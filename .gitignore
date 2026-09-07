@@ -1,0 +1,8 @@
+# Соревновательные данные НН и крупные артефакты — не коммитить
+/data/
+private_features.csv
+submission*.csv
+*.pkl
+__pycache__/
+.venv/
+*.pyc
