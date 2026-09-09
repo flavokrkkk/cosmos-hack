@@ -2,6 +2,40 @@
 
 Подготовка к старту. Цель — победа.
 
+## Каркас приложений
+
+- `frontend/` — React + TypeScript + Vite, слои `app`, `pages`, `widgets`,
+  `features`, `entities`, `shared` как в `flowers_store`;
+- `backend/` — FastAPI с тем же разделением на `api`, `core` и
+  `infrastructure`; из прикладных API пока есть только авторизация;
+- `ml/` — независимое тренировочное ядро по данным ростовского кейса;
+- `docker-compose.yml` — полный запуск;
+- `docker-compose.local.yml` — PostgreSQL, Redis и Ollama для разработки
+  приложений напрямую на машине.
+
+Полный запуск:
+
+```bash
+docker compose up --build
+```
+
+Команда поднимает frontend, backend, Taskiq worker, PostgreSQL, Redis и Ollama.
+При первом запуске контейнер `ollama-pull` загрузит модель `qwen3:4b` (около
+2,5 ГБ), поэтому первый старт будет дольше последующих. Модель сохраняется в
+volume `ollama-data`.
+
+Выбрать другую модель можно без правки compose:
+
+```bash
+COSMOS_OLLAMA_MODEL=qwen3:8b docker compose up --build
+```
+
+Для запуска backend и frontend на машине, а инфраструктуры в Docker:
+
+```bash
+docker compose -f docker-compose.local.yml up
+```
+
 ## 📌 Начни отсюда
 - **[PLAYBOOK.md](PLAYBOOK.md)** — стратегия на победу: расшифровка рубрики (100 б.),
   победный рецепт вегетационного кейса, главные ловушки, пред-стартовый чеклист,
