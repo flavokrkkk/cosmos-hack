@@ -27,6 +27,7 @@ services:
       timeout: 3s
       retries: 10
 
+
   ollama:
     image: ollama/ollama:latest
     environment:
