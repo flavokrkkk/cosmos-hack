@@ -2,10 +2,14 @@
 
 ## Purpose
 
-This repository is a reusable starter for the Cosmos Hackathon. Preserve the
-generic infrastructure until the official case is published. Add case-specific
-product behavior, data pipelines, thresholds, and models in separate commits so
-the work completed during the event is easy to identify.
+This repository is a reusable starter for the Cosmos Hackathon. The team has
+accepted **Case 02 «Сервисная модель космической экономики»** (Nizhny Novgorod,
+11–13 September 2026, case holder АНО «КЭП»). Preserve the generic
+infrastructure; add case-specific product behavior, data pipelines, thresholds,
+and models in separate commits so the work completed during the event is easy
+to identify. Everything the team knows about the event and the case lives in
+`docs/` — see "Documentation and knowledge base" below. Two people and their AI
+agents work in this repository; the rules below apply to all of them.
 
 ## Repository layout
 
@@ -15,7 +19,9 @@ the work completed during the event is easy to identify.
 - `ml/`: standalone training and evaluation code prepared from the Rostov NDVI
   case. It is not part of the backend runtime.
 - `flowers_store/`: local reference checkout. Never edit, import, or commit it.
-- `PLAYBOOK.md`: hackathon strategy and case assumptions.
+- `docs/`: team knowledge base — event, case brief, hypotheses, strategy,
+  rubric/delivery, and the deep research (`docs/research/`). Start at
+  `docs/README.md`. The old NDVI playbook is archived in `docs/archive/`.
 - `PREEXISTING.md`: inventory of components created before the event.
 
 ## Frontend conventions
@@ -122,3 +128,47 @@ PYTHONPYCACHEPREFIX=/tmp/cosmos-hack-pycache \
 For ML changes, run `python ml/selfcheck.py` and the relevant local evaluation
 command documented in `ml/README.md`. Do not report Docker verification unless
 the containers were actually built and started.
+
+## Documentation and knowledge base
+
+`docs/` is the single source of truth for everything the team knows about the
+event and the case. Knowledge must land in `docs/` in the agreed structure — not
+in chat, an agent's private memory, commit messages, or new root-level files.
+Whenever you learn something new (from a teammate, the platform, the web, a
+briefing, or research), write it into the owning file in the same working
+session.
+
+Routing — put new information in the file that owns the topic:
+
+| What | Where |
+|---|---|
+| Event logistics, deadlines, platform (ЛК) | `docs/00-event.md` |
+| Case text, decode, jury profile | `docs/01-case02-brief.md` |
+| Hypotheses (each with "how to verify") and briefing questions | `docs/02-hypotheses.md` |
+| What we build and why, roles | `docs/03-strategy.md` |
+| Rubric, delivery requirements, timeline, anti-patterns | `docs/04-rubric-and-delivery.md` |
+| Decisions taken (date, decision, why, alternatives, status) | `docs/05-decisions.md` |
+| Sourced research findings, one topic per file | `docs/research/<topic>.md` + a row in `docs/research/README.md` |
+| Dated notes: briefing, standups, expert or tracker consultations | `docs/notes/YYYY-MM-DD-<topic>.md` |
+| Outdated documents | `docs/archive/` with a deprecation note at the top; never delete |
+
+Rules:
+
+- The repository root holds only `README.md`, `AGENTS.md`, `CLAUDE.md`, and
+  `PREEXISTING.md`. Do not create other top-level Markdown files.
+- One file, one topic. Link instead of duplicating. When adding or renaming a
+  file, update the map in `docs/README.md` (and `docs/research/README.md` for
+  research) and keep relative links valid.
+- Mark every statement: **ФАКТ** (with a URL), **ГИПОТЕЗА** (with how to
+  verify), **НАХОДКА** (research result, with a URL). A number without a source
+  is written as an estimate («≈») together with its basis. Never invent URLs or
+  figures.
+- When a hypothesis is verified, record the verdict next to it; do not delete it.
+- Docs are written in Russian; quotations may keep the source language.
+- After the case briefing, update in this order: `docs/02-hypotheses.md`
+  (verdicts, official definitions of access modes), `docs/research/engine-parameters.md`
+  (real lots and budget), `docs/00-event.md` (deadlines), `docs/05-decisions.md`.
+- Edit only your own sections of shared files (`README.md`, this file); preserve
+  other people's sections verbatim.
+- Code conventions stay in this file; `ml/README.md` and `ml/GENERIC.md`
+  document the ML kit. Do not move code documentation into `docs/`.
