@@ -3,7 +3,7 @@ from taskiq_redis import RedisStreamBroker
 from app.infrastructure.config.config import settings
 
 
-broker = RedisStreamBroker(settings.redis_url)
+broker = RedisStreamBroker(settings.redis.url)
 
 
 @broker.task

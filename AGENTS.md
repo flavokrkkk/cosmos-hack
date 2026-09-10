@@ -81,6 +81,11 @@ runnable: frontend, backend, worker, PostgreSQL, Redis, Ollama, and model pull.
 Keep Ollama weights in the named volume and make the model configurable through
 `COSMOS_OLLAMA_MODEL`.
 
+Use `docker-compose.server.yml` when FastAPI and frontend run on a remote server
+while Ollama runs on a Mac through ngrok. Keep ngrok Basic Auth credentials in
+an untracked env file. The browser must call FastAPI only; never expose ngrok
+credentials or the Ollama URL to the frontend bundle.
+
 ## ML and data
 
 Treat `ml/sample_data` as public Rostov reference data for rehearsing the NDVI

@@ -22,7 +22,7 @@ def configure_logging() -> None:
             structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
             structlog.dev.ConsoleRenderer()
-            if settings.debug
+            if settings.app.debug
             else structlog.processors.JSONRenderer(),
         ],
         wrapper_class=structlog.stdlib.BoundLogger,
@@ -31,7 +31,7 @@ def configure_logging() -> None:
         cache_logger_on_first_use=True,
     )
     logging.basicConfig(
-        level=logging.DEBUG if settings.debug else logging.INFO,
+        level=logging.DEBUG if settings.app.debug else logging.INFO,
         format="%(message)s",
     )
 

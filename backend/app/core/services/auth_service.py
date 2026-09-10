@@ -33,9 +33,9 @@ class AuthService:
     def _create_token(self, admin: Admin, token_type: TokenType) -> str:
         now = datetime.now(timezone.utc)
         lifetime = (
-            timedelta(minutes=settings.access_token_expire_minutes)
+            timedelta(minutes=settings.jwt.access_token_expire_minutes)
             if token_type == "access"
-            else timedelta(days=settings.refresh_token_expire_days)
+            else timedelta(days=settings.jwt.refresh_token_expire_days)
         )
         payload = {
             "sub": str(admin.id),
@@ -46,8 +46,8 @@ class AuthService:
         }
         return jwt.encode(
             payload,
-            settings.jwt_secret_key,
-            algorithm=settings.jwt_algorithm,
+            settings.jwt.secret_key,
+            algorithm=settings.jwt.algorithm,
         )
 
     def _create_token_pair(self, admin: Admin) -> TokenSchema:
@@ -63,8 +63,8 @@ class AuthService:
         try:
             payload = jwt.decode(
                 token,
-                settings.jwt_secret_key,
-                algorithms=[settings.jwt_algorithm],
+                settings.jwt.secret_key,
+                algorithms=[settings.jwt.algorithm],
             )
             if payload.get("type") != expected_type:
                 raise InvalidCredentials()

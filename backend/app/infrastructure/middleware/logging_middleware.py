@@ -40,7 +40,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         process_time = time.perf_counter() - started_at
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Process-Time"] = str(round(process_time, 6))
-        is_slow = process_time > settings.slow_request_threshold
+        is_slow = process_time > settings.app.slow_request_threshold
         log = logger.warning if is_slow else logger.info
         log(
             "slow_request" if is_slow else "request_completed",

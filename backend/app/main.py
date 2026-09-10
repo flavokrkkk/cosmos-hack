@@ -20,32 +20,38 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("application_startup", app_name=settings.app_name, debug=settings.debug)
-    database = DatabaseConnection(settings.database_url)
+    logger.info("application_startup", app_name=settings.app.name, debug=settings.app.debug)
+    database = DatabaseConnection(settings.database.url)
     await database.initialize()
     app.state.db_connection = database
     logger.info("database_connected")
 
     ollama_client = OllamaClient(
-        settings.ollama_base_url,
-        settings.ollama_timeout_seconds,
+        settings.ollama.base_url,
+        settings.ollama.timeout_seconds,
+        settings.ollama.username,
+        (
+            settings.ollama.password.get_secret_value()
+            if settings.ollama.password
+            else None
+        ),
     )
     app.state.ollama_service = OllamaService(
         ollama_client,
-        settings.ollama_model,
+        settings.ollama.model,
     )
     logger.info(
         "ollama_client_configured",
-        base_url=settings.ollama_base_url,
-        model=settings.ollama_model,
+        base_url=settings.ollama.base_url,
+        model=settings.ollama.model,
     )
 
-    if settings.bootstrap_admin_username and settings.bootstrap_admin_password:
+    if settings.bootstrap.admin_username and settings.bootstrap.admin_password:
         async with database.session_factory() as session:
             service = AuthService(AdminRepository(session))
             await service.ensure_admin(
-                settings.bootstrap_admin_username,
-                settings.bootstrap_admin_password,
+                settings.bootstrap.admin_username,
+                settings.bootstrap.admin_password,
             )
 
     try:
@@ -57,14 +63,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title=settings.app_name,
-    debug=settings.debug,
+    title=settings.app.name,
+    debug=settings.app.debug,
     lifespan=lifespan,
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=settings.app.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

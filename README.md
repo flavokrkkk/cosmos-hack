@@ -36,6 +36,36 @@ COSMOS_OLLAMA_MODEL=qwen3:8b docker compose up --build
 docker compose -f docker-compose.local.yml up
 ```
 
+## Сервер + Ollama на Mac через ngrok
+
+На Mac заранее загрузите модель и поднимите защищённый туннель:
+
+```bash
+ollama pull qwen3:4b
+ngrok http 11434 \
+  --host-header="localhost:11434" \
+  --basic-auth="cosmos:change-this-password"
+```
+
+Не публикуйте Ollama без авторизации. Оставьте Mac подключённым к питанию и
+отключите сон на время демонстрации:
+
+```bash
+caffeinate -dimsu
+```
+
+На сервере создайте закрытый env-файл из примера, укажите публичные адреса
+frontend, backend и ngrok, затем запустите compose без локальной Ollama:
+
+```bash
+cp .env.server.example .env.server
+docker compose --env-file .env.server -f docker-compose.server.yml up --build -d
+```
+
+`docker-compose.server.yml` не публикует порты PostgreSQL и Redis. Frontend
+обращается только к серверному FastAPI, а FastAPI вызывает Ollama через ngrok.
+Файл `.env.server` с паролями не коммитьте.
+
 ## 📌 Начни отсюда
 - **[PLAYBOOK.md](PLAYBOOK.md)** — стратегия на победу: расшифровка рубрики (100 б.),
   победный рецепт вегетационного кейса, главные ловушки, пред-стартовый чеклист,

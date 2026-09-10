@@ -109,11 +109,22 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: http://localhost:8000
+        VITE_API_URL: ${VITE_API_URL:-/api}
     depends_on:
       - app
     ports:
       - "5173:80"
+    restart: unless-stopped
+
+  tuna:
+    image: yuccastream/tuna:latest
+    command: http frontend:80 --inspect=false --domain=${TUNA_DOMAIN:?Set TUNA_DOMAIN in .env} --location=${TUNA_LOCATION:-nl}
+    environment:
+      TUNA_TOKEN: ${TUNA_TOKEN:?Set TUNA_TOKEN in .env}
+      TUNA_LOG: stdout
+      TUNA_LOG_LEVEL: info
+    depends_on:
+      - frontend
     restart: unless-stopped
 
 volumes:
