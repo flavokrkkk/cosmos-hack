@@ -57,7 +57,9 @@ services:
     restart: "no"
 
   app:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       COSMOS_APP_NAME: Cosmos Hack API
       COSMOS_DEBUG: "true"
@@ -79,14 +81,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      ollama-pull:
-        condition: service_completed_successfully
     ports:
       - "${COSMOS_API_HOST_PORT:-8000}:8000"
     restart: unless-stopped
 
   worker:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     command: taskiq worker app.tasks.broker:broker --workers 1
     environment:
       COSMOS_DB_NAME: cosmos_hack
@@ -103,8 +105,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      ollama-pull:
-        condition: service_completed_successfully
     restart: unless-stopped
 
   frontend:

@@ -1,8 +1,9 @@
-# engine — расчётный слой кейса «Космос как инфраструктура»
+# engine — совместимость CLI и прежних импортов
 
-Чистое Python-ядро без веб-зависимостей: считает портфель каноническими формулами
-организаторов, диагностирует ограничения, перебирает пространство решений и выгружает
-контрольные результаты.
+Реализация перенесена в
+[`backend/app/core/services/portfolio_engine`](../backend/app/core/services/portfolio_engine/).
+В корневом `engine/` только переходники: `python -m engine` и прежние импорты продолжают работать.
+Формулы не продублированы; чистое ядро не зависит от FastAPI, БД или Ollama.
 
 **Принцип:** материалы кейса в [`case/source/`](../case/source) **не изменяются**. `engine`
 их только импортирует и читает. Все формулы берутся из `case_core.py` организаторов, поэтому
@@ -10,12 +11,13 @@
 
 ## Запуск
 
-Проверено на **Python 3.9.6** и **pandas 2.3.3** (macOS).
+После переноса проверено на **Python 3.12.14** и **pandas 2.3.3** (macOS).
 
 ```bash
 python -m pip install -r requirements.txt
 python -m engine evaluate          # рекомендуемый портфель, BASE и STRESS
 python -m pytest tests/ -q         # 21 проверка формул и границ
+python -m engine selfcheck        # воспроизводимость и контроль пространства
 ```
 
 ## Команды
@@ -61,7 +63,7 @@ cash = anchor_cash_source * k_anchor + commercial_cash_source * k_commercial
 ## Структура
 
 ```text
-engine/
+backend/app/core/services/portfolio_engine/
 ├── canonical.py    импорт case_core организаторов, загрузка данных кейса
 ├── constraints.py  диагностика: порог, факт, запас, PASS/FAIL + сверка с каноном
 ├── space.py        перебор 5670 конфигураций, допустимость, Парето, частоты
@@ -71,9 +73,8 @@ engine/
 
 ## Интеграция с backend (для команды бэкенда)
 
-`engine` не знает про FastAPI и не должен узнать. Сервис в
-`backend/app/core/services/portfolio/` **импортирует** его и отдаёт наружу — логика не
-дублируется, поэтому числа в вебе и в CLI не разъедутся.
+`PortfolioService` и `RecommendationService` импортируют `app.core.services.portfolio_engine`.
+API не использует корневые переходники. Контракт HTTP — в [backend/README.md](../backend/README.md).
 
 Контракт, на который можно опираться:
 
@@ -101,7 +102,12 @@ rows = diagnose(metrics, "STRESS")          # у каждой строки: code
 
 `ConstraintRow.as_dict()` уже готов к отдаче в JSON.
 
-Предлагаемые ручки (соответствуют критериям Т2–Т4):
+Исторический проект ручек ниже **не реализован под этими адресами**. Сейчас доступны
+`GET /portfolio/catalog`, `POST /portfolio/evaluate`, `POST /portfolio/recommend`,
+`POST /portfolio/compare`. CLI `evaluate` читает пример из config или `--portfolio`;
+автоматического победителя выбирает API recommend.
+
+Прежний проект (для истории):
 
 | Метод | Путь | Назначение |
 |---|---|---|

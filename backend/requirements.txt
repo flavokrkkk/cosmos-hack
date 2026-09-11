@@ -11,3 +11,4 @@ pwdlib[argon2]>=0.2,<1
 structlog>=25.4,<26
 taskiq>=0.12,<1
 taskiq-redis>=1.1,<2
+pandas==2.3.3
