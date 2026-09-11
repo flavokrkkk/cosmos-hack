@@ -11,6 +11,7 @@
     python -m engine compare
     python -m engine space
     python -m engine pareto --scenario STRESS --top 15
+    python -m engine sensitivity --scenario STRESS
     python -m engine export
 """
 
@@ -24,6 +25,7 @@ from typing import List, Sequence, Tuple
 from .canonical import REPO_ROOT, evaluate, scenarios
 from .constraints import diagnose, failed
 from .decision import Variant, load_decision
+from .sensitivity import binding_first, c0_breaking_point, input_headroom
 from .space import (
     binding_analysis,
     enumerate_space,
@@ -230,6 +232,13 @@ def cmd_export(args) -> int:
             RESULTS_DIR / f"constraints_{scenario}.csv", index=False, encoding="utf-8"
         )
 
+    import pandas as pd
+
+    for scenario in scenarios():
+        pd.DataFrame(
+            [row.as_dict() for row in input_headroom(decision.recommended.selection, scenario)]
+        ).to_csv(RESULTS_DIR / f"sensitivity_{scenario}.csv", index=False, encoding="utf-8")
+
     space = enumerate_space()
     space.to_csv(RESULTS_DIR / "portfolio_space.csv", index=False, encoding="utf-8")
 
@@ -237,6 +246,46 @@ def cmd_export(args) -> int:
     print(f"Записано в {RESULTS_DIR}:")
     for name in written:
         print("  •", name)
+    return 0
+
+
+def cmd_sensitivity(args) -> int:
+    decision = load_decision(args.config)
+    selection, origin = _selection_from_args(args, decision)
+    scenario = args.scenario
+
+    print(f"Портфель: {format_selection(selection)}   ({origin})")
+    print(f"Сценарий: {scenario}")
+    print()
+    print("=== Насколько могут измениться входные данные, пока портфель допустим ===")
+    rows = input_headroom(selection, scenario)
+    print(_table(
+        ["Вход", "Направление", "Предельный множитель", "Запас", "Упирается в"],
+        [[r.input_name, r.direction, f"{r.limit_factor:.4f}",
+          f"{abs(r.change_pct):.1f}%", r.binding] for r in rows],
+    ))
+    print()
+    narrow = binding_first(selection, scenario)
+    print(f"  Самое узкое место: {narrow.input_name} — "
+          f"{narrow.direction} на {abs(narrow.change_pct):.1f}% упирается в {narrow.binding}.")
+
+    print()
+    print("=== Граница по лимиту стартовых затрат ===")
+    point = c0_breaking_point(selection)
+    print(_table(
+        ["Показатель", "Значение"],
+        [
+            ["c0 портфеля", f"{point['portfolio_c0']:.2f} млн ₽"],
+            ["Лимит BASE", f"{point['base_limit']} млн ₽"],
+            ["Лимит STRESS", f"{point['stress_limit']} млн ₽"],
+            ["Запас в STRESS", f"{point['stress_slack']:.2f} млн ₽"],
+            ["Ломается при лимите ниже", f"{point['breaks_below_limit']:.2f} млн ₽"],
+            ["Допустимое доп. сокращение лимита", f"{point['extra_cut_allowed_pct']:.2f}%"],
+        ],
+    ))
+    print()
+    print("  Исходные файлы кейса при этом не изменяются: запас считается по уже")
+    print("  рассчитанным показателям, а не подкруткой lots.csv.")
     return 0
 
 
@@ -266,6 +315,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_par.add_argument("--scenario", choices=["BASE", "STRESS"], default="STRESS")
     p_par.add_argument("--top", type=int, default=15)
     p_par.set_defaults(func=cmd_pareto)
+
+    p_sens = sub.add_parser("sensitivity", help="запас по входным данным и граница слома")
+    p_sens.add_argument("--portfolio", help="например FIRE:A,AGRI:A,TRANS:B,ENV:A")
+    p_sens.add_argument("--scenario", choices=["BASE", "STRESS"], default="STRESS")
+    p_sens.set_defaults(func=cmd_sensitivity)
 
     p_exp = sub.add_parser("export", help="выгрузка контрольных результатов в results/")
     p_exp.set_defaults(func=cmd_export)

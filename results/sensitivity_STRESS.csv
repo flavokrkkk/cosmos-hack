@@ -1,0 +1,5 @@
+input,direction,limit_factor,change_pct,binding_constraint
+c0 (стартовые затраты),рост,1.023417,2.34,c0_limit (STRESS)
+opex (годовые расходы),рост,1.136543,13.65,opex_limit
+cash (денежные поступления),падение,0.589302,41.07,kcash_floor
+vpub (общественная ценность),падение,0.751654,24.83,vpub_floor

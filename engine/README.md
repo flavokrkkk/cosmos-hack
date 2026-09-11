@@ -15,7 +15,7 @@
 ```bash
 python -m pip install -r requirements.txt
 python -m engine evaluate          # рекомендуемый портфель, BASE и STRESS
-python -m pytest tests/ -q         # 18 проверок формул и границ
+python -m pytest tests/ -q         # 21 проверка формул и границ
 ```
 
 ## Команды
@@ -26,6 +26,7 @@ python -m pytest tests/ -q         # 18 проверок формул и гра�
 | `compare` | сравнение рекомендации и альтернатив из конфига по единым показателям |
 | `space` | полный перебор: допустимость по сценариям, какие ограничения реально связывают |
 | `pareto` | недоминируемые конфигурации выбранного сценария |
+| `sensitivity` | запас по входным данным: насколько можно ошибиться, пока портфель допустим |
 | `export` | контрольные результаты в `results/` |
 
 Портфель меняется **без правки кода** — флагом или конфигом:
@@ -33,6 +34,7 @@ python -m pytest tests/ -q         # 18 проверок формул и гра�
 ```bash
 python -m engine evaluate --portfolio FIRE:A,AGRI:A,TRANS:B,ENV:A --scenario STRESS
 python -m engine pareto --scenario STRESS --top 20
+python -m engine sensitivity --scenario STRESS
 ```
 
 Постоянные параметры решения (портфель, альтернативы, управленческие поля, допущения) —
@@ -84,6 +86,9 @@ from engine import (
     feasible,            # (scenario) -> DataFrame допустимых
     pareto_front,        # (DataFrame) -> DataFrame недоминируемых
     binding_analysis,    # () -> DataFrame «какие ограничения связывают»
+    input_headroom,      # (selection, scenario) -> list[Headroom]: запас по входам
+    binding_first,       # (selection, scenario) -> Headroom: самое узкое место
+    c0_breaking_point,   # (selection) -> dict: при каком лимите c0 портфель ломается
     load_decision,       # () -> Decision из config/decision.json
     lot_ids, mode_ids, scenarios,
 )
@@ -125,7 +130,8 @@ rows = diagnose(metrics, "STRESS")          # у каждой строки: code
 
 `python -m engine export` пишет в [`results/`](../results):
 `portfolio_detail.csv`, `portfolio_metrics.json`, `team_decision_config.json`,
-`constraints_BASE.csv`, `constraints_STRESS.csv`, `portfolio_space.csv` (полный перебор).
+`constraints_BASE.csv`, `constraints_STRESS.csv`, `sensitivity_BASE.csv`, `sensitivity_STRESS.csv`,
+`portfolio_space.csv` (полный перебор).
 
 Эти файлы — источник чисел для записки и презентации. Требование рубрики: цифры в записке,
 на слайдах и в выводе инструмента **обязаны совпадать**.

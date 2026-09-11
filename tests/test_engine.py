@@ -195,3 +195,34 @@ def test_recommended_variant_from_config_passes_both_scenarios():
         assert constraints.all_passed(rows), (
             f"{scenario}: {[r.code for r in constraints.failed(rows)]}"
         )
+
+
+# --------------------------------------------------------------------------- #
+# 5. Анализ устойчивости
+# --------------------------------------------------------------------------- #
+def test_headroom_is_verified_numerically():
+    """Аналитика запаса проверяется численно: на границе PASS, за границей FAIL."""
+    from engine import sensitivity
+
+    selection = [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
+    for scenario in ("BASE", "STRESS"):
+        assert sensitivity.verify_headroom(selection, scenario), scenario
+
+
+def test_c0_is_narrowest_input_under_stress():
+    """В стрессе самое узкое место — стартовые затраты, а не OPEX или поступления."""
+    from engine import sensitivity
+
+    selection = [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
+    narrow = sensitivity.binding_first(selection, "STRESS")
+    assert narrow.input_name.startswith("c0")
+
+
+def test_c0_breaking_point_matches_portfolio_c0():
+    from engine import sensitivity
+
+    selection = [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
+    point = sensitivity.c0_breaking_point(selection)
+    assert point["portfolio_c0"] == pytest.approx(1153.0)
+    assert point["stress_slack"] == pytest.approx(1180 - 1153.0)
+    assert point["breaks_below_limit"] == pytest.approx(point["portfolio_c0"])
