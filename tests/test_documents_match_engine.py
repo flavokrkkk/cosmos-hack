@@ -193,21 +193,27 @@ def test_decision_config_management_fields_are_filled():
     assert empty == [], f"не заполнены управленческие поля: {', '.join(empty)}"
 
 
-def test_team_name_is_filled_before_submission():
-    """Название команды подставлено.
+def test_team_name_is_filled_and_consistent():
+    """Название команды заполнено и одинаково во всех материалах сдачи.
 
     Отдельный тест, а не часть предыдущего: это единственное поле, которое
-    нельзя вывести из расчёта или записки — его называет команда. Пока оно
-    не заполнено, тест красный намеренно: это пункт чек-листа сдачи, который
-    легче всего забыть, и он должен быть виден, а не спрятан.
+    нельзя вывести из расчёта — его называет команда. Оно попадает в экспорт
+    `team_decision_config.json`, который эксперт открывает первым, и в шапки
+    обоих документов. Разъехавшееся название читается как разные работы.
     """
     config = json.loads(DECISION.read_text(encoding="utf-8"))
-    name = str(config.get("team_name", ""))
+    name = str(config.get("team_name", "")).strip()
     assert name and "TODO" not in name.upper(), (
         "config/decision.json: team_name не заполнено. Название попадает "
         "в экспорт team_decision_config.json, который эксперт открывает "
         "первым. Заполнить до стоп-кода."
     )
+
+    for path in (NOTE, STRESS_SUMMARY, REPO / "README.md"):
+        assert name in path.read_text(encoding="utf-8"), (
+            f"{path.name}: название команды «{name}» не указано. "
+            "Материалы сдачи должны быть подписаны одинаково."
+        )
 
 
 def test_note_has_no_open_decisions():
