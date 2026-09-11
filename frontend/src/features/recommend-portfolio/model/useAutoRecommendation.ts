@@ -5,38 +5,32 @@ import { useRecommendation, useWorkspace } from '@entities/portfolio'
 /**
  * Автоподбор по всем восьми лотам.
  *
- * Условие поиска — состояние страницы, а не скрытый параметр запроса: если
- * подбор шёл в BASE, а тумблер уже переключён на STRESS, результат помечается
- * как полученный при других условиях, пока пользователь не нажмёт «Подобрать заново».
+ * После первого запуска изменение условия сразу переключает запрос.
  */
 export function useAutoRecommendation(datasetHash: string | undefined) {
   const autoSearch = useWorkspace((state) => state.autoSearch)
   const requireStress = useWorkspace((state) => state.requireStress)
   const launchAutoSearch = useWorkspace((state) => state.launchAutoSearch)
 
-  const searchRequireStress = autoSearch?.requireStress ?? requireStress
   const query = useRecommendation({
     datasetHash,
-    requireStress: searchRequireStress,
+    requireStress,
     lotIds: null,
     enabled: autoSearch !== null,
   })
 
-  const conditionChanged = autoSearch !== null && autoSearch.requireStress !== requireStress
-
   const launch = useCallback(() => {
-    if (autoSearch && autoSearch.requireStress === requireStress) {
+    if (autoSearch) {
       void query.refetch()
       return
     }
     launchAutoSearch()
-  }, [autoSearch, requireStress, launchAutoSearch, query])
+  }, [autoSearch, launchAutoSearch, query])
 
   return {
     query,
     launched: autoSearch !== null,
-    conditionChanged,
-    searchRequireStress,
+    searchRequireStress: requireStress,
     launch,
   }
 }

@@ -1,7 +1,7 @@
 export { CompareDialog, MAX_VARIANTS, MIN_VARIANTS, buildCandidates } from './compare-portfolios'
 export type { Candidate, CandidateSource } from './compare-portfolios'
 export { useManualSelection } from './edit-portfolio'
-export { useExplanation } from './explain-portfolio'
+export { useExplanation, VariantExplanation } from './explain-portfolio'
 export type { ExplanationStatus } from './explain-portfolio'
 export { ExportButton } from './export-calculation'
 export {

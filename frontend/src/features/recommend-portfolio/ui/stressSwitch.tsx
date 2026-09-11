@@ -11,8 +11,7 @@ type Props = {
 }
 
 /**
- * Условие поиска «Искать только проходящие STRESS». Это настройка СЛЕДУЮЩЕГО
- * подбора, а не переключатель просмотра — просмотр BASE/STRESS живёт у результата.
+ * Изменение условия обновляет уже запущенный подбор.
  */
 export function StressSwitch({ className, compact = false }: Props) {
   const id = useId()
@@ -21,7 +20,7 @@ export function StressSwitch({ className, compact = false }: Props) {
 
   return (
     <div className={cn('flex items-center gap-4', className)}>
-      <Tooltip content="Портфель должен выдерживать сокращение бюджета (сценарий STRESS) без пересмотра состава. Это условие поиска, а не переключатель просмотра.">
+      <Tooltip content="Портфель должен выдерживать сокращение бюджета (сценарий STRESS) без пересмотра состава. После первого запуска переключение сразу обновляет подбор.">
         <label
           htmlFor={id}
           className={cn('cursor-pointer font-medium', compact ? 'text-[13.5px]' : 'text-[15px]')}

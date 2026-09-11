@@ -92,7 +92,12 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
 
       setMode: (mode) => set({ mode }),
       setScenario: (scenario) => set({ scenario }),
-      setRequireStress: (requireStress) => set({ requireStress }),
+      setRequireStress: (requireStress) =>
+        set((state) => state.requireStress === requireStress ? state : ({
+          requireStress,
+          autoSearch: state.autoSearch ? { requireStress, startedAt: Date.now() } : null,
+          activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
+        })),
 
       launchAutoSearch: () =>
         set((state) => ({

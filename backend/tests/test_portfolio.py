@@ -1,5 +1,6 @@
 import hashlib
 import json
+from math import comb
 
 import pandas as pd
 import pytest
@@ -265,8 +266,32 @@ def test_recommend_modes_for_fixed_lots(client, catalog, require_stress):
     assert unrestricted.json()["considered_count"] == 5670
 
 
+@pytest.mark.parametrize("candidate_count", [5, 6, 7, 8])
+def test_recommend_searches_all_four_lot_portfolios_inside_candidate_pool(
+    client, catalog, candidate_count,
+):
+    base_ids = ["FIRE", "AGRI", "TRANS", "ENV"]
+    extra_ids = [lot.lot_id for lot in catalog.lots if lot.lot_id not in base_ids]
+    ids = [*base_ids, *extra_ids[:candidate_count - len(base_ids)]]
+    response = client.post(
+        "/portfolio/recommend",
+        json={"dataset_hash": catalog.dataset_hash, "lot_ids": ids},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["considered_count"] == comb(candidate_count, 4) * 3**4
+    assert data["request"]["lot_ids"] == sorted(ids)
+    allowed = set(ids)
+    variants = [variant for variant in [data["recommended"], *data["alternatives"]] if variant]
+    assert variants
+    for variant in variants:
+        selected = {item["lot_id"] for item in variant["calculation"]["selection"]}
+        assert len(selected) == 4
+        assert selected <= allowed
+
+
 @pytest.mark.parametrize("ids", [[], ["FIRE"], ["FIRE", "AGRI", "ENV"],
-    ["FIRE", "FLOOD", "AGRI", "ENV", "TRANS"], ["FIRE", "FIRE", "ENV", "TRANS"],
+    [f"LOT_{index}" for index in range(9)], ["FIRE", "FIRE", "ENV", "TRANS"],
     ["FIRE", "AGRI", "ENV", "MISSING"]])
 def test_fixed_lots_reject_invalid_selection(client, catalog, ids):
     response = client.post("/portfolio/recommend", json={"dataset_hash": catalog.dataset_hash, "lot_ids": ids})

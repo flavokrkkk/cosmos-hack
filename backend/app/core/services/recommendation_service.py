@@ -82,11 +82,14 @@ def rank_candidates(frame):
     return result.sort_values(PRIORITIES, ascending=ASCENDING, kind="stable").reset_index(drop=True)
 
 
-@lru_cache(maxsize=142)
+@lru_cache(maxsize=256)
 def _recommend(dataset_hash: str, require_stress: bool, lot_ids: tuple[str, ...] | None = None) -> RecommendationResult:
     frame = space.enumerate_space()
     if lot_ids is not None:
-        frame = frame[frame.lots.map(lambda value: tuple(sorted(value.split("+"))) == lot_ids)]
+        selected_lots = frozenset(lot_ids)
+        frame = frame[
+            frame.lots.map(lambda value: set(value.split("+")).issubset(selected_lots))
+        ]
     candidates = space.feasible("STRESS" if require_stress else "BASE", frame)
     front = rank_candidates(space.pareto_front(candidates))
     request = RecommendRequest(dataset_hash=dataset_hash, require_stress=require_stress,

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { LotCard, RecommendedLotCard, useLotDetails } from '@entities/case'
 import { formatMoney, selectionKey, useSavedVariants, useWorkspace } from '@entities/portfolio'
 import {
-  CompareDialog, SaveVariantDialog, SearchStats, StressSwitch, buildCandidates, defaultVariant,
+  CompareDialog, SaveVariantDialog, SearchStats, StressSwitch, buildCandidates,
   useActiveVariant, useAutoRecommendation, useManualRecommendation,
 } from '@features'
 import type { CaseCatalog, RecommendationResult } from '@shared/api/contracts'
@@ -25,12 +25,11 @@ const TILTS = [-2, -0.6, 0.6, 2]
  * Экран «Автоподбор».
  *
  * Алгоритм перебирает 5670 конфигураций, отбрасывает нарушающие ограничения и
- * оставляет фронт. Сверху — портфель команды (если он на фронте) или первая
- * опорная точка; ниже — проверка, объяснение и остальные опорные точки.
+ * оставляет фронт. Карточки, проверка и объяснение показывают один открытый вариант.
  * Получение результата само по себе не означает, что команда приняла его решением.
  */
 export function AutoScreen({ catalog }: Props) {
-  const { query, launched, conditionChanged, searchRequireStress, launch } = useAutoRecommendation(catalog.dataset_hash)
+  const { query, launched, searchRequireStress, launch } = useAutoRecommendation(catalog.dataset_hash)
   const manual = useManualRecommendation(catalog.dataset_hash)
   const result = query.data
   const active = useActiveVariant(catalog.dataset_hash, result)
@@ -61,7 +60,7 @@ export function AutoScreen({ catalog }: Props) {
     return [...new Set(ids.filter((id): id is string => Boolean(id)))]
   }, [active.calculation, result])
 
-  const top = defaultVariant(result)
+  const showPortfolio = (result?.status === 'ok' && Boolean(active.calculation)) || active.kind === 'saved'
   const activeTarget: AlternativeTarget | null =
     active.kind === 'team' ? 'team' : active.kind === 'reference' ? (active.alternativeIndex ?? null) : null
 
@@ -102,7 +101,6 @@ export function AutoScreen({ catalog }: Props) {
           isRerunning={query.isFetching}
           onSearchInBase={() => {
             setRequireStress(false)
-            launch()
           }}
           onManual={() => {
             startManualFrom([])
@@ -111,36 +109,32 @@ export function AutoScreen({ catalog }: Props) {
         />
       ) : null}
 
-      {result?.status === 'ok' && top ? (
-        <section className="rise-in flex flex-col items-center gap-8" aria-busy={query.isFetching}>
+      {showPortfolio && active.calculation ? (
+        <section id="active-portfolio" className="rise-in flex scroll-mt-6 flex-col items-center gap-8" aria-busy={query.isFetching}>
           <div className="flex flex-col items-center gap-3 text-center">
             <h2 className="text-[24px] leading-tight font-bold tracking-[-0.015em]">
-              {top.kind === 'team' ? 'Портфель команды' : `Опорная точка фронта: ${top.variant.title}`}
+              {active.kind === 'team' ? 'Портфель команды' : active.title}
             </h2>
             <p className="max-w-[560px] text-[13.5px] leading-snug text-muted">
-              {top.kind === 'team'
-                ? 'Лежит на фронте недоминируемых вариантов и выбран командой по правилу из управленческой записки. Остальные опорные точки фронта — ниже.'
-                : 'Портфель команды не лежит на фронте при этих условиях поиска, поэтому показана крайняя точка фронта. Остальные опорные точки — ниже.'}
+              {active.reason}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <Tag tone="muted" size="md">условие поиска: {searchRequireStress ? 'проходят STRESS' : 'проходят BASE'}</Tag>
-              {conditionChanged ? (
-                <Tag tone="warn" size="md">условие изменено — нажмите «Подобрать заново»</Tag>
-              ) : null}
+              {active.kind !== 'saved' ? <Tag tone="muted" size="md">условие поиска: {searchRequireStress ? 'проходят STRESS' : 'проходят BASE'}</Tag> : null}
               {query.isFetching ? <Tag tone="brand" size="md">идёт новый подбор…</Tag> : null}
             </div>
           </div>
 
           <ul className={`grid w-full max-w-[1180px] gap-6 sm:grid-cols-2 lg:grid-cols-4 ${query.isFetching ? 'is-stale' : ''}`}>
-            {top.variant.calculation.detail.map((detail, index) => {
+            {active.calculation.detail.map((detail, index) => {
               const lot = lotById.get(detail.lot_id)
               if (!lot) return null
               return (
                 <li key={detail.lot_id} className="flex">
                   <RecommendedLotCard
                     lot={lot}
+                    detail={detail}
                     modeId={detail.mode_id}
-                    modeLabel={top.kind === 'team' ? 'Выбран командой · режим' : 'Режим'}
+                    modeLabel={active.kind === 'team' ? 'Выбран командой · режим' : 'Режим'}
                     onDetails={openDetails}
                     formatMoney={formatMoney}
                     tilt={TILTS[index] ?? 0}
@@ -150,7 +144,7 @@ export function AutoScreen({ catalog }: Props) {
             })}
           </ul>
 
-          <SearchStats result={result} />
+          {result ? <SearchStats result={result} /> : null}
 
           <Button onClick={launch} loading={query.isFetching}>
             <RotateCcw className="size-4" aria-hidden />
@@ -161,7 +155,7 @@ export function AutoScreen({ catalog }: Props) {
 
       {/* Сохранённый вариант открывается и без запущенного автоподбора: блок просмотра
           нужен ему сам по себе, а веер и опорные точки — только результату перебора. */}
-      {(result?.status === 'ok' && top) || active.kind === 'saved' ? (
+      {showPortfolio ? (
         <>
           <PortfolioReview
             catalog={catalog}
@@ -183,7 +177,7 @@ export function AutoScreen({ catalog }: Props) {
             }}
           />
 
-          <ExplanationBlock datasetHash={catalog.dataset_hash} calculation={active.calculation} scenario={scenario} />
+          <ExplanationBlock datasetHash={catalog.dataset_hash} calculation={query.isFetching || active.isLoading || active.isError ? undefined : active.calculation} scenario={scenario} />
         </>
       ) : null}
 
@@ -194,9 +188,10 @@ export function AutoScreen({ catalog }: Props) {
           subtitle="Опорные точки фронта — крайние значения по каждому показателю среди недоминируемых вариантов. Это границы возможного, а не то, что следует выбрать."
           result={result}
           active={activeTarget}
-          onOpen={(target) =>
+          onOpen={(target) => {
             openVariant(target === 'team' ? { kind: 'default' } : { kind: 'alternative', index: target })
-          }
+            document.getElementById('active-portfolio')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }}
         />
       ) : null}
 

@@ -93,12 +93,12 @@ export function useExplanation(
 ) {
   return useQuery({
     queryKey: portfolioKeys.explanation(datasetHash ?? '', selection, scenario),
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       portfolioService.explain({
         dataset_hash: datasetHash as string,
         selection: [...selection],
         scenario,
-      } satisfies PortfolioExplanationRequest),
+      } satisfies PortfolioExplanationRequest, signal),
     enabled: enabled && Boolean(datasetHash) && selection.length === 4,
     staleTime: Infinity,
     retry: false,

@@ -32,8 +32,11 @@ class RecommendRequest(PortfolioSchema):
     require_stress: bool = Field(default=True, strict=True)
     method_id: Literal["pareto_lexicographic_v1"] = "pareto_lexicographic_v1"
     lot_ids: list[Annotated[str, Field(min_length=1, max_length=32)]] | None = Field(
-        default=None, min_length=4, max_length=4,
-        description="Четыре фиксированных лота для подбора режимов; null — полный автоподбор.",
+        default=None, min_length=4, max_length=8,
+        description=(
+            "От четырёх до восьми лотов-кандидатов. Алгоритм перебирает все портфели "
+            "из четырёх лотов и режимы внутри этого списка; null — полный автоподбор."
+        ),
     )
 
     @model_validator(mode="after")

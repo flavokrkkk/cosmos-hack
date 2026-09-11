@@ -3,7 +3,8 @@ import {
 } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 
-import { selectionLabel } from '@entities/portfolio'
+import { formatMoney, formatNumber, selectionLabel, useWorkspace } from '@entities/portfolio'
+import { VariantExplanation } from '@features/explain-portfolio'
 import type { RecommendationResult, RecommendationVariant } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
@@ -43,6 +44,7 @@ function iconFor(title: string, isTeam: boolean): LucideIcon {
  * меняет просмотр, но НЕ принимает вариант решением команды.
  */
 export function Alternatives({ title, subtitle, result, active, onOpen, className }: Props) {
+  const scenario = useWorkspace((state) => state.scenario)
   const items: { target: AlternativeTarget; variant: RecommendationVariant }[] = [
     ...(result.recommended ? [{ target: 'team' as const, variant: result.recommended }] : []),
     ...result.alternatives.map((variant, index) => ({ target: index, variant })),
@@ -59,6 +61,8 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
           const isActive = active === target
           const Icon = iconFor(variant.title, isTeam)
           const feasible = variant.calculation.feasible_by_scenario
+          const metrics = variant.calculation.metrics
+          const budget = variant.calculation.checks[scenario]?.find((check) => check.code === 'c0_limit')
           return (
             <li key={variant.calculation.input_hash} className="flex w-full sm:w-[calc(50%-12px)] lg:w-[262px]">
               <Card
@@ -87,6 +91,17 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
                     </Tag>
                   ))}
                 </div>
+                {metrics ? (
+                  <dl className="mt-3 grid grid-cols-2 gap-2 text-[12px] tabular-nums">
+                    <div><dt className="text-muted">C0</dt><dd>{formatMoney(metrics.c0_mrub)}</dd></div>
+                    <div><dt className="text-muted">VPUB / год</dt><dd>{formatMoney(metrics.vpub_mrub_per_year)}</dd></div>
+                    <div><dt className="text-muted">KCASH</dt><dd>{formatNumber(metrics.kcash)}</dd></div>
+                    {budget?.slack != null ? (
+                      <div><dt className="text-muted">Запас · {scenario}</dt><dd className={budget.passed ? 'text-pass' : 'text-fail'}>{formatMoney(budget.slack)}</dd></div>
+                    ) : null}
+                  </dl>
+                ) : null}
+                <VariantExplanation calculation={variant.calculation} scenario={scenario} />
                 <div className="mt-auto pt-5">
                   <Button
                     size="md"

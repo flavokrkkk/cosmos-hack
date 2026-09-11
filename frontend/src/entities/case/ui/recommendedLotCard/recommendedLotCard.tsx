@@ -1,7 +1,7 @@
 import { Info } from 'lucide-react'
 import type { CSSProperties } from 'react'
 
-import type { Lot } from '@shared/api/contracts'
+import type { Lot, LotDetail } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Card, IconButton } from '@shared/ui'
 
@@ -11,6 +11,7 @@ import { LotIcon } from '../lotIcon'
 
 type Props = {
   lot: Lot
+  detail: LotDetail
   /** Режим, назначенный лоту в рекомендации. */
   modeId: string
   /** Подпись под режимом: «Рекомендован» у рекомендации, «Режим» у альтернативы. */
@@ -23,11 +24,10 @@ type Props = {
 }
 
 /**
- * Карточка рекомендованного лота: исходные C0 и VPUB из каталога плюс режим,
- * который выбрал алгоритм. Пересчитанные числа — в блоке «Текущий портфель».
+ * Показатели и режим открытого варианта приходят из calculation.detail.
  */
 export function RecommendedLotCard({
-  lot, modeId, modeLabel = 'Рекомендован', onDetails, formatMoney, tilt = 0, className,
+  lot, detail, modeId, modeLabel = 'Рекомендован', onDetails, formatMoney, tilt = 0, className,
 }: Props) {
   return (
     <Card
@@ -56,15 +56,17 @@ export function RecommendedLotCard({
       <dl className="mt-4 flex gap-5 border-t border-line pt-3.5">
         <div>
           <dt className="text-[11px] tracking-[0.02em] text-muted">C0</dt>
-          <dd className="mt-0.5 text-[15px] font-medium tabular-nums">{formatMoney(lot.c0_mrub)}</dd>
+          <dd className="mt-0.5 text-[15px] font-medium tabular-nums">{formatMoney(detail.c0_mrub)}</dd>
         </div>
         <div>
           <dt className="text-[11px] tracking-[0.02em] text-muted">VPUB</dt>
           <dd className="mt-0.5 text-[15px] font-medium tabular-nums">
-            {formatMoney(lot.vpub_mrub_per_year)} / год
+            {formatMoney(detail.vpub_mrub_per_year)} / год
           </dd>
         </div>
       </dl>
+
+      <p className="mt-2 text-[11px] text-muted">С учётом режима {modeId}</p>
 
       <dl className="mt-3 border-t border-line pt-3">
         <dt className="text-[11px] tracking-[0.02em] text-muted">{modeLabel}</dt>

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { useExplanation as useExplanationQuery, useWorkspace } from '@entities/portfolio'
 import { normalizeApiError } from '@shared/api'
@@ -14,12 +14,8 @@ export type ExplanationStatus =
   | 'error'
 
 /**
- * Объяснение расчёта: один HTTP-запрос по действию пользователя.
- *
- * Факт запроса хранится в сессии, результат — в кеше запросов (тоже в сессии),
- * поэтому после перезагрузки текст на месте, а повторный клик по той же паре
- * «состав + сценарий» не ходит на сервер. Модель ничего не считает: тезисы
- * ссылаются на факты расчёта, числа подставляет сервер.
+ * Объяснение автоматически загружается для открытого расчёта и сценария.
+ * Задержка не запускает генерацию для каждого быстро пролистанного варианта.
  */
 export function useExplanation(
   datasetHash: string | undefined,
@@ -34,6 +30,12 @@ export function useExplanation(
   const forgetExplanation = useWorkspace((state) => state.forgetExplanation)
 
   const query = useExplanationQuery(datasetHash, calculation?.selection ?? [], scenario, requested && complete)
+
+  useEffect(() => {
+    if (!key || requested) return
+    const timer = window.setTimeout(() => requestExplanation(key), 400)
+    return () => window.clearTimeout(timer)
+  }, [key, requested, requestExplanation])
 
   const request = useCallback(() => {
     if (!key) return
