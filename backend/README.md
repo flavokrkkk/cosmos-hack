@@ -22,8 +22,16 @@ FastAPI-каркас повторяет слои `flowers_store`: `api`, `core`,
 выбирает рекомендацию; DTO — в `core/dto/portfolio.py`. Корневой `engine/` содержит только
 переходники для прежних импортов и CLI, не вторую реализацию.
 
-Портфельные маршруты используют штатную авторизацию, включая её 403 при отсутствии доступа.
+Портфельные маршруты публичные: токен и вход не нужны. Авторизация `/admin/auth/*` сохранена;
+`/admin/auth/current_user` без токена по-прежнему возвращает 403.
 Браузер через nginx вызывает `/api/portfolio/*`, FastAPI обслуживает `/portfolio/*`.
+
+В Swagger `/docs` можно сразу вызвать `GET /portfolio/catalog`, скопировать `dataset_hash`
+и передать его в `POST /portfolio/recommend`. Нажимать Authorize не требуется.
+Хранение черновика в браузере запланировано через localStorage, но пока не реализовано;
+backend не сохраняет портфели и всегда сам пересчитывает клиентский selection.
+PostgreSQL всё ещё требуется для запуска существующего приложения; снятие авторизации
+с расчётных ручек не отключает инициализацию БД в lifespan.
 
 `evaluate` принимает `dataset_hash` из каталога и `selection` вида
 `[{"lot_id":"FIRE","mode_id":"A"}]`. Пустой выбор — `incomplete`, `metrics: null`;
@@ -61,8 +69,10 @@ PYTHONPYCACHEPREFIX=/tmp/cosmos-hack-pycache .venv/bin/python -m compileall -q a
 .venv/bin/python -c "from app.main import app; print(sorted(app.openapi()['paths']))"
 ```
 
-Проверено на Python 3.12.14 и pandas 2.3.3: 41 тест, self-check и CLI evaluate/compare.
-API-тесты используют реальные роуты с подменой пользователя, без PostgreSQL. Полный запуск
+После снятия авторизации прошли 42 Python-теста, compileall и проверка OpenAPI.
+API-тесты используют реальные публичные роуты без токена и подмены пользователя,
+проверяют отсутствие security в OpenAPI и сохранение защиты административного маршрута.
+Тесты идут без PostgreSQL и запуска lifespan. Полный запуск
 с БД из них не следует. TestClient выдаёт предупреждения о deprecated httpx/anyio-интерфейсах.
 
 Контрольный локальный замер Python 3.12.14: холодный recommend STRESS — 3,909 с,

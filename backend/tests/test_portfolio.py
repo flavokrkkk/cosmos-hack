@@ -1,13 +1,11 @@
 import hashlib
 import json
-from uuid import uuid4
 
 import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.v1.dependencies import get_current_user, get_db_session
-from app.core.dto.admin import BaseAdminSchema
+from app.api.v1.dependencies import get_db_session
 from app.core.dto.portfolio import EvaluateRequest, RecommendRequest
 from app.core.services.portfolio_engine import canonical, constraints, space
 from app.core.services.portfolio_service import PortfolioService
@@ -31,13 +29,11 @@ def catalog(service):
 
 @pytest.fixture
 def client():
-    app.dependency_overrides[get_current_user] = lambda: BaseAdminSchema(id=uuid4(), username="test", is_active=True)
     instance = TestClient(app)
     try:
         yield instance
     finally:
         instance.close()
-        app.dependency_overrides.clear()
 
 
 def test_catalog_sources_and_mutation_isolation(service, catalog):
@@ -195,13 +191,21 @@ def test_api_recommend_without_selection(client, catalog):
     assert response.json()["recommended"]["calculation"]["status"] == "complete"
 
 
-def test_api_requires_authentication():
+def test_portfolio_openapi_has_no_authentication(client):
+    paths = client.get("/openapi.json").json()["paths"]
+    for path, method in [("/portfolio/catalog", "get"), ("/portfolio/evaluate", "post"),
+                         ("/portfolio/recommend", "post"), ("/portfolio/compare", "post")]:
+        assert not paths[path][method].get("security")
+    assert paths["/admin/auth/current_user"]["get"]["security"]
+
+
+def test_admin_still_requires_authentication(client):
     async def no_database():
         yield None
 
     app.dependency_overrides[get_db_session] = no_database
     try:
-        response = TestClient(app).get("/portfolio/catalog")
+        response = client.get("/admin/auth/current_user")
         assert response.status_code == 403
     finally:
         app.dependency_overrides.clear()
