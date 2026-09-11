@@ -4,11 +4,14 @@ import { LotCard, useCatalog } from '@entities/case'
 import {
   ConstraintsTable, MetricsTable, selectionLabel, useEvaluate, useRecommend,
 } from '@entities/portfolio'
-import { PORTFOLIO_SIZE, RecommendPanel, usePortfolioDraft } from '@features'
+import {
+  ComparePanel, ExportPanel, PORTFOLIO_SIZE, RecommendPanel, usePortfolioDraft,
+} from '@features'
 import type {
-  AccessMode, Calculation, RecommendationResult, Scenario,
+  AccessMode, Calculation, ComparisonResult, RecommendationResult, Scenario,
 } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
+import { SolutionMaterials } from '@widgets'
 
 /** Стабильная ссылка: иначе `?? []` создаёт новый массив на каждый рендер. */
 const NO_MODES: AccessMode[] = []
@@ -19,6 +22,8 @@ export default function DashboardPage() {
 
   const [scenario, setScenario] = useState<Scenario>('STRESS')
   const [requireStress, setRequireStress] = useState(true)
+  /** Результат сравнения поднят сюда: его забирает экспорт как comparison.csv. */
+  const [comparison, setComparison] = useState<ComparisonResult | undefined>()
 
   const modes = catalog.data?.modes ?? NO_MODES
   const publicCoreMode = modes.find((mode) => mode.public_core)
@@ -160,6 +165,24 @@ export default function DashboardPage() {
           />
         )}
       </section>
+
+      <ComparePanel
+        datasetHash={dataset_hash}
+        recommendation={recommendation}
+        draft={draft.selection}
+        draftOrigin={draft.origin}
+        onResult={setComparison}
+      />
+
+      <ExportPanel
+        calculation={evaluation.data}
+        catalog={catalog.data}
+        comparison={comparison}
+      />
+
+      {/* Материалы доступны всегда, даже до расчёта: эксперт должен находить
+          записку, стресс-резюме и инструкцию запуска, ничего не считая. */}
+      <SolutionMaterials catalog={catalog.data} isDraft={draft.origin !== 'empty'} />
     </main>
   )
 }

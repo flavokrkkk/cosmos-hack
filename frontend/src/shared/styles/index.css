@@ -516,3 +516,153 @@ select {
   color: var(--danger);
   font-size: 13px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ВРЕМЕННЫЙ СТРУКТУРНЫЙ СЛОЙ
+
+   Только раскладка: чтобы таблицы не разъезжались и списки читались.
+   Дизайн придёт от дизайнера и заменит этот блок целиком. Поэтому здесь нет
+   решений про цвет, типографику и отступы «по вкусу» — их переделывать.
+   Разметка и имена классов при замене не меняются.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Сравнение вариантов */
+.compare,
+.materials {
+  display: grid;
+  gap: 12px;
+}
+
+.compare__head,
+.compare__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.compare__scroll {
+  overflow-x: auto;
+}
+
+.compare__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.compare__table th,
+.compare__table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.compare__value,
+.compare__delta {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.compare__delta--better { color: var(--ok); }
+.compare__delta--worse { color: var(--danger); }
+.compare__row--scenario td,
+.compare__row--scenario th { background: var(--bg); }
+
+.compare__title,
+.compare__selection {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.compare__verdict { font-weight: 600; }
+.compare__note { margin: 0; color: var(--muted); font-size: 13px; }
+.compare__note--fail { color: var(--danger); }
+
+/* Выбор кандидатов для сравнения */
+.candidates,
+.candidates__body {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.candidates__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.candidates__title { font-weight: 600; }
+
+.candidates__selection {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Экспорт */
+.export-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Материалы решения */
+.materials__groups {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.materials__group { display: grid; gap: 8px; align-content: start; }
+.materials__title { margin: 0; font-size: 15px; }
+
+.materials__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.materials__item {
+  display: grid;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.materials__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.materials__purpose,
+.materials__meta,
+.materials__note,
+.materials__criteria {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.materials__meta { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.badge--accent { background: var(--accent-soft); color: var(--accent); }
+
+.btn--small { padding: 5px 10px; font-size: 13px; }
