@@ -16,8 +16,6 @@ agents work in this repository; the rules below apply to all of them.
 - `frontend/`: React, TypeScript, and Vite application.
 - `backend/`: FastAPI application, PostgreSQL access, authentication, Ollama
   integration, and Taskiq worker configuration.
-- `ml/`: standalone training and evaluation code prepared from the Rostov NDVI
-  case. It is not part of the backend runtime.
 - `flowers_store/`: local reference checkout. Never edit, import, or commit it.
 - `docs/`: team knowledge base — event, case brief, hypotheses, strategy,
   rubric/delivery, and the deep research (`docs/research/`). Start at
@@ -92,21 +90,29 @@ while Ollama runs on a Mac through ngrok. Keep ngrok Basic Auth credentials in
 an untracked env file. The browser must call FastAPI only; never expose ngrok
 credentials or the Ollama URL to the frontend bundle.
 
-## ML and data
+## Computation and data
 
-Treat `ml/sample_data` as public Rostov reference data for rehearsing the NDVI
-pipeline. It is useful only for a vegetation or compatible time-series case.
-Do not load it during API startup or assume its schema matches a new case.
+Case 02 needs no machine learning: there is nothing to train on and no automated
+metric. The portfolio engine is deterministic arithmetic (yearly cash flows,
+enumeration of the 70 four-of-eight portfolios, Pareto front, Monte Carlo) and
+belongs in `backend/app/core/services`, called synchronously from the API. Do not
+introduce a separate ML service, GPU dependency, or queue for it. Use Taskiq only
+if a computation actually exceeds a couple of seconds.
 
-Keep ML code independently runnable from the web application. If a case needs
-long processing, a Taskiq worker may import a stable ML package or invoke its
-pipeline. Create a separate HTTP ML service only when GPU isolation, conflicting
-dependencies, or independent scaling requires it.
+Every model parameter carries its origin: `постановка` (given by the organisers),
+`ресерч` (external source with a URL), or `допущение` (ours, with a stated basis).
+Numbers without a source are marked as estimates. The LLM never produces numbers —
+it only renders text from values the engine already computed.
 
-Never commit private event datasets, generated submissions, model weights,
-secrets, `.env`, virtual environments, `node_modules`, or runtime storage.
-Document every external dataset, model, repository, and license in the README
-and update `PREEXISTING.md` when the pre-event template changes.
+Calculations must be deterministic and reproducible: same inputs, same outputs,
+plus a self-check that asserts this. The NDVI kit removed from `ml/` (tag
+`ndvi-kit`) is the reference for that pattern — config-driven parameters and a
+`selfcheck.py` battery.
+
+Never commit private event datasets, secrets, `.env`, virtual environments,
+`node_modules`, or runtime storage. Document every external dataset, model,
+repository, and license in the README, and update `PREEXISTING.md` when the
+pre-event template changes.
 
 ## Verification
 
@@ -125,9 +131,9 @@ PYTHONPYCACHEPREFIX=/tmp/cosmos-hack-pycache \
 .venv/bin/python -c "from app.main import app; print(sorted(app.openapi()['paths']))"
 ```
 
-For ML changes, run `python ml/selfcheck.py` and the relevant local evaluation
-command documented in `ml/README.md`. Do not report Docker verification unless
-the containers were actually built and started.
+For changes to the portfolio engine, run its self-check and confirm the numbers
+are reproducible. Do not report Docker verification unless the containers were
+actually built and started.
 
 ## Documentation and knowledge base
 
@@ -170,5 +176,5 @@ Rules:
   (real lots and budget), `docs/00-event.md` (deadlines), `docs/05-decisions.md`.
 - Edit only your own sections of shared files (`README.md`, this file); preserve
   other people's sections verbatim.
-- Code conventions stay in this file; `ml/README.md` and `ml/GENERIC.md`
-  document the ML kit. Do not move code documentation into `docs/`.
+- Code conventions stay in this file; component READMEs document their own
+  component. Do not move code documentation into `docs/`.

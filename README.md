@@ -14,7 +14,6 @@
   `features`, `entities`, `shared` как в `flowers_store`;
 - `backend/` — FastAPI с тем же разделением на `api`, `core` и
   `infrastructure`; из прикладных API пока есть только авторизация;
-- `ml/` — независимое тренировочное ядро по данным ростовского кейса;
 - `docker-compose.yml` — полный запуск;
 - `docker-compose.local.yml` — PostgreSQL, Redis и Ollama для разработки
   приложений напрямую на машине.
@@ -87,8 +86,9 @@ docker compose --env-file .env.server -f docker-compose.server.yml up --build -d
 - Правила для ИИ-агентов и ведения базы знаний — [CLAUDE.md](CLAUDE.md) (Claude Code) и раздел
   *Documentation and knowledge base* в [AGENTS.md](AGENTS.md) (все агенты и люди): всё новое знание —
   в `docs/` по маршрутизации, новых `.md` в корне не создавать.
-- `ml/` — leak-free NDVI-кит под ростовский вегетационный кейс. **Под кейсы НН не применим**, оставлен
-  как чистый self-tested пример кода ([ml/README.md](ml/README.md)).
+- NDVI-кит под ростовский вегетационный кейс (бывший `ml/`) **снят** — Кейс 02 управленческий,
+  машинное обучение не нужно. Код в истории, тег `ndvi-kit`:
+  `git checkout ndvi-kit -- ml/`. Подробности — [PREEXISTING.md](PREEXISTING.md).
 - Старый NDVI-плейбук — в архиве: [docs/archive/ndvi-playbook.md](docs/archive/ndvi-playbook.md).
 
 ## Материалы события
