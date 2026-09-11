@@ -128,10 +128,7 @@ export default function DashboardPage() {
         <RecommendationBlock
           result={recommendation}
           isRerunning={recommend.isPending}
-          onEdit={() =>
-            recommendation.recommended &&
-            draft.replace(recommendation.recommended.calculation.selection)
-          }
+          onEdit={(calculation) => draft.replace(calculation.selection)}
           onSearchInBase={() => search(false)}
         />
       ) : null}
@@ -248,10 +245,10 @@ function RecommendationBlock({
   result: RecommendationResult
   /** Запущен новый подбор, а на экране всё ещё прошлый результат. */
   isRerunning: boolean
-  onEdit: () => void
+  onEdit: (calculation: Calculation) => void
   onSearchInBase: () => void
 }) {
-  if (result.status === 'no_feasible' || !result.recommended) {
+  if (result.status === 'no_feasible') {
     /*
      * Отсутствие допустимого варианта — законный результат расчёта, а не ошибка
      * и не пустой портфель 0/4. Поэтому панель не «предупреждение».
@@ -323,19 +320,19 @@ function RecommendationBlock({
   return (
     <section className={`panel panel--accent${isRerunning ? ' is-stale' : ''}`}>
       <header className="panel__head">
-        <h2>Рекомендация алгоритма</h2>
+        <h2>{recommended ? recommended.title : 'Допустимые варианты'}</h2>
         <div className="result__actions">
           {isRerunning ? (
             <span className="badge badge--neutral">предыдущий результат</span>
           ) : null}
-          <button
+          {recommended ? <button
             type="button"
             className="btn btn--ghost"
-            onClick={onEdit}
+            onClick={() => onEdit(recommended.calculation)}
             disabled={isRerunning}
           >
             Изменить вручную
-          </button>
+          </button> : null}
         </div>
       </header>
 
@@ -351,10 +348,19 @@ function RecommendationBlock({
         ) : null}
       </div>
 
-      <p className="selection selection--lead">
-        {selectionLabel(recommended.calculation.selection)}
-      </p>
-      <p className="panel__muted">{recommended.reason}</p>
+      {recommended ? (
+        <>
+          <p className="selection selection--lead">
+            {selectionLabel(recommended.calculation.selection)}
+          </p>
+          <p className="panel__muted">{recommended.reason}</p>
+        </>
+      ) : (
+        <p className="panel__muted">
+          Варианты найдены. Портфель команды не входит в результаты этого поиска.
+          Выберите один из вариантов ниже для просмотра и проверки.
+        </p>
+      )}
 
       <SearchStats result={result} />
 
@@ -369,6 +375,14 @@ function RecommendationBlock({
                   {selectionLabel(variant.calculation.selection)}
                 </span>
                 <span className="panel__muted">{variant.reason}</span>
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={() => onEdit(variant.calculation)}
+                  disabled={isRerunning}
+                >
+                  Открыть вариант
+                </button>
               </li>
             ))}
           </ul>

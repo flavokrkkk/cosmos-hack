@@ -34,6 +34,7 @@ services:
     environment:
       COSMOS_APP_NAME: Cosmos Hack API
       COSMOS_DEBUG: "true"
+      COSMOS_ROOT_PATH: /api
       COSMOS_CORS_ALLOWED_ORIGINS: ${COSMOS_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174}
       COSMOS_OLLAMA_BASE_URL: http://ollama:11434
       COSMOS_OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b-instruct}

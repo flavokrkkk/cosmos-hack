@@ -19,6 +19,7 @@ class Config(BaseSettings):
 class AppSettings(Config):
     name: str = Field("Cosmos Hack API", validation_alias="COSMOS_APP_NAME")
     debug: bool = Field(False, validation_alias="COSMOS_DEBUG")
+    root_path: str = Field("", validation_alias="COSMOS_ROOT_PATH")
     cors_allowed_origins: str = Field(
         "http://localhost:5173",
         validation_alias="COSMOS_CORS_ALLOWED_ORIGINS",
