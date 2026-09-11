@@ -89,7 +89,8 @@ docker compose --env-file .env.server -f docker-compose.server.yml up --build -d
 - NDVI-кит под ростовский вегетационный кейс (бывший `ml/`) **снят** — Кейс 02 управленческий,
   машинное обучение не нужно. Код в истории, тег `ndvi-kit`:
   `git checkout ndvi-kit -- ml/`. Подробности — [PREEXISTING.md](PREEXISTING.md).
-- Старый NDVI-плейбук — в архиве: [docs/archive/ndvi-playbook.md](docs/archive/ndvi-playbook.md).
+- Старый NDVI-плейбук удалён вместе с китом: относился к ростовскому кейсу. В истории репозитория,
+  тег `ndvi-kit`.
 
 ## Материалы события
 

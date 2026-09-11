@@ -19,7 +19,7 @@ agents work in this repository; the rules below apply to all of them.
 - `flowers_store/`: local reference checkout. Never edit, import, or commit it.
 - `docs/`: team knowledge base — event, case brief, hypotheses, strategy,
   rubric/delivery, and the deep research (`docs/research/`). Start at
-  `docs/README.md`. The old NDVI playbook is archived in `docs/archive/`.
+  `docs/README.md`.
 - `PREEXISTING.md`: inventory of components created before the event.
 
 ## Frontend conventions
@@ -156,7 +156,7 @@ Routing — put new information in the file that owns the topic:
 | Decisions taken (date, decision, why, alternatives, status) | `docs/05-decisions.md` |
 | Sourced research findings, one topic per file | `docs/research/<topic>.md` + a row in `docs/research/README.md` |
 | Dated notes: briefing, standups, expert or tracker consultations | `docs/notes/YYYY-MM-DD-<topic>.md` |
-| Outdated documents | `docs/archive/` with a deprecation note at the top; never delete |
+| Outdated documents still relevant to Case 02 | `docs/archive/` with a deprecation note at the top | 
 
 Rules:
 
