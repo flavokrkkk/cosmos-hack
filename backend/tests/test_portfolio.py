@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from app.api.v1.dependencies import get_db_session
 from app.core.dto.portfolio import EvaluateRequest, RecommendRequest
 from app.core.services.portfolio_engine import canonical, constraints, space
+from app.core.services.portfolio_engine.decision import load_decision
 from app.core.services.portfolio_service import PortfolioService
 from app.core.services.recommendation_service import RecommendationService, rank_candidates
 from app.main import app
@@ -112,24 +113,64 @@ def test_original_source_hashes():
 
 
 def test_recommendations_are_computed_and_reproducible(catalog):
+    """ПРАВКА 12.09.2026: тест переписан под новое поведение.
+
+    Раньше утверждал, что `recommended` — вариант с максимальным VPUB. Это и
+    было проблемой: инструмент короновал победителя по одному показателю и
+    расходился с управленческой запиской. Теперь `recommended` — выбор команды
+    из config/decision.json, помеченный отдельно от машинного результата, а
+    крайние точки фронта уехали в `alternatives`. Причина — в шапке
+    recommendation_service.py и в docs/notes/2026-09-12-tool-note-alignment.md.
+    """
     service = RecommendationService()
     for require_stress in (False, True):
         request = RecommendRequest(dataset_hash=catalog.dataset_hash, require_stress=require_stress)
         result = service.recommend(request)
         assert result == service.recommend(request)
         assert (result.considered_count, result.base_count, result.stress_count) == (5670, 1031, 143)
-        assert result.recommended is not None
+
         scenario = "STRESS" if require_stress else "BASE"
+        assert result.recommended is not None, "выбор команды обязан лежать на фронте обоих сценариев"
+        assert result.recommended.title == "Портфель команды"
         assert result.recommended.calculation.feasible_by_scenario[scenario]
-        frame = space.feasible(scenario)
-        expected = rank_candidates(frame).iloc[0]
+
+        # Выбор команды берётся из конфига, а не из сортировки по показателю.
+        expected = space.format_selection(sorted(load_decision().recommended.selection))
         actual = result.recommended.calculation
-        assert actual.metrics.vpub_mrub_per_year == frame.vpub.max()
-        assert space.format_selection([(item.lot_id, item.mode_id) for item in actual.selection]) == expected.stable_id
+        assert space.format_selection([(i.lot_id, i.mode_id) for i in actual.selection]) == expected
+
+        # И он НЕ обязан быть максимумом VPUB — именно это раньше подменяло решение.
+        front = space.pareto_front(space.feasible(scenario))
+        assert actual.metrics.vpub_mrub_per_year <= front.vpub.max()
+
+        # Опорные точки фронта — объективные крайние значения.
+        titles = {variant.title for variant in result.alternatives}
+        assert "Наибольшая общественная ценность" in titles
+        best_vpub = next(v for v in result.alternatives if v.title == "Наибольшая общественная ценность")
+        assert best_vpub.calculation.metrics.vpub_mrub_per_year == front.vpub.max()
+
         ids = [actual.input_hash, *(variant.calculation.input_hash for variant in result.alternatives)]
-        assert len(ids) == len(set(ids))
+        assert len(ids) == len(set(ids)), "опорные точки не должны дублировать друг друга"
+
         result.recommended.title = "mutated"
         assert service.recommend(request).recommended.title != "mutated"
+
+
+def test_team_choice_is_not_substituted_when_outside_search_area(catalog):
+    """Если портфель команды не попал в область поиска, подмены не происходит.
+
+    Это защита от худшего сценария: инструмент не должен выдавать машинный
+    максимум за решение команды. Лучше пустое поле, чем ложная подпись.
+    """
+    service = RecommendationService()
+    result = service.recommend(RecommendRequest(
+        dataset_hash=catalog.dataset_hash, require_stress=True,
+        lot_ids=["AGRI", "INFRA", "TRANS", "ENV"],
+    ))
+    assert result.status == "ok"
+    assert result.pareto_count > 0
+    assert result.recommended is None, "чужая область поиска — выбора команды здесь нет"
+    assert result.alternatives, "опорные точки фронта показываются в любом случае"
 
 
 def test_ranking_raw_precision_and_stable_ties():
@@ -207,9 +248,16 @@ def test_recommend_modes_for_fixed_lots(client, catalog, require_stress):
     assert data["base_count"] == int(frame.BASE_ok.sum())
     assert data["stress_count"] == int(frame.STRESS_ok.sum())
     assert data["feasible_count"] == len(candidates)
-    expected = rank_candidates(candidates).iloc[0].stable_id
+    # ПРАВКА 12.09.2026: `recommended` — выбор команды, а не вершина сортировки.
+    # Лоты здесь совпадают с портфелем записки, поэтому выбор команды в области
+    # поиска есть и должен прийти именно он, а не максимум по VPUB.
+    expected = space.format_selection(sorted(load_decision().recommended.selection))
     selection = data["recommended"]["calculation"]["selection"]
     assert space.format_selection((item["lot_id"], item["mode_id"]) for item in selection) == expected
+    top_by_vpub = rank_candidates(candidates).iloc[0].stable_id
+    if top_by_vpub != expected:
+        assert any(v["title"] == "Наибольшая общественная ценность" for v in data["alternatives"]), \
+            "максимум VPUB обязан остаться видимым как опорная точка фронта"
     for variant in [data["recommended"], *data["alternatives"]]:
         assert {item["lot_id"] for item in variant["calculation"]["selection"]} == set(ids)
     reversed_response = client.post("/portfolio/recommend", json={**request, "lot_ids": ids[::-1]})
