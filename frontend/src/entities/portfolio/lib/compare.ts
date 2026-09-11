@@ -97,6 +97,20 @@ export function scenarioVerdict(calculation: Calculation, scenario: Scenario): S
   }
 }
 
+/**
+ * Коды условий, чей порог отличается между BASE и STRESS (в канонических данных —
+ * только `c0_limit`). Сравниваются пороги из ответа бэкенда, ничего не считается.
+ */
+export function scenarioDependentCodes(calculation: Calculation): Set<string> {
+  const base = new Map((calculation.checks.BASE ?? []).map((check) => [check.code, check.threshold]))
+  const codes = new Set<string>()
+  for (const check of calculation.checks.STRESS ?? []) {
+    const baseThreshold = base.get(check.code)
+    if (baseThreshold !== undefined && baseThreshold !== check.threshold) codes.add(check.code)
+  }
+  return codes
+}
+
 /** Показатель варианта по ключу дельты. `null` — портфель неполный. */
 export function metricValue(
   metrics: PortfolioMetrics | null,

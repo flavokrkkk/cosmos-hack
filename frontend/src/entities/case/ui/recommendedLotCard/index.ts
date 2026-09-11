@@ -1,0 +1,1 @@
+export { RecommendedLotCard } from './recommendedLotCard'

@@ -1,0 +1,1 @@
+export { LotIcon } from './lotIcon'

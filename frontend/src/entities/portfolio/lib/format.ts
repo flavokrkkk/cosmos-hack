@@ -38,9 +38,22 @@ export function formatThreshold(check: Pick<ConstraintCheck, 'operator' | 'thres
   return `${OPERATOR_SIGN[check.operator]}${decimal.format(check.threshold)}`
 }
 
-/** «769 / ≥ 1 000» — факт против порога, как на плитке ограничения. */
+/**
+ * Компактная запись для плитки: без разрядных пробелов и не больше одного
+ * знака после запятой у больших чисел — «1330,4 / ≥ 1000» помещается в одну
+ * строку узкой плитки. Точность отображения; сравнение бэкенд делал по сырым числам.
+ */
+const compact = new Intl.NumberFormat('ru-RU', { useGrouping: false, maximumFractionDigits: 2 })
+const compactLarge = new Intl.NumberFormat('ru-RU', { useGrouping: false, maximumFractionDigits: 1 })
+
+export function formatCompact(value: number): string {
+  return Math.abs(value) >= 100 ? compactLarge.format(value) : compact.format(value)
+}
+
+/** «769 / ≥ 1000» — факт против порога, как на плитке ограничения. */
 export function formatCheckValue(check: ConstraintCheck): string {
-  return `${decimal.format(check.actual)} / ${formatThreshold(check)}`
+  const sign = OPERATOR_SIGN[check.operator]
+  return `${formatCompact(check.actual)} / ${sign}${formatCompact(check.threshold)}`
 }
 
 export type MetricTileDefinition = {

@@ -1,0 +1,1 @@
+export { useLotDetails } from './lotDetails'

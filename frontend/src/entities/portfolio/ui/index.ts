@@ -1,5 +1,8 @@
 export { ConstraintTiles } from './constraintTiles'
+export { ExtraMetrics } from './extraMetrics'
 export { FeasibilityBadge } from './feasibilityBadge'
 export { LotChip } from './lotChip'
 export { MetricTiles } from './metricTiles'
 export { PortfolioLotCard } from './portfolioLotCard'
+export { PortfolioProgress } from './portfolioProgress'
+export { ScenarioHeadroom } from './scenarioHeadroom'

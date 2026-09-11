@@ -36,7 +36,7 @@ export function LotCard({
     <Card
       data-state={state}
       className={cn(
-        'flex flex-col p-[18px] transition-[opacity,box-shadow,transform] duration-200',
+        'flex flex-col p-[18px] transition-[opacity,box-shadow,transform] duration-300 ease-(--ease-soft)',
         state === 'dimmed' && 'opacity-45 shadow-tile',
         selected && 'ring-2 ring-brand/15',
         className,
