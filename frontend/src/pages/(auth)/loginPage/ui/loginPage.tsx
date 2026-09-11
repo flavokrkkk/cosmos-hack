@@ -1,8 +1,5 @@
-// import { AdminLoginForm } from '@entities/admin/ui'
+import { LoginForm } from '@entities/session'
 
 export default function LoginPage() {
-  return (
-    <p style={{fontSize: 150}}>Я тебя могну</p>
-  )
-  // return <AdminLoginForm />
+  return <LoginForm />
 }

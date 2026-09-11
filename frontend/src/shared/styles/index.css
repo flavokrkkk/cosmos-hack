@@ -1,7 +1,15 @@
 :root {
+  --bg: #f4f6f9;
+  --panel: #ffffff;
+  --border: #d7dde5;
+  --text: #1b2430;
+  --muted: #5b6675;
+  --accent: #2f6feb;
+  --danger: #c0392b;
+
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  color: #17211c;
-  background: #eef4f0;
+  color: var(--text);
+  background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -21,6 +29,7 @@ input {
   font: inherit;
 }
 
+/* Layout-страницы с центрированным блоком (вход, ошибка) */
 .auth-page,
 .message-page {
   display: grid;
@@ -29,62 +38,100 @@ input {
   padding: 24px;
 }
 
-.login-form {
-  display: grid;
-  width: min(420px, 100%);
-  gap: 18px;
-  padding: 36px;
-  border: 1px solid #cbd9d0;
-  border-radius: 24px;
-  background: #fff;
-}
-
-.login-form label {
-  display: grid;
-  gap: 8px;
-}
-
-.login-form input,
-.login-form button {
-  min-height: 44px;
-  border: 1px solid #aebdb4;
-  border-radius: 10px;
-  padding: 0 12px;
-}
-
-.login-form button {
-  color: #fff;
-  background: #287a50;
-  cursor: pointer;
-}
-
-.form-error {
-  color: #aa2b2b;
-}
-
-.home-page {
+/* Контентная страница */
+.page {
   display: grid;
   min-height: 100vh;
   place-items: center;
   padding: 24px;
 }
 
-.home-page__content {
-  width: min(680px, 100%);
-  padding: 48px;
-  border: 1px solid #cbd9d0;
-  border-radius: 24px;
-  background: #fff;
+.page__panel {
+  display: grid;
+  width: min(640px, 100%);
+  gap: 12px;
+  padding: 40px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--panel);
 }
 
-.home-page__eyebrow {
-  color: #287a50;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+.page__eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.home-page h1 {
-  margin: 12px 0;
-  font-size: clamp(32px, 6vw, 56px);
+.page__muted {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* Форма входа */
+.login-form {
+  display: grid;
+  width: min(420px, 100%);
+  gap: 18px;
+  padding: 36px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--panel);
+}
+
+/* Поле формы (shared/ui/TextField) */
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field__label {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.field__input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  background: var(--panel);
+}
+
+.field__input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.field__input[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+.field__error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.login-form button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.login-form button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.form-error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 14px;
 }

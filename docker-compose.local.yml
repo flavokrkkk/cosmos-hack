@@ -1,0 +1,70 @@
+# Инфраструктура для разработки backend и frontend НА МАШИНЕ (не в контейнерах).
+# Поднимает только PostgreSQL, Redis и Ollama; сам backend и frontend запускаются
+# локально (см. backend/README.md и frontend/README.md).
+#
+#   docker compose -f docker-compose.local.yml up -d
+#
+# Модель Ollama по умолчанию не качается: профиль llm включает загрузку ~2.5 ГБ.
+#   docker compose -f docker-compose.local.yml --profile llm up -d
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cosmos_hack
+      POSTGRES_USER: cosmos_hack
+      POSTGRES_PASSWORD: cosmos_hack
+    ports:
+      - "${COSMOS_DB_HOST_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cosmos_hack -d cosmos_hack"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${COSMOS_REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+    ports:
+      - "${COSMOS_OLLAMA_HOST_PORT:-11434}:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  ollama-pull:
+    profiles: ["llm"]
+    image: ollama/ollama:latest
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b}
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["ollama pull \"$${OLLAMA_MODEL}\""]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
+
+volumes:
+  postgres-data:
+  redis-data:
+  ollama-data:

@@ -9,10 +9,6 @@ export type LoginResponse = {
   token_type: string
 }
 
-export type RefreshTokenDto = {
-  refresh_token: string
-}
-
 export type CurrentUserResponse = {
   id: string
   username: string

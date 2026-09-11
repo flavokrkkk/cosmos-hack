@@ -38,7 +38,41 @@ COSMOS_OLLAMA_MODEL=qwen3:8b docker compose up --build
 Для запуска backend и frontend на машине, а инфраструктуры в Docker:
 
 ```bash
-docker compose -f docker-compose.local.yml up
+docker compose -f docker-compose.local.yml up -d
+```
+
+Поднимает PostgreSQL, Redis и Ollama; модель по умолчанию **не качается** —
+включается профилем: `docker compose -f docker-compose.local.yml --profile llm up -d`.
+
+### Быстрый путь: только бэкенд, без загрузки модели
+
+`app` по зависимостям ждёт `ollama-pull`, то есть первый `up` тянет ~2,5 ГБ. Если
+LLM сейчас не нужен (основной путь решения работает без него — см.
+[docs/03-strategy.md](docs/03-strategy.md)), бэкенд поднимается так:
+
+```bash
+docker compose up -d db redis
+docker compose up -d --no-deps --build app
+curl -s http://localhost:8000/health   # {"status":"ok"}
+```
+
+Таблицы создаются при старте приложения (`Base.metadata.create_all`), отдельный
+прогон миграций для запуска не нужен. Бутстрап-администратор берётся из
+`COSMOS_BOOTSTRAP_ADMIN_*` (по умолчанию `admin` / `change-me-now`).
+Swagger — http://localhost:8000/docs.
+
+### Переменные окружения
+
+```bash
+cp .env.example .env
+```
+
+`.env` в репозиторий не коммитится. Публичный туннель `tuna` вынесен в профиль и по
+умолчанию не стартует — иначе `docker compose up` падал у всех, у кого не заданы
+`TUNA_DOMAIN` / `TUNA_TOKEN`. Запуск туннеля:
+
+```bash
+docker compose --profile tunnel up -d tuna
 ```
 
 ## Сервер + Ollama на Mac через ngrok

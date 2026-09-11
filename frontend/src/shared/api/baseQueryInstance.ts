@@ -11,14 +11,11 @@ import {
   getRefreshToken,
   setAccessToken,
   setRefreshToken,
-} from '@entities/token'
+} from '@shared/lib/token'
+
+import { normalizeApiError } from './apiError'
 
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
-
-type ApiErrorBody = {
-  detail?: string
-  message?: string
-}
 
 type TokenPair = {
   access_token: string
@@ -55,7 +52,7 @@ class AxiosClient {
 
     this.instance.interceptors.response.use(
       (response) => response,
-      async (error: AxiosError<ApiErrorBody>) => {
+      async (error: AxiosError) => {
         const request = error.config as
           | (AxiosRequestConfig & { _retry?: boolean })
           | undefined
@@ -95,16 +92,16 @@ class AxiosClient {
     return this.unwrap(this.instance.post<T>(url, data, config))
   }
 
+  /**
+   * Любая ошибка сети или бэкенда приводится к ApiError. Раньше здесь был
+   * `new Error(detail)`, из-за чего массив ошибок валидации FastAPI (422)
+   * превращался в «[object Object]».
+   */
   private async unwrap<T>(request: Promise<AxiosResponse<T>>): Promise<T> {
     try {
       return (await request).data
     } catch (error) {
-      const apiError = error as AxiosError<ApiErrorBody>
-      throw new Error(
-        apiError.response?.data.detail ??
-          apiError.response?.data.message ??
-          apiError.message,
-      )
+      throw normalizeApiError(error)
     }
   }
 }

@@ -6,4 +6,4 @@ export {
   getRefreshToken,
   setAccessToken,
   setRefreshToken,
-} from './lib/tokenService'
+} from './tokenService'
