@@ -2,6 +2,26 @@
 
 Кейс 02 «Сервисная модель космической экономики» (АНО «КЭП»). Цель — победа.
 
+## 🚀 Кейс опубликован: «Космос как инфраструктура»
+
+Выбрать 4 из 8 сервисных лотов, назначить режимы доступа, проверить в BASE и STRESS,
+обосновать финансирование и реализацию. Материалы организаторов — в [`case/`](case/)
+(не изменять). **План действий — [docs/07-action-plan.md](docs/07-action-plan.md).**
+
+Расчётное ядро готово:
+
+```bash
+python -m pip install -r requirements.txt
+python -m engine evaluate     # портфель + PASS/FAIL по ограничениям, BASE и STRESS
+python -m engine space        # полный перебор 5670 конфигураций
+python -m pytest tests/ -q    # 18 проверок формул и границ
+```
+
+Портфель меняется **без правки кода** — [`config/decision.json`](config/decision.json) или
+флаг `--portfolio FIRE:A,AGRI:A,TRANS:B,ENV:A`. Контракт для backend и что делать нельзя —
+[`engine/README.md`](engine/README.md). Разбор пространства решений —
+[docs/research/portfolio-space.md](docs/research/portfolio-space.md).
+
 ## 📌 База знаний → [`docs/`](docs/README.md)
 
 Всё, что мы знаем, по кускам: событие · кейс и расшифровка · гипотезы с вердиктами · стратегия ·

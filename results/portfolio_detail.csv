@@ -1,0 +1,5 @@
+lot_id,mode_id,c0_mrub,opex_mrub_per_year,vpub_mrub_per_year,cash_mrub_per_year,t_rep,readiness_1_5,resilience_1_5,scale_1_5,territorial_archetype,federal,capability_groups,public_core
+FIRE,A,336.0,89.25,560.0,83.75,0.68,4.3,3.5,4.5,Siberian,False,EO,True
+AGRI,A,273.0,78.75,230.0,60.0,0.74,4.6,4.1,4.8,South,False,EO;PNT/InSAR,True
+TRANS,B,250.0,70.0,180.39999999999998,102.5,0.77,4.8,4.4,4.7,Central,False,PNT/InSAR;EO,False
+ENV,A,294.0,78.75,360.0,76.25,0.73,4.4,4.2,4.7,VolgaCaspian,False,EO,True

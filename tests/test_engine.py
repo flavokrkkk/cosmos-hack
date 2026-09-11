@@ -1,0 +1,197 @@
+"""Контроль формул и границ (критерий Т1).
+
+Проверяем три вещи:
+1. Исходные данные кейса не подменены.
+2. Наши числа получаются каноническими формулами и совпадают с ручным расчётом.
+3. Границы ограничений включают саму границу, а диагностика не расходится с
+   каноническим `check_constraints`.
+"""
+
+from __future__ import annotations
+
+import pytest
+
+from engine import canonical, constraints, space
+
+
+# --------------------------------------------------------------------------- #
+# 1. Целостность исходных данных
+# --------------------------------------------------------------------------- #
+def test_source_data_untouched():
+    lots, modes, config = canonical.load_case()
+    assert len(lots) == 8, "в кейсе ровно восемь лотов"
+    assert len(modes) == 3, "канонических режимов доступа три: A, B, C"
+    assert config["case_version"] == "1.1"
+    assert config["scenarios"]["BASE"]["c0_max_mrub"] == 1300
+    assert config["scenarios"]["STRESS"]["c0_max_mrub"] == 1180
+    common = config["constraints_common"]
+    assert common["selected_lots_exactly"] == 4
+    assert common["min_public_core_lots"] == 2
+    assert common["opex_max_mrub_per_year"] == 360
+    assert common["vpub_min_mrub_per_year"] == 1000
+    assert common["kcash_min"] == 0.6
+    assert common["t_rep_min"] == 0.63
+
+
+def test_only_mode_a_is_public_core():
+    """На этом факте держится ограничение public_core_lots >= 2."""
+    _, modes, _ = canonical.load_case()
+    flags = dict(zip(modes.mode_id, modes.public_core))
+    assert bool(flags["A"]) is True
+    assert bool(flags["B"]) is False
+    assert bool(flags["C"]) is False
+
+
+# --------------------------------------------------------------------------- #
+# 2. Формулы: ручной расчёт против канонического
+# --------------------------------------------------------------------------- #
+def test_apply_mode_matches_manual_computation():
+    """FIRE в режиме A, посчитанный руками по формулам из инструкции кейса."""
+    detail, _ = canonical.evaluate([("FIRE", "A")])
+    row = detail.iloc[0]
+    # Исходные значения FIRE: c0=320, opex=85, anchor=75, commercial=35, vpub=560.
+    # Режим A: k_c0=1.05, k_opex=1.05, k_vpub=1.00, k_anchor=1.00, k_commercial=0.25.
+    assert row.c0_mrub == pytest.approx(320 * 1.05)
+    assert row.opex_mrub_per_year == pytest.approx(85 * 1.05)
+    assert row.vpub_mrub_per_year == pytest.approx(560 * 1.00)
+    assert row.cash_mrub_per_year == pytest.approx(75 * 1.00 + 35 * 0.25)
+
+
+def test_portfolio_aggregation_matches_manual_sum():
+    """Рекомендуемый портфель: суммы и производные показатели."""
+    selection = [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
+    _, metrics = canonical.evaluate(selection)
+
+    assert metrics["c0_mrub"] == pytest.approx(336 + 273 + 250 + 294)  # 1153.0
+    assert metrics["opex_mrub_per_year"] == pytest.approx(89.25 + 78.75 + 70 + 78.75)  # 316.75
+    assert metrics["vpub_mrub_per_year"] == pytest.approx(560 + 230 + 180.4 + 360)  # 1330.4
+    assert metrics["cash_mrub_per_year"] == pytest.approx(83.75 + 60 + 102.5 + 76.25)  # 322.5
+    # kcash — это ровно cash/opex и ничего больше.
+    assert metrics["kcash"] == pytest.approx(322.5 / 316.75)
+    # t_rep агрегируется средним арифметическим.
+    assert metrics["t_rep"] == pytest.approx((0.68 + 0.74 + 0.77 + 0.73) / 4)
+    assert metrics["public_core_lots"] == 3
+    assert metrics["territorial_archetypes"] == 4
+
+
+def test_federal_lot_excluded_from_territorial_count():
+    """SSA помечен federal и не должен попадать в счётчик архетипов."""
+    _, metrics = canonical.evaluate(
+        [("SSA", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
+    )
+    assert metrics["territorial_archetypes"] == 3
+
+
+def test_capability_normalisation():
+    """PNT, InSAR и PNT/InSAR схлопываются в одну группу."""
+    assert canonical.case_core.normalize_capability("PNT") == {"PNT/InSAR"}
+    assert canonical.case_core.normalize_capability("InSAR") == {"PNT/InSAR"}
+    assert canonical.case_core.normalize_capability("PNT/InSAR") == {"PNT/InSAR"}
+
+
+# --------------------------------------------------------------------------- #
+# 3. Ограничения и границы
+# --------------------------------------------------------------------------- #
+def test_diagnosis_agrees_with_canonical_checks():
+    """Наша обогащённая таблица обязана совпадать с каноническим ответом."""
+    selection = [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
+    _, metrics = canonical.evaluate(selection)
+    for scenario in ("BASE", "STRESS"):
+        rows = constraints.diagnose(metrics, scenario)  # внутри — сверка с case_core
+        reference = canonical.canonical_checks(metrics, scenario)
+        assert {r.code: r.passed for r in rows} == reference
+
+
+@pytest.mark.parametrize("scenario,limit", [("BASE", 1300), ("STRESS", 1180)])
+def test_c0_boundary_is_inclusive(scenario, limit):
+    """Значение ровно на пороге должно проходить."""
+    metrics = {
+        "selected_lots": 4, "territorial_archetypes": 4, "capability_groups": 2,
+        "public_core_lots": 2, "c0_mrub": limit, "opex_mrub_per_year": 360,
+        "vpub_mrub_per_year": 1000, "kcash": 0.6, "t_rep": 0.63,
+    }
+    rows = constraints.diagnose(metrics, scenario)
+    assert constraints.all_passed(rows), [r.code for r in constraints.failed(rows)]
+
+
+def test_c0_above_limit_fails_with_actual_value():
+    """При нарушении видно и порог, и фактическое значение (критерий Т3)."""
+    metrics = {
+        "selected_lots": 4, "territorial_archetypes": 4, "capability_groups": 2,
+        "public_core_lots": 2, "c0_mrub": 1181, "opex_mrub_per_year": 300,
+        "vpub_mrub_per_year": 1000, "kcash": 0.6, "t_rep": 0.63,
+    }
+    rows = constraints.diagnose(metrics, "STRESS")
+    broken = constraints.failed(rows)
+    assert [r.code for r in broken] == ["c0_limit"]
+    assert broken[0].threshold == 1180
+    assert broken[0].actual == 1181
+    assert broken[0].slack == pytest.approx(-1)
+
+
+def test_single_lot_fails_exact_count():
+    """Дымовая проверка из инструкции кейса: один лот не образует портфель."""
+    _, metrics = canonical.evaluate([("FIRE", "A")])
+    rows = constraints.diagnose(metrics, "BASE")
+    assert not constraints.all_passed(rows)
+    assert "exact_lot_count" in [r.code for r in constraints.failed(rows)]
+
+
+# --------------------------------------------------------------------------- #
+# 4. Пространство решений — защита от регрессии
+# --------------------------------------------------------------------------- #
+def test_space_size_and_feasibility_counts():
+    frame = space.enumerate_space()
+    assert len(frame) == 5670, "C(8,4)=70 наборов × 3^4=81 назначение"
+    assert int(frame.BASE_ok.sum()) == 1031
+    assert int(frame.STRESS_ok.sum()) == 143
+
+
+def test_stress_is_subset_of_base():
+    """STRESS отличается только более жёстким лимитом c0, поэтому строго вложен в BASE."""
+    frame = space.enumerate_space()
+    assert not (frame.STRESS_ok & ~frame.BASE_ok).any()
+
+
+def test_arctic_never_feasible_under_stress():
+    """Вывод, на который опирается отказ от ARCTIC в записке."""
+    stress = space.feasible("STRESS")
+    assert not stress["lots"].str.contains("ARCTIC").any()
+
+
+def test_non_binding_constraints():
+    """Эти ограничения не заваливают ни одной конфигурации — важный вывод для П2."""
+    binding = space.binding_analysis().set_index("constraint")["failures"].to_dict()
+    assert binding["territorial_archetypes"] == 0
+    assert binding["capability_groups"] == 0
+    assert binding["kcash_floor"] == 0
+
+
+def test_pareto_front_is_non_dominated():
+    front = space.pareto_front(space.feasible("STRESS"))
+    assert 0 < len(front) <= len(space.feasible("STRESS"))
+    highs = front[list(space.MAXIMIZE)].to_numpy()
+    lows = front[list(space.MINIMIZE)].to_numpy()
+    for i in range(len(front)):
+        not_worse = (highs >= highs[i]).all(axis=1) & (lows <= lows[i]).all(axis=1)
+        better = (highs > highs[i]).any(axis=1) | (lows < lows[i]).any(axis=1)
+        assert not bool((not_worse & better).any()), "внутри фронта не должно быть доминирования"
+
+
+def test_parse_selection_roundtrip():
+    parsed = space.parse_selection("FIRE:A, AGRI:A ,TRANS:B,ENV:A")
+    assert parsed == [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
+    assert space.format_selection(parsed) == "FIRE:A,AGRI:A,TRANS:B,ENV:A"
+
+
+def test_recommended_variant_from_config_passes_both_scenarios():
+    """Портфель из config/decision.json проходит и BASE, и STRESS."""
+    from engine.decision import load_decision
+
+    decision = load_decision()
+    _, metrics = canonical.evaluate(decision.recommended.selection)
+    for scenario in ("BASE", "STRESS"):
+        rows = constraints.diagnose(metrics, scenario)
+        assert constraints.all_passed(rows), (
+            f"{scenario}: {[r.code for r in constraints.failed(rows)]}"
+        )
