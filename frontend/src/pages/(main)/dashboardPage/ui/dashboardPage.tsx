@@ -242,6 +242,8 @@ function PortfolioResult({
   onReset: () => void
   fallbackChecks: number
 }) {
+  const checks = calculation?.checks[scenario]
+
   return (
     <div className="result">
       <div className="result__head">
@@ -259,18 +261,25 @@ function PortfolioResult({
       {/* Пока идёт пересчёт, старые числа помечены устаревшими: иначе их можно
           принять за результат нового выбора. */}
       <div className={isPending ? 'result__body is-stale' : 'result__body'}>
+        {/* Неполный портфель: движок возвращает промежуточную сумму по выбранным
+            лотам, но это НЕ итог портфеля. Выдавать её за итог нельзя — четыре
+            лота требуются по условию, и проверки до полного состава не считаются. */}
         {calculation?.status === 'incomplete' ? (
           <p className="state">
             Выбрано {calculation.selection.length} из {PORTFOLIO_SIZE} лотов. Портфель
-            неполный — показатели не считаются, проверок нет ({fallbackChecks} условий
-            ждут полного состава).
+            неполный: {fallbackChecks} условий ждут полного состава, а промежуточная
+            сумма по выбранным лотам итогом портфеля не является и здесь не показывается.
           </p>
         ) : null}
 
-        {calculation?.metrics ? (
+        {calculation?.status === 'complete' && calculation.metrics ? (
           <div className="result__tables">
             <MetricsTable metrics={calculation.metrics} />
-            <ConstraintsTable checks={calculation.checks[scenario]} scenario={scenario} />
+            {checks ? (
+              <ConstraintsTable checks={checks} scenario={scenario} />
+            ) : (
+              <p className="state">Проверки по сценарию {scenario} не пришли от backend.</p>
+            )}
           </div>
         ) : null}
 
