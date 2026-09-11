@@ -184,8 +184,72 @@ export type RecommendRequest = {
   /** Искать только среди проходящих STRESS без пересмотра состава. */
   require_stress: boolean
   method_id: 'pareto_lexicographic_v1'
+  /**
+   * Ровно четыре лота, внутри которых подбираются режимы; `null` — полный
+   * автоподбор по всем восьми. Бэкенд сортирует список и отклоняет дубликаты
+   * и неизвестные идентификаторы (422).
+   */
+  lot_ids?: string[] | null
 }
 
 export type CompareRequest = {
   variants: EvaluateRequest[]
+}
+
+// ───────────────────── объяснение расчёта (опционально) ─────────────────────
+
+/**
+ * Пояснение к уже посчитанному портфелю. Модель ничего не считает и не
+ * выбирает: она излагает факты расчёта. Каждый тезис ссылается на `fact_id`,
+ * числа подставляет сервер — свободный текст модели их не содержит.
+ */
+
+export type PortfolioExplanationRequest = {
+  dataset_hash: string
+  /** Ровно четыре пары: пояснение даётся только полному портфелю. */
+  selection: SelectionItem[]
+  scenario: Scenario
+}
+
+export type ExplanationFact = {
+  id: string
+  text: string
+  source: 'calculation' | 'case'
+}
+
+export type ExplanationPoint = {
+  text: string
+  fact_ids: string[]
+}
+
+export type PortfolioExplanation = {
+  headline: string
+  summary: string
+  strengths: ExplanationPoint[]
+  limitations: ExplanationPoint[]
+}
+
+export type PortfolioExplanationResult = {
+  calculation: Calculation
+  scenario: Scenario
+  facts: ExplanationFact[]
+  explanation: PortfolioExplanation
+  model: string | null
+  /** `template` — модель недоступна, текст собран сервером по шаблону. */
+  generated_by: 'ollama' | 'template'
+  warning?: string | null
+}
+
+export type ExplanationJobCreated = {
+  id: string
+  status: 'queued'
+}
+
+export type ExplanationJob = {
+  id: string
+  status: 'queued' | 'running' | 'succeeded' | 'failed'
+  created_at: string
+  updated_at: string
+  result?: PortfolioExplanationResult | null
+  error?: string | null
 }
