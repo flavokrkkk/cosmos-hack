@@ -128,11 +128,17 @@ export type Calculation = {
   input_hash: string
   engine_version: string
   selection: SelectionItem[]
-  /** `incomplete` — выбрано меньше четырёх лотов; `metrics` тогда `null`. */
+  /** `incomplete` — выбрано меньше четырёх лотов. */
   status: 'incomplete' | 'complete'
   detail: LotDetail[]
+  /**
+   * `null` только при ПУСТОМ выборе. При 1–3 лотах движок возвращает
+   * промежуточную сумму по выбранным лотам — это не итог портфеля, и выдавать
+   * её за итог нельзя (проверено на живом бэкенде 11.09).
+   */
   metrics: PortfolioMetrics | null
-  checks: Record<Scenario, ConstraintCheck[]>
+  /** Пустой объект `{}` при пустом выборе: `checks[scenario]` тогда `undefined`. */
+  checks: Partial<Record<Scenario, ConstraintCheck[]>>
   feasible_by_scenario: Record<Scenario, boolean>
 }
 

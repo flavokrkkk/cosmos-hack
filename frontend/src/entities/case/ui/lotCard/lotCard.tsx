@@ -41,9 +41,18 @@ export function LotCard({
         </button>
       </header>
 
+      {/* У федерального лота SSA территория и называется «Федеральный»:
+          без этой проверки выходило «Федеральный · федеральный». */}
       <p className="lot-card__meta">
-        {lot.territory_title}
-        {lot.federal ? ' · федеральный' : ''} · {lot.capability_groups.join(', ')}
+        {[
+          lot.territory_title,
+          lot.federal && lot.territory_title.toLowerCase() !== 'федеральный'
+            ? 'федеральный'
+            : null,
+          lot.capability_groups.join(', '),
+        ]
+          .filter(Boolean)
+          .join(' · ')}
       </p>
 
       <dl className="lot-card__facts">

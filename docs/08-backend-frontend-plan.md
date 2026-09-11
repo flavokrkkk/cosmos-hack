@@ -544,7 +544,13 @@ URL по запросу пользователя и не превращать do
 **ФАКТ — текущие файлы:** [routes.tsx](../frontend/src/pages/routes.tsx),
 [AxiosClient](../frontend/src/shared/api/baseQueryInstance.ts),
 [QueryClient](../frontend/src/shared/api/queryClient.ts),
-[session](../frontend/src/entities/session/), [viewer](../frontend/src/entities/viewer/).
+[contracts](../frontend/src/shared/api/contracts.ts), [case](../frontend/src/entities/case/),
+[portfolio](../frontend/src/entities/portfolio/).
+
+> **Обновление 11.09:** авторизация удалена (`entities/session`, `entities/viewer`, страницы
+> `(auth)`, `shared/lib/token`) — README кейсодержателя §14, сценарий 5 требует, чтобы эксперт
+> запускал решение без логина, а портфельные маршруты бэкенда открыты. Пункты F0 про
+> auth/refresh больше не применимы; типы берутся из `shared/api/contracts.ts` — зеркала DTO.
 
 - [ ] Сохранить auth/refresh, RHF+yup, QueryClient и существующие токены стилей.
 - [ ] Расширить текущий AxiosClient методом patch, не создавать второй refresh-клиент.

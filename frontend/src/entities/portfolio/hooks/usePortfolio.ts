@@ -1,6 +1,8 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 
-import type { EvaluateRequest, RecommendRequest, SelectionItem } from '@shared/api/contracts'
+import type {
+  CompareRequest, EvaluateRequest, RecommendRequest, SelectionItem,
+} from '@shared/api/contracts'
 
 import { portfolioService } from '../api'
 
@@ -35,5 +37,22 @@ export function useRecommend() {
   return useMutation({
     mutationFn: (request: RecommendRequest) => portfolioService.recommend(request),
     meta: { errorMessage: 'Не удалось подобрать портфель' },
+  })
+}
+
+/**
+ * Сопоставление вариантов — тоже действие по кнопке.
+ *
+ * Считает бэкенд: он же считал и одиночные портфели, поэтому колонки сравнения
+ * гарантированно получены одной и той же арифметикой. Фронтенд не пересчитывает
+ * показатели и не выводит дельты самостоятельно.
+ *
+ * Бэкенд принимает от 2 до 4 вариантов и требует полные портфели из четырёх
+ * лотов — иначе 422.
+ */
+export function useCompare() {
+  return useMutation({
+    mutationFn: (request: CompareRequest) => portfolioService.compare(request),
+    meta: { errorMessage: 'Не удалось сравнить варианты' },
   })
 }
