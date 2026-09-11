@@ -1,6 +1,4 @@
-from datetime import datetime
 from typing import Annotated, Literal, Self
-from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -203,7 +201,7 @@ class PortfolioExplanationRequest(PortfolioSchema):
 class ExplanationFact(PortfolioSchema):
     id: str
     text: str
-    source: Literal["calculation", "case"]
+    source: Literal["calculation", "system"]
 
 
 class ExplanationPoint(PortfolioSchema):
@@ -226,17 +224,3 @@ class PortfolioExplanationResult(PortfolioSchema):
     model: str | None
     generated_by: Literal["ollama", "template"]
     warning: str | None = None
-
-
-class ExplanationJobCreated(PortfolioSchema):
-    id: UUID
-    status: Literal["queued"]
-
-
-class ExplanationJob(PortfolioSchema):
-    id: UUID
-    status: Literal["queued", "running", "succeeded", "failed"]
-    created_at: datetime
-    updated_at: datetime
-    result: PortfolioExplanationResult | None = None
-    error: str | None = None

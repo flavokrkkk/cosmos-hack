@@ -9,13 +9,3 @@ class InvalidPortfolio(BaseAPIException):
 class DatasetMismatch(BaseAPIException):
     def __init__(self) -> None:
         super().__init__(status_code=409, detail="Набор данных изменился. Обновите каталог и повторите расчёт.")
-
-
-class ExplanationJobNotFound(BaseAPIException):
-    def __init__(self) -> None:
-        super().__init__(status_code=404, detail="Задача объяснения не найдена")
-
-
-class ExplanationQueueUnavailable(BaseAPIException):
-    def __init__(self) -> None:
-        super().__init__(status_code=503, detail="Сервис объяснений временно недоступен")

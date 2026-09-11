@@ -1,33 +1,4 @@
 services:
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: cosmos_hack
-      POSTGRES_USER: cosmos_hack
-      POSTGRES_PASSWORD: cosmos_hack
-    ports:
-      - "${COSMOS_DB_HOST_PORT:-5432}:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U cosmos_hack -d cosmos_hack"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "${COSMOS_REDIS_HOST_PORT:-6379}:6379"
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
-
   ollama:
     image: ollama/ollama:latest
     environment:
@@ -63,50 +34,12 @@ services:
     environment:
       COSMOS_APP_NAME: Cosmos Hack API
       COSMOS_DEBUG: "true"
-      # 5174 — запасной порт Vite: если 5173 занят другим проектом, dev-сервер
-      # переезжает сам, и без этого origin логин падал бы на CORS.
       COSMOS_CORS_ALLOWED_ORIGINS: ${COSMOS_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174}
-      COSMOS_DB_NAME: cosmos_hack
-      COSMOS_DB_USER: cosmos_hack
-      COSMOS_DB_PASS: cosmos_hack
-      COSMOS_DB_HOST: db
-      COSMOS_DB_PORT: 5432
-      COSMOS_JWT_SECRET_KEY: ${COSMOS_JWT_SECRET_KEY:-local-development-secret-at-least-32-bytes}
-      COSMOS_BOOTSTRAP_ADMIN_USERNAME: ${COSMOS_BOOTSTRAP_ADMIN_USERNAME:-admin}
-      COSMOS_BOOTSTRAP_ADMIN_PASSWORD: ${COSMOS_BOOTSTRAP_ADMIN_PASSWORD:-change-me-now}
-      COSMOS_REDIS_URL: redis://redis:6379/0
       COSMOS_OLLAMA_BASE_URL: http://ollama:11434
       COSMOS_OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b-instruct}
-      COSMOS_OLLAMA_TIMEOUT_SECONDS: ${COSMOS_OLLAMA_TIMEOUT_SECONDS:-180}
-    depends_on:
-      db:
-        condition: service_healthy
+      COSMOS_OLLAMA_TIMEOUT_SECONDS: ${COSMOS_OLLAMA_TIMEOUT_SECONDS:-45}
     ports:
       - "${COSMOS_API_HOST_PORT:-8000}:8000"
-    restart: unless-stopped
-
-  worker:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    command: taskiq worker app.tasks.broker:broker --workers 1
-    environment:
-      COSMOS_DB_NAME: cosmos_hack
-      COSMOS_DB_USER: cosmos_hack
-      COSMOS_DB_PASS: cosmos_hack
-      COSMOS_DB_HOST: db
-      COSMOS_DB_PORT: 5432
-      COSMOS_REDIS_URL: redis://redis:6379/0
-      COSMOS_OLLAMA_BASE_URL: http://ollama:11434
-      COSMOS_OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b-instruct}
-      COSMOS_OLLAMA_TIMEOUT_SECONDS: ${COSMOS_OLLAMA_TIMEOUT_SECONDS:-180}
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      ollama-pull:
-        condition: service_completed_successfully
     restart: unless-stopped
 
   frontend:
@@ -136,6 +69,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres-data:
-  redis-data:
   ollama-data:

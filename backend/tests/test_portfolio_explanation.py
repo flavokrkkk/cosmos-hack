@@ -1,17 +1,17 @@
 import asyncio
-from datetime import UTC, datetime
-from types import SimpleNamespace
-from uuid import uuid4
 
 import pytest
+from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
+from app.api.v1.dependencies import get_ollama_service
 from app.core.dto.ollama import OllamaChatResult, PortfolioExplanationDraft
 from app.core.dto.portfolio import PortfolioExplanationRequest
 from app.core.services.ollama_service import OllamaService
 from app.core.services.portfolio_explanation_service import PortfolioExplanationService
 from app.core.services.portfolio_service import PortfolioService
 from app.infrastructure.errors.ollama_errors import OllamaUnavailableError
+from app.main import app
 
 
 SELECTION = [
@@ -20,27 +20,6 @@ SELECTION = [
     {"lot_id": "TRANS", "mode_id": "B"},
     {"lot_id": "ENV", "mode_id": "A"},
 ]
-
-
-class FakeRepository:
-    def __init__(self):
-        self.items = {}
-
-    async def add(self, **data):
-        now = datetime.now(UTC)
-        item = SimpleNamespace(id=uuid4(), created_at=now, updated_at=now, result=None, error=None, **data)
-        self.items[item.id] = item
-        return item
-
-    async def get_item(self, item_id):
-        return self.items.get(item_id)
-
-    async def update_item(self, item_id, **data):
-        item = self.items[item_id]
-        for key, value in data.items():
-            setattr(item, key, value)
-        item.updated_at = datetime.now(UTC)
-        return item
 
 
 class FakeOllama:
@@ -60,6 +39,23 @@ class FakeOllama:
 class UnavailableOllama:
     async def explain_portfolio(self, facts):
         raise OllamaUnavailableError("offline")
+
+
+class InvalidOllama:
+    def __init__(self, *, text="Выдуманное значение 42", fact_ids=None):
+        self.text = text
+        self.fact_ids = fact_ids or ["portfolio_status"]
+
+    async def explain_portfolio(self, facts):
+        return (
+            PortfolioExplanationDraft(
+                headline="Некорректный ответ",
+                summary="Проверка завершена.",
+                strengths=[{"text": self.text, "fact_ids": self.fact_ids}],
+                limitations=[{"text": "Граница расчёта сохранена.", "fact_ids": ["scope_limit"]}],
+            ),
+            OllamaChatResult(model="qwen3:4b-instruct", content="{}"),
+        )
 
 
 def make_request():
@@ -88,39 +84,50 @@ def test_explanation_request_rejects_arbitrary_prompt():
         )
 
 
-def test_explanation_job_uses_server_calculation_and_ollama():
+def test_explanation_uses_server_calculation_and_ollama():
     async def scenario():
-        repository = FakeRepository()
-        queued = []
-
-        async def enqueue(job_id):
-            queued.append(job_id)
-
-        service = PortfolioExplanationService(repository, enqueue=enqueue)
-        created = await service.create(make_request())
-        assert queued == [created.id]
-        await service.run(created.id, FakeOllama())
-        job = await service.get(created.id)
-        assert job.status == "succeeded"
-        assert job.result.generated_by == "ollama"
-        assert job.result.model == "qwen3:4b-instruct"
-        assert job.result.calculation.input_hash == repository.items[created.id].calculation_input_hash
-        assert {point.fact_ids[0] for point in job.result.explanation.strengths} == {"portfolio_status"}
+        result = await PortfolioExplanationService().explain(make_request(), FakeOllama())
+        assert result.generated_by == "ollama"
+        assert result.model == "qwen3:4b-instruct"
+        assert result.calculation.status == "complete"
+        assert {point.fact_ids[0] for point in result.explanation.strengths} == {"portfolio_status"}
 
     asyncio.run(scenario())
 
 
+def test_explanation_api_returns_result_in_same_request():
+    app.dependency_overrides[get_ollama_service] = lambda: FakeOllama()
+    try:
+        response = TestClient(app).post(
+            "/portfolio/explain",
+            json=make_request().model_dump(mode="json"),
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["generated_by"] == "ollama"
+    assert payload["calculation"]["status"] == "complete"
+    assert "id" not in payload
+    assert "status" not in payload
+
+
 def test_explanation_falls_back_without_ollama():
     async def scenario():
-        repository = FakeRepository()
-        service = PortfolioExplanationService(repository, enqueue=lambda _: asyncio.sleep(0))
-        created = await service.create(make_request())
-        await service.run(created.id, UnavailableOllama())
-        job = await service.get(created.id)
-        assert job.status == "succeeded"
-        assert job.result.generated_by == "template"
-        assert job.result.model is None
-        assert job.result.warning
+        result = await PortfolioExplanationService().explain(make_request(), UnavailableOllama())
+        assert result.generated_by == "template"
+        assert result.model is None
+        assert result.warning
+
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("ollama", [InvalidOllama(), InvalidOllama(text="Новый факт", fact_ids=["missing"])])
+def test_explanation_rejects_numbers_and_unknown_facts(ollama):
+    async def scenario():
+        result = await PortfolioExplanationService().explain(make_request(), ollama)
+        assert result.generated_by == "template"
 
     asyncio.run(scenario())
 

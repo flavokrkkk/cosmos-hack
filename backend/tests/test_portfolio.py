@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.v1.dependencies import get_db_session
 from app.core.dto.portfolio import EvaluateRequest, RecommendRequest
 from app.core.services.portfolio_engine import canonical, constraints, space
 from app.core.services.portfolio_engine.decision import load_decision
@@ -289,22 +288,9 @@ def test_portfolio_openapi_has_no_authentication(client):
     paths = client.get("/openapi.json").json()["paths"]
     for path, method in [("/portfolio/catalog", "get"), ("/portfolio/evaluate", "post"),
                          ("/portfolio/recommend", "post"), ("/portfolio/compare", "post"),
-                         ("/portfolio/explanations", "post"),
-                         ("/portfolio/explanations/{job_id}", "get")]:
+                         ("/portfolio/explain", "post")]:
         assert not paths[path][method].get("security")
-    assert paths["/admin/auth/current_user"]["get"]["security"]
-
-
-def test_admin_still_requires_authentication(client):
-    async def no_database():
-        yield None
-
-    app.dependency_overrides[get_db_session] = no_database
-    try:
-        response = client.get("/admin/auth/current_user")
-        assert response.status_code == 403
-    finally:
-        app.dependency_overrides.clear()
+    assert not any(path.startswith("/admin/") for path in paths)
 
 
 def test_no_feasible_is_explicit(catalog, monkeypatch):

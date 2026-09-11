@@ -9,8 +9,6 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/app ./app
-COPY backend/migrations ./migrations
-COPY backend/alembic.ini .
 COPY case/source/case_core.py /workspace/case/source/case_core.py
 COPY case/source/data/lots.csv case/source/data/access_modes.csv /workspace/case/source/data/
 COPY case/source/config/case_config.json /workspace/case/source/config/case_config.json

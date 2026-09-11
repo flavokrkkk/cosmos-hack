@@ -2,10 +2,11 @@
 
 Кейс 02 «Сервисная модель космической экономики» (АНО «КЭП»). Цель — победа.
 
-## Реализация приложения — актуализация 11.09
+## Реализация приложения — актуализация 12.09
 
-Добавлен первый backend-срез: портфельный API с автоподбором, альтернативами,
-проверками BASE/STRESS и сравнением. Фронтенд не реализован; исходный каркас сохранён.
+Добавлен backend-срез: портфельный API с автоподбором, альтернативами,
+проверками BASE/STRESS, сравнением и синхронным объяснением через Ollama.
+Фронтенд не реализован; исходный каркас сохранён.
 Расчётное ядро теперь находится в
 `backend/app/core/services/portfolio_engine`; корневой `engine` — совместимость прежнего CLI.
 Исторические описания стартового каркаса ниже не отражают добавленные портфельные маршруты.
@@ -19,8 +20,8 @@ backend/.venv/bin/python -m engine selfcheck
 ```
 
 Предварительно установить `backend/requirements-dev.txt` в Python 3.12.
-Проверены 41 Python-тест, self-check и CLI. Docker daemon на машине
-не запущен: контейнерная сборка и полный запуск с PostgreSQL пока не проверены.
+Проверен 61 Python-тест, self-check, контейнерная сборка и реальный вызов Ollama.
+Портфельный API стартует без PostgreSQL и Redis.
 Сохранение решений, веб-экспорт, финальные материалы и расширения — следующие этапы.
 
 ## 🚀 Кейс опубликован: «Космос как инфраструктура»
@@ -56,7 +57,7 @@ python -m pytest tests/ -q    # 23 проверки формул, границ �
   `features`, `entities`, `shared`. Одна страница — дашборд подбора портфеля,
   **без авторизации**: эксперт должен запускать решение без логина (README кейса §14);
 - `backend/` — FastAPI с тем же разделением на `api`, `core` и
-  `infrastructure`; портфельные маршруты `/portfolio/{catalog,evaluate,recommend,compare}`;
+  `infrastructure`; маршруты `/portfolio/{catalog,evaluate,recommend,compare,explain}`;
 - `docker-compose.yml` — полный запуск;
 - `docker-compose.local.yml` — PostgreSQL, Redis и Ollama для разработки
   приложений напрямую на машине.
@@ -68,7 +69,9 @@ docker compose up --build
 ```
 
 Команда поднимает frontend, backend, Taskiq worker, PostgreSQL, Redis и Ollama.
-При первом запуске контейнер `ollama-pull` загрузит модель `qwen3:4b` (около
+PostgreSQL, Redis и worker сохранены как инфраструктура исходного каркаса, но портфельные
+расчёты и объяснение от них не зависят.
+При первом запуске контейнер `ollama-pull` загрузит модель `qwen3:4b-instruct` (около
 2,5 ГБ), поэтому первый старт будет дольше последующих. Модель сохраняется в
 volume `ollama-data`.
 
@@ -78,30 +81,27 @@ volume `ollama-data`.
 COSMOS_OLLAMA_MODEL=qwen3:8b docker compose up --build
 ```
 
-Для запуска backend и frontend на машине, а инфраструктуры в Docker:
+Для запуска backend и frontend на машине достаточно поднять Ollama:
 
 ```bash
-docker compose -f docker-compose.local.yml up -d
+docker compose -f docker-compose.local.yml up -d ollama
 ```
 
-Поднимает PostgreSQL, Redis и Ollama; модель по умолчанию **не качается** —
-включается профилем: `docker compose -f docker-compose.local.yml --profile llm up -d`.
+Модель по умолчанию **не качается** — загрузить её можно командой
+`docker compose -f docker-compose.local.yml --profile llm up ollama-pull`.
 
-### Быстрый путь: только бэкенд, без загрузки модели
+### Быстрый путь: backend без PostgreSQL и Redis
 
-`app` по зависимостям ждёт `ollama-pull`, то есть первый `up` тянет ~2,5 ГБ. Если
-LLM сейчас не нужен (основной путь решения работает без него — см.
-[docs/03-strategy.md](docs/03-strategy.md)), бэкенд поднимается так:
+Если модель уже загружена, достаточно:
 
 ```bash
-docker compose up -d db redis
+docker compose up -d ollama
 docker compose up -d --no-deps --build app
 curl -s http://localhost:8000/health   # {"status":"ok"}
 ```
 
-Таблицы создаются при старте приложения (`Base.metadata.create_all`), отдельный
-прогон миграций для запуска не нужен. Бутстрап-администратор берётся из
-`COSMOS_BOOTSTRAP_ADMIN_*` (по умолчанию `admin` / `change-me-now`).
+Для расчётных ручек таблицы не создаются. PostgreSQL подключается лениво только при вызове
+старых административных auth-маршрутов. Redis и Taskiq worker для Case 02 не используются.
 Swagger — http://localhost:8000/docs.
 
 ### Переменные окружения
@@ -123,7 +123,7 @@ docker compose --profile tunnel up -d tuna
 На Mac заранее загрузите модель и поднимите защищённый туннель:
 
 ```bash
-ollama pull qwen3:4b
+ollama pull qwen3:4b-instruct
 ngrok http 11434 \
   --host-header="localhost:11434" \
   --basic-auth="cosmos:change-this-password"

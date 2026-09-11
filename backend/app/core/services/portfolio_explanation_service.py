@@ -1,129 +1,67 @@
 import re
-from collections.abc import Awaitable, Callable
-from uuid import UUID
 
 from app.core.dto.ollama import PortfolioExplanationDraft
 from app.core.dto.portfolio import (
     Calculation,
     EvaluateRequest,
     ExplanationFact,
-    ExplanationJob,
-    ExplanationJobCreated,
     ExplanationPoint,
     PortfolioExplanation,
     PortfolioExplanationRequest,
     PortfolioExplanationResult,
+    Scenario,
 )
-from app.core.repositories.portfolio_explanation_repository import PortfolioExplanationRepository
 from app.core.services.ollama_service import OllamaService
 from app.core.services.portfolio_service import PortfolioService
 from app.infrastructure.errors.ollama_errors import OllamaError, OllamaResponseError
-from app.infrastructure.errors.portfolio_errors import (
-    ExplanationJobNotFound,
-    ExplanationQueueUnavailable,
-)
+from app.infrastructure.logging.logger import get_logger
 
 
-EnqueueExplanation = Callable[[UUID], Awaitable[None]]
+logger = get_logger(__name__)
 
 
 class PortfolioExplanationService:
-    def __init__(
+    async def explain(
         self,
-        repository: PortfolioExplanationRepository,
-        enqueue: EnqueueExplanation | None = None,
-    ) -> None:
-        self._repository = repository
-        self._enqueue = enqueue
-
-    async def create(self, request: PortfolioExplanationRequest) -> ExplanationJobCreated:
+        request: PortfolioExplanationRequest,
+        ollama: OllamaService,
+    ) -> PortfolioExplanationResult:
         calculation = PortfolioService().evaluate(
             EvaluateRequest(dataset_hash=request.dataset_hash, selection=request.selection),
         )
-        job = await self._repository.add(
-            status="queued",
-            request=request.model_dump(mode="json"),
-            calculation_input_hash=calculation.input_hash,
-        )
+        facts = _build_facts(calculation, request.scenario)
+        generated_by = "ollama"
+        warning = None
+        model = None
         try:
-            if self._enqueue is None:
-                from app.tasks.portfolio_explanation import generate_portfolio_explanation
-
-                await generate_portfolio_explanation.kiq(str(job.id))
-            else:
-                await self._enqueue(job.id)
-        except Exception as error:
-            await self._repository.update_item(
-                job.id,
-                status="failed",
-                error="Не удалось поставить задачу в очередь",
+            draft, response = await ollama.explain_portfolio(
+                [fact.model_dump() for fact in facts],
             )
-            raise ExplanationQueueUnavailable() from error
-        return ExplanationJobCreated(id=job.id, status="queued")
+            explanation = _validate_explanation(draft, facts)
+            model = response.model
+        except OllamaError as error:
+            logger.warning(
+                "portfolio_explanation_fallback",
+                calculation_input_hash=calculation.input_hash,
+                error_type=type(error).__name__,
+                reason=str(error),
+            )
+            generated_by = "template"
+            warning = "Ollama недоступен или вернул некорректный ответ; показан шаблонный текст."
+            explanation = _template_explanation(calculation, request.scenario, facts)
 
-    async def get(self, job_id: UUID) -> ExplanationJob:
-        job = await self._repository.get_item(job_id)
-        if job is None:
-            raise ExplanationJobNotFound()
-        return ExplanationJob(
-            id=job.id,
-            status=job.status,
-            created_at=job.created_at,
-            updated_at=job.updated_at,
-            result=job.result,
-            error=job.error,
+        return PortfolioExplanationResult(
+            calculation=calculation,
+            scenario=request.scenario,
+            facts=facts,
+            explanation=explanation,
+            model=model,
+            generated_by=generated_by,
+            warning=warning,
         )
 
-    async def run(self, job_id: UUID, ollama: OllamaService) -> None:
-        job = await self._repository.get_item(job_id)
-        if job is None:
-            raise ExplanationJobNotFound()
-        await self._repository.update_item(job.id, status="running", error=None)
-        try:
-            request = PortfolioExplanationRequest.model_validate(job.request)
-            calculation = PortfolioService().evaluate(
-                EvaluateRequest(dataset_hash=request.dataset_hash, selection=request.selection),
-            )
-            facts = _build_facts(calculation, request.scenario)
-            generated_by = "ollama"
-            warning = None
-            model = None
-            try:
-                draft, response = await ollama.explain_portfolio(
-                    [fact.model_dump() for fact in facts],
-                )
-                explanation = _validate_explanation(draft, facts)
-                model = response.model
-            except OllamaError:
-                generated_by = "template"
-                warning = "Ollama недоступен или вернул некорректный ответ; показан шаблонный текст."
-                explanation = _template_explanation(calculation, request.scenario, facts)
 
-            result = PortfolioExplanationResult(
-                calculation=calculation,
-                scenario=request.scenario,
-                facts=facts,
-                explanation=explanation,
-                model=model,
-                generated_by=generated_by,
-                warning=warning,
-            )
-            await self._repository.update_item(
-                job.id,
-                status="succeeded",
-                result=result.model_dump(mode="json"),
-                error=None,
-            )
-        except Exception as error:
-            await self._repository.update_item(
-                job.id,
-                status="failed",
-                error="Не удалось сформировать объяснение портфеля",
-            )
-            raise error
-
-
-def _build_facts(calculation: Calculation, scenario: str) -> list[ExplanationFact]:
+def _build_facts(calculation: Calculation, scenario: Scenario) -> list[ExplanationFact]:
     catalog = PortfolioService().catalog()
     lot_titles = {lot.lot_id: lot.title for lot in catalog.lots}
     facts = [
@@ -160,7 +98,7 @@ def _build_facts(calculation: Calculation, scenario: str) -> list[ExplanationFac
                 "Расчёт проверяет состав, режимы и ограничения портфеля, но не определяет "
                 "юридическую схему, плательщиков и конкретных исполнителей."
             ),
-            source="case",
+            source="system",
         ),
     )
     return facts
@@ -191,7 +129,7 @@ def _validate_explanation(
 
 def _template_explanation(
     calculation: Calculation,
-    scenario: str,
+    scenario: Scenario,
     facts: list[ExplanationFact],
 ) -> PortfolioExplanation:
     fact_by_id = {fact.id: fact for fact in facts}

@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class OllamaMessage(BaseModel):
@@ -18,12 +18,16 @@ class OllamaChatResult(BaseModel):
 
 
 class PortfolioExplanationPoint(BaseModel):
-    text: str
-    fact_ids: list[str]
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=300)
+    fact_ids: list[str] = Field(min_length=1, max_length=3)
 
 
 class PortfolioExplanationDraft(BaseModel):
-    headline: str
-    summary: str
-    strengths: list[PortfolioExplanationPoint]
-    limitations: list[PortfolioExplanationPoint]
+    model_config = ConfigDict(extra="forbid")
+
+    headline: str = Field(min_length=1, max_length=120)
+    summary: str = Field(min_length=1, max_length=500)
+    strengths: list[PortfolioExplanationPoint] = Field(min_length=1, max_length=3)
+    limitations: list[PortfolioExplanationPoint] = Field(min_length=1, max_length=3)

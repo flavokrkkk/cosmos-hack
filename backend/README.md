@@ -13,7 +13,8 @@ FastAPI-каркас повторяет слои `flowers_store`: `api`, `core`,
 - `GET /portfolio/catalog` — официальный каталог, режимы, пороги и метод выбора;
 - `POST /portfolio/evaluate` — пересчёт 0–4 уникальных лотов и BASE/STRESS;
 - `POST /portfolio/recommend` — автоподбор и альтернативы;
-- `POST /portfolio/compare` — сравнение 2–4 полных портфелей.
+- `POST /portfolio/compare` — сравнение 2–4 полных портфелей;
+- `POST /portfolio/explain` — сразу вернуть объяснение полного портфеля.
 
 ## Портфельный расчёт
 
@@ -30,8 +31,8 @@ FastAPI-каркас повторяет слои `flowers_store`: `api`, `core`,
 и передать его в `POST /portfolio/recommend`. Нажимать Authorize не требуется.
 Хранение черновика в браузере запланировано через localStorage, но пока не реализовано;
 backend не сохраняет портфели и всегда сам пересчитывает клиентский selection.
-PostgreSQL всё ещё требуется для запуска существующего приложения; снятие авторизации
-с расчётных ручек не отключает инициализацию БД в lifespan.
+Портфельные маршруты и `/health` запускаются без PostgreSQL и Redis. Соединение с PostgreSQL
+создаётся лениво только при обращении к сохранённым административным auth-маршрутам.
 
 `evaluate` принимает `dataset_hash` из каталога и `selection` вида
 `[{"lot_id":"FIRE","mode_id":"A"}]`. Пустой выбор — `incomplete`, `metrics: null`;
@@ -69,29 +70,34 @@ recommended=null, alternatives=[]; переключения на другие л
 заданная до старта процесса. Набор фиксирован до перезапуска. Официальные файлы не менялись.
 
 Dockerfile собирается из корня repo, копирует только необходимые runtime-файлы без jury.
-В compose снята зависимость app/worker от завершения `ollama-pull`; AI-сервисы сохранены.
-Сборка/запуск контейнеров не проверены: локальный Docker daemon недоступен.
+API не зависит от db, Redis, worker или завершения `ollama-pull`. Старые инфраструктурные
+сервисы сохранены в compose как часть каркаса, но кейсовая логика их не вызывает.
+Сборка и синхронный вызов API → Ollama проверены 12.09.2026.
 
-Пока не реализованы сохранение решений в PostgreSQL, веб-экспорт/импорт, выдача финальных
-материалов, четыре расширения и предметные AI-пояснения. CLI-экспорт сохранён.
+Пока не реализованы сохранение пользовательских решений в PostgreSQL, веб-экспорт/импорт,
+выдача финальных материалов и четыре расширения алгоритма. Предметное AI-пояснение уже
+работает обычным HTTP-запросом; CLI-экспорт сохранён.
 
 ### Проверки
 
-Из `backend/`:
+Из корня репозитория:
 
 ```bash
-uv pip install --python .venv/bin/python -r requirements-dev.txt
-.venv/bin/python -m pytest ../tests tests -q
+uv pip install --python backend/.venv/bin/python -r backend/requirements-dev.txt
+backend/.venv/bin/python -m pytest tests backend/tests -q
+cd backend
 .venv/bin/python -m app.core.services.portfolio_engine selfcheck
 PYTHONPYCACHEPREFIX=/tmp/cosmos-hack-pycache .venv/bin/python -m compileall -q app migrations
 .venv/bin/python -c "from app.main import app; print(sorted(app.openapi()['paths']))"
 ```
 
-После снятия авторизации прошли 42 Python-теста, compileall и проверка OpenAPI.
+После добавления объяснений прошёл 61 Python-тест, self-check, compileall и проверка OpenAPI.
 API-тесты используют реальные публичные роуты без токена и подмены пользователя,
 проверяют отсутствие security в OpenAPI и сохранение защиты административного маршрута.
-Тесты идут без PostgreSQL и запуска lifespan. Полный запуск
-с БД из них не следует. TestClient выдаёт предупреждения о deprecated httpx/anyio-интерфейсах.
+Unit/API-тесты не доказывают работу внешних сервисов сами по себе, поэтому отдельно выполнен
+Docker end-to-end вызов API → локальная Ollama. Отдельно проверен запуск `/health` и каталога
+с недоступным адресом PostgreSQL. TestClient выдаёт предупреждения о deprecated
+httpx/anyio-интерфейсах.
 
 Контрольный локальный замер Python 3.12.14: холодный recommend STRESS — 3,909 с,
 повторный — 0,0006 с (внутри сервиса, без HTTP/БД). Это один замер, не SLA;
@@ -101,7 +107,8 @@ API-тесты используют реальные публичные роут
 httpx 0.28.1 — BSD-3-Clause. Установленный NumPy 2.5.3 декларирует
 `BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0` для комплекта; см. его LICENSE/NOTICE.
 Официальные данные и код получены от кейсодержателя, источник — `case/source/README.md`.
-Новый датасет или модель в этой реализации не добавлялись.
+Новый датасет не добавлялся. Для объяснений установлена локальная модель
+`qwen3:4b-instruct`; источник и лицензия указаны ниже.
 
 ## Локальный запуск
 
@@ -112,8 +119,9 @@ uv pip install --python .venv/bin/python -r requirements.txt
 .venv/bin/uvicorn app.main:app --reload
 ```
 
-Администратор из `COSMOS_BOOTSTRAP_ADMIN_*` создаётся при первом запуске. Для
-production замените JWT-ключ и пароль, затем удалите bootstrap-переменные.
+Для портфельных маршрутов база не нужна. Если вызвать сохранённые административные
+auth-маршруты, backend лениво подключит PostgreSQL и создаст администратора из
+`COSMOS_BOOTSTRAP_ADMIN_*`.
 
 Конфигурация разделена по подсистемам: `AppSettings`, `DatabaseSettings`,
 `JWTSettings`, `BootstrapSettings`, `RedisSettings` и `OllamaSettings`. Имена
@@ -121,23 +129,35 @@ production замените JWT-ключ и пароль, затем удали�
 
 ## Ollama
 
-Backend содержит два отдельных слоя:
+Ollama используется только для понятного текстового объяснения уже рассчитанного
+портфеля. Модель не выбирает лоты, не выбирает A/B/C и не считает метрики.
 
-- `OllamaClient` в `app/core/clients` отвечает за асинхронный HTTP-вызов
-  `/api/chat`, таймаут и преобразование ошибок;
-- `OllamaService` в `app/core/services` собирает сообщения и предоставляет
-  прикладные методы `chat()` и `answer()`.
+- `OllamaClient` в `app/core/clients` отвечает только за HTTP `/api/chat`;
+- `OllamaService.explain_portfolio()` собирает закрытый предметный prompt и требует JSON
+  по схеме;
+- `PortfolioExplanationService` заново считает selection на сервере, формирует разрешённые
+  факты и проверяет ссылки `fact_ids` в ответе;
+- числа в текст модели не передаются. Если в ответе появились цифры, неизвестные факты или
+  неверный JSON, ответ отбрасывается и возвращается детерминированный шаблон;
+- генерация выполняется одним обычным HTTP-запросом. PostgreSQL, Redis, Taskiq и polling
+  для неё не используются. Обычные расчётные ручки от Ollama не зависят.
 
-Экземпляр сервиса создаётся в lifespan приложения и доступен будущим ручкам
-через зависимость `get_ollama_service`. Отдельной публичной LLM-ручки пока нет:
-её контракт должен зависеть от выбранного кейса.
+`POST /portfolio/explain` принимает только `dataset_hash`, полный `selection` из четырёх
+пар `lot_id/mode_id` и `scenario`, ждёт Ollama не более 45 секунд и сразу возвращает результат.
+Произвольного `prompt` в публичном API нет. При шаблонном fallback поле `generated_by`
+равно `template`, а `warning` объясняет причину.
+
+Модель по умолчанию — `qwen3:4b-instruct`: компактная instruct-модель для русского текста
+и структурированного JSON. Выбор и источники зафиксированы в
+[`docs/research/ollama-model.md`](../docs/research/ollama-model.md). Модель можно заменить
+server-side через `COSMOS_OLLAMA_MODEL`; frontend не получает адрес Ollama и её credentials.
 
 Для локального запуска задайте в `.env`:
 
 ```dotenv
 COSMOS_OLLAMA_BASE_URL=http://localhost:11434
-COSMOS_OLLAMA_MODEL=qwen3:4b
-COSMOS_OLLAMA_TIMEOUT_SECONDS=180
+COSMOS_OLLAMA_MODEL=qwen3:4b-instruct
+COSMOS_OLLAMA_TIMEOUT_SECONDS=45
 ```
 
 Для защищённого ngrok-туннеля также задайте:
@@ -149,3 +169,12 @@ COSMOS_OLLAMA_PASSWORD=replace-with-an-ngrok-password
 
 Если обе переменные заданы, `OllamaClient` отправляет Basic Auth. При локальной
 Ollama оставьте их пустыми.
+
+Пример подготовки Ollama без Docker:
+
+```bash
+ollama pull qwen3:4b-instruct
+```
+
+После запуска API отправьте полный selection в `POST /portfolio/explain`. Ответ с calculation,
+facts и explanation придёт в этом же запросе; отдельный worker запускать не нужно.

@@ -1,14 +1,14 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
+from app.api.v1.dependencies import get_ollama_service
 from app.core.dto.portfolio import (
     Calculation, CaseCatalog, CompareRequest, ComparisonResult, EvaluateRequest,
-    ExplanationJob, ExplanationJobCreated, PortfolioExplanationRequest,
-    RecommendRequest, RecommendationResult,
+    PortfolioExplanationRequest, PortfolioExplanationResult, RecommendRequest,
+    RecommendationResult,
 )
-from app.api.v1.dependencies import get_portfolio_explanation_service
+from app.core.services.ollama_service import OllamaService
 from app.core.services.portfolio_explanation_service import PortfolioExplanationService
 from app.core.services.portfolio_service import PortfolioService
 from app.core.services.recommendation_service import RecommendationService
@@ -17,9 +17,9 @@ from app.core.services.recommendation_service import RecommendationService
 router = APIRouter(prefix="/portfolio", tags=["portfolio"])
 Portfolio = Annotated[PortfolioService, Depends(PortfolioService)]
 Recommendation = Annotated[RecommendationService, Depends(RecommendationService)]
-Explanation = Annotated[
-    PortfolioExplanationService,
-    Depends(get_portfolio_explanation_service),
+Ollama = Annotated[
+    OllamaService,
+    Depends(get_ollama_service),
 ]
 
 
@@ -43,14 +43,9 @@ def compare(request: CompareRequest, service: Portfolio) -> ComparisonResult:
     return service.compare(request)
 
 
-@router.post("/explanations", response_model=ExplanationJobCreated, status_code=202)
-async def create_explanation(
+@router.post("/explain", response_model=PortfolioExplanationResult)
+async def explain(
     request: PortfolioExplanationRequest,
-    service: Explanation,
-) -> ExplanationJobCreated:
-    return await service.create(request)
-
-
-@router.get("/explanations/{job_id}", response_model=ExplanationJob)
-async def get_explanation(job_id: UUID, service: Explanation) -> ExplanationJob:
-    return await service.get(job_id)
+    ollama: Ollama,
+) -> PortfolioExplanationResult:
+    return await PortfolioExplanationService().explain(request, ollama)
