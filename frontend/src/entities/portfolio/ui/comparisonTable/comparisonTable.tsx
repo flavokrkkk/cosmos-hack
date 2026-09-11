@@ -43,7 +43,7 @@ export function ComparisonTable({ result, titles }: Props) {
               {variants.map((variant, index) => (
                 <th key={variant.input_hash} scope="col" className="compare__head">
                   <span className="compare__title">{titles[index] ?? `Вариант ${index + 1}`}</span>
-                  <span className="compare__selection">{selectionLabel(variant.selection)}</span>
+                  <span className="selection selection--muted">{selectionLabel(variant.selection)}</span>
                   {index === baselineIndex ? (
                     <span className="badge badge--neutral">база сравнения</span>
                   ) : null}

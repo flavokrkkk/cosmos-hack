@@ -107,7 +107,7 @@ export function ComparePanel({
                           <span className="badge badge--accent">база сравнения</span>
                         ) : null}
                       </span>
-                      <span className="candidates__selection">
+                      <span className="selection selection--muted">
                         {candidate.selection
                           .map((item) => `${item.lot_id}:${item.mode_id}`)
                           .join(', ')}
@@ -150,7 +150,7 @@ export function ComparePanel({
           {result ? (
             <div className={isStale ? 'is-stale' : undefined}>
               {isStale ? (
-                <p className="state">
+                <p className="state state--stale">
                   Набор вариантов изменился после расчёта. Таблица ниже относится к
                   предыдущему набору — нажмите «Сравнить», чтобы пересчитать.
                 </p>

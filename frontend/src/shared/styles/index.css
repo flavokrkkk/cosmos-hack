@@ -241,9 +241,19 @@ summary:focus-visible,
   background: var(--surface-accent);
 }
 
+/* Сбой: запрос не выполнен, расчёта нет. */
 .panel--warning {
   border-color: var(--border-fail);
   background: var(--surface-fail);
+}
+
+/* Заметный, но НЕ ошибочный итог: «допустимого портфеля нет» — это результат
+   перебора, а не отказ. Красным его красить нельзя: красный на защите читается
+   как «у них сломалось». */
+.panel--notice {
+  border-width: 2px;
+  border-color: var(--border-default);
+  background: var(--surface-sunken);
 }
 
 .panel__head {
@@ -291,10 +301,19 @@ summary:focus-visible,
 
 /* ─────────────────────────── элементы управления ────────────────────────── */
 
+/* Работает и на <button>, и на <a>: действие «Собрать вариант вручную» —
+   это переход к каталогу, и ссылка не должна выглядеть подчёркнутым текстом
+   среди кнопок. */
 .btn {
+  display: inline-flex;
+  gap: var(--space-sm);
+  align-items: center;
+  justify-content: center;
   padding: var(--space-sm) var(--space-lg);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
+  text-align: center;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -361,6 +380,14 @@ summary:focus-visible,
   font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
   white-space: nowrap;
+}
+
+/* В шапке панели бейдж несёт не статус, а данные («данные 9f2c… · движок …»).
+   Такой длинной строке перенос нужен: без него она не даёт странице сжаться
+   до 320px и появляется горизонтальная прокрутка всей страницы.
+   Статусы PASS/FAIL лежат в таблицах и остаются неразрывными. */
+.panel__head > .badge {
+  white-space: normal;
 }
 
 .badge--pass {
@@ -481,12 +508,27 @@ summary:focus-visible,
   justify-content: space-between;
 }
 
-.result__selection,
-.recommendation__selection {
+/* Состав портфеля строкой «L01:A, L03:B, …».
+   Одна сущность — один класс. Раньше их было пять (result__, recommendation__,
+   alternatives__, candidates__, compare__), и оформить состав единообразно
+   значило найти и исправить все пять. */
+.selection {
+  display: block;
   margin: 0;
   font-family: var(--font-mono);
+  font-size: var(--font-size-300);
+}
+
+/* Состав как главный идентификатор варианта: шапка результата и рекомендации. */
+.selection--lead {
   font-size: var(--font-size-500);
   font-weight: var(--weight-bold);
+}
+
+/* Состав как второстепенная подпись: карточка кандидата, шапка колонки. */
+.selection--muted {
+  font-size: var(--font-size-200);
+  color: var(--text-secondary);
 }
 
 .result__actions {
@@ -514,14 +556,17 @@ summary:focus-visible,
   font-size: var(--font-size-300);
 }
 
+/* display у caption не трогаем. От `display: flex` подпись перестаёт быть
+   заголовком таблицы и уезжает ПОД строку шапки — в сравнении вариантов
+   «Сопоставление вариантов» оказывалось ниже названий колонок. */
 .data-table__caption {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  align-items: center;
   margin-bottom: var(--space-sm);
   font-weight: var(--weight-bold);
   text-align: left;
+}
+
+.data-table__caption .badge {
+  margin-left: var(--space-sm);
 }
 
 .data-table th,
@@ -603,13 +648,14 @@ summary:focus-visible,
   background: var(--surface-card);
 }
 
-.alternatives__selection {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-300);
-}
-
 /* ─────────────────────────────── состояния ──────────────────────────────── */
 
+/*
+ * Одна разметка на пять разных сообщений — и все выглядели одинаково: «пусто»,
+ * «считаем», «ошибка» и «показанное устарело» различались только текстом.
+ * База = «пока показывать нечего» (пустой выбор, неполный портфель), остальные
+ * четыре разведены модификаторами.
+ */
 .state {
   margin: 0;
   padding: var(--space-lg);
@@ -622,6 +668,33 @@ summary:focus-visible,
 .state--error {
   border-color: var(--border-fail);
   color: var(--text-fail);
+}
+
+/* Пересчёт идёт: подпись словом. Одной прозрачности мало — выцветшие цифры
+   всё равно читаются как актуальные. */
+.state--loading {
+  border-style: solid;
+  border-color: var(--border-accent);
+  color: var(--text-accent);
+}
+
+/* Показанное относится к прошлому расчёту. Не ошибка — но и не ответ на то,
+   что сейчас на экране. */
+.state--stale {
+  border-style: solid;
+  color: var(--text-primary);
+}
+
+/* Пояснение к разделу, а не состояние расчёта. */
+.state--info {
+  border-style: solid;
+  background: var(--surface-sunken);
+}
+
+/* Живая область для сообщений о пересчёте: существует всегда, пустая не
+   занимает место в сетке. */
+.result__status:empty {
+  display: none;
 }
 
 /* ─────────────────────── страница ошибки роутера ────────────────────────── */
@@ -735,13 +808,6 @@ summary:focus-visible,
   font-weight: var(--weight-bold);
 }
 
-.compare__selection {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-200);
-  font-weight: var(--weight-normal);
-}
-
 .compare__value,
 .compare__delta {
   display: block;
@@ -810,12 +876,6 @@ summary:focus-visible,
   gap: var(--space-sm);
   align-items: baseline;
   font-weight: var(--weight-bold);
-}
-
-.candidates__selection {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-200);
-  color: var(--text-secondary);
 }
 
 /* Экспорт */
@@ -951,8 +1011,11 @@ summary:focus-visible,
     background: var(--surface-fail);
   }
 
-  /* Подпись таблицы не должна уезжать вместе с прокруткой колонок. */
+  /* Подпись таблицы не должна уезжать вместе с прокруткой колонок.
+     Внутри display:block таблицы caption становится обычным блоком и
+     остаётся первым по порядку в разметке. */
   .data-table__caption {
+    display: block;
     position: sticky;
     left: 0;
     width: fit-content;

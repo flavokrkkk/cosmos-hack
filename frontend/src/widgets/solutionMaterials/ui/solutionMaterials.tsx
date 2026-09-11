@@ -39,7 +39,7 @@ export function SolutionMaterials({ catalog, isDraft }: Props) {
       </p>
 
       {isDraft ? (
-        <p className="state">
+        <p className="state state--info">
           Наверху открыт черновик, собранный вручную. Материалы ниже относятся к
           финальному решению команды и от ручной правки не меняются.
         </p>
