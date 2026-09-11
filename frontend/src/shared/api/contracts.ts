@@ -144,6 +144,13 @@ export type Calculation = {
 
 // ────────────────────────────── рекомендация ────────────────────────────────
 
+/**
+ * Вариант из ответа подбора. `recommended` — портфель команды из
+ * `config/decision.json`, если он лежит на фронте области поиска (title
+ * «Портфель команды»); `alternatives` — опорные точки фронта: крайние значения
+ * по каждому показателю среди недоминируемых. Алгоритм победителя не коронует
+ * (правка бэкенда 12.09): выбор одной точки фронта — решение команды.
+ */
 export type RecommendationVariant = {
   title: string
   reason: string
@@ -153,7 +160,11 @@ export type RecommendationVariant = {
 export type RecommendationResult = {
   input_hash: string
   request: RecommendRequest
-  /** `no_feasible` — допустимых нет; `recommended` тогда `null`. */
+  /**
+   * `no_feasible` — допустимых нет, `recommended` и `alternatives` пусты.
+   * При `ok` `recommended` тоже может быть `null`: портфель команды не лежит
+   * на фронте этой области поиска (например, при других четырёх лотах).
+   */
   status: 'ok' | 'no_feasible'
   considered_count: number
   base_count: number
@@ -202,6 +213,7 @@ export type CompareRequest = {
  * Пояснение к уже посчитанному портфелю. Модель ничего не считает и не
  * выбирает: она излагает факты расчёта. Каждый тезис ссылается на `fact_id`,
  * числа подставляет сервер — свободный текст модели их не содержит.
+ * Один обычный HTTP-запрос: очереди, `job_id` и опроса нет (решение 12.09).
  */
 
 export type PortfolioExplanationRequest = {
@@ -214,7 +226,7 @@ export type PortfolioExplanationRequest = {
 export type ExplanationFact = {
   id: string
   text: string
-  source: 'calculation' | 'case'
+  source: 'calculation' | 'system'
 }
 
 export type ExplanationPoint = {
@@ -238,18 +250,4 @@ export type PortfolioExplanationResult = {
   /** `template` — модель недоступна, текст собран сервером по шаблону. */
   generated_by: 'ollama' | 'template'
   warning?: string | null
-}
-
-export type ExplanationJobCreated = {
-  id: string
-  status: 'queued'
-}
-
-export type ExplanationJob = {
-  id: string
-  status: 'queued' | 'running' | 'succeeded' | 'failed'
-  created_at: string
-  updated_at: string
-  result?: PortfolioExplanationResult | null
-  error?: string | null
 }

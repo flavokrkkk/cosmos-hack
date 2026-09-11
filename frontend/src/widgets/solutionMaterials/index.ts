@@ -1,1 +1,1 @@
-export { SolutionMaterials } from './ui'
+export { SolutionMaterials } from './ui/solutionMaterials'

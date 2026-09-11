@@ -1,88 +1,89 @@
-import type { AccessMode, Lot } from '@shared/api/contracts'
+import { Check, Info, Plus } from 'lucide-react'
+
+import type { Lot } from '@shared/api/contracts'
+import { cn } from '@shared/lib/cn'
+import { Button, Card, IconButton } from '@shared/ui'
+
+import { lotSubtitle } from '../../lib'
+import { CapabilityTags } from '../capabilityTags'
+import { LotIcon } from '../lotIcon'
+
+export type LotCardState = 'idle' | 'selected' | 'dimmed'
 
 type Props = {
   lot: Lot
-  /** Назначенный режим, если лот входит в текущий портфель. */
-  mode?: AccessMode
-  selected: boolean
-  disabled: boolean
-  onToggle: (lotId: string) => void
-  onModeChange: (lotId: string, modeId: string) => void
-  modes: AccessMode[]
+  /** `dimmed` — четыре лота уже выбраны, этот не входит: читаем, но приглушён. */
+  state?: LotCardState
+  /** Кнопка «Выбрать / Выбрано». Без обработчика карточка только показывает лот. */
+  onToggle?: (lotId: string) => void
+  onDetails: (lotId: string) => void
+  /** Формат чисел в подвале: исходные значения каталога. */
+  formatMoney: (value: number) => string
+  className?: string
 }
 
 /**
- * Карточка лота показывает ИСХОДНЫЕ значения из каталога.
- * Пересчитанные с коэффициентами режима числа живут в таблице портфеля —
- * смешивать их на одном экране нельзя, эксперт перестанет понимать источник числа.
+ * Карточка лота в каталоге. Показывает ИСХОДНЫЕ значения каталога, без
+ * коэффициентов режима: пересчитанные числа живут в портфеле, и смешивать
+ * их на одной карточке нельзя — эксперт перестанет понимать источник числа.
  */
 export function LotCard({
-  lot, mode, selected, disabled, onToggle, onModeChange, modes,
+  lot, state = 'idle', onToggle, onDetails, formatMoney, className,
 }: Props) {
-  const anchorShare = lot.anchor_cash_mrub_per_year + lot.commercial_cash_mrub_per_year
-  const share = anchorShare > 0
-    ? Math.round((lot.anchor_cash_mrub_per_year / anchorShare) * 100)
-    : 0
+  const selected = state === 'selected'
 
   return (
-    <article className={`lot-card ${selected ? 'is-selected' : ''}`}>
-      <header className="lot-card__head">
-        <div>
-          <h3 className="lot-card__id">{lot.lot_id}</h3>
-          <p className="lot-card__title">{lot.title}</p>
+    <Card
+      data-state={state}
+      className={cn(
+        'flex flex-col p-[18px] transition-[opacity,box-shadow,transform] duration-200',
+        state === 'dimmed' && 'opacity-45 shadow-tile',
+        selected && 'ring-2 ring-brand/15',
+        className,
+      )}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <LotIcon lotId={lot.lot_id} tone={selected ? 'brand' : 'muted'} />
+        <div className="flex items-center gap-1.5">
+          <CapabilityTags groups={lot.capability_groups} className="flex items-center gap-1.5" />
+          <IconButton label={`Подробнее о лоте ${lot.title}`} size="sm" onClick={() => onDetails(lot.lot_id)}>
+            <Info />
+          </IconButton>
         </div>
-        <button
-          type="button"
-          className={selected ? 'btn btn--ghost' : 'btn btn--primary'}
-          onClick={() => onToggle(lot.lot_id)}
-          disabled={disabled && !selected}
-        >
-          {selected ? 'Убрать' : 'Выбрать'}
-        </button>
-      </header>
+      </div>
 
-      {/* У федерального лота SSA территория и называется «Федеральный»:
-          без этой проверки выходило «Федеральный · федеральный». */}
-      <p className="lot-card__meta">
-        {[
-          lot.territory_title,
-          lot.federal && lot.territory_title.toLowerCase() !== 'федеральный'
-            ? 'федеральный'
-            : null,
-          lot.capability_groups.join(', '),
-        ]
-          .filter(Boolean)
-          .join(' · ')}
-      </p>
+      <div className="mt-7">
+        <h3 className="text-[17px] leading-tight font-bold tracking-[-0.01em]">{lot.title}</h3>
+        <p className="mt-1 text-[13px] text-muted">{lotSubtitle(lot)}</p>
+      </div>
 
-      <dl className="lot-card__facts">
-        <div><dt>Старт</dt><dd>{lot.c0_mrub} млн ₽</dd></div>
-        <div><dt>Год</dt><dd>{lot.opex_mrub_per_year} млн ₽</dd></div>
-        <div><dt>Общ. ценность</dt><dd>{lot.vpub_mrub_per_year} млн ₽/год</dd></div>
-        <div>
-          <dt>Доля якоря</dt>
-          <dd title="Якорные поступления ÷ все поступления. Показывает, кто формирует спрос">
-            {share}%
-          </dd>
-        </div>
-      </dl>
+      <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-3.5">
+        <dl className="flex items-end gap-5">
+          <div>
+            <dt className="text-[11px] tracking-[0.02em] text-muted">C0</dt>
+            <dd className="mt-0.5 text-[15px] font-medium tabular-nums">{formatMoney(lot.c0_mrub)}</dd>
+          </div>
+          <div>
+            <dt className="text-[11px] tracking-[0.02em] text-muted">VPUB</dt>
+            <dd className="mt-0.5 text-[15px] font-medium tabular-nums">
+              {formatMoney(lot.vpub_mrub_per_year)} / год
+            </dd>
+          </div>
+        </dl>
 
-      {selected ? (
-        <label className="lot-card__mode">
-          <span>Режим доступа</span>
-          <select
-            value={mode?.mode_id ?? ''}
-            onChange={(event) => onModeChange(lot.lot_id, event.target.value)}
+        {onToggle ? (
+          <Button
+            size="sm"
+            variant={selected ? 'primary' : 'secondary'}
+            aria-pressed={selected}
+            onClick={() => onToggle(lot.lot_id)}
+            className="h-[38px] px-4 text-[14px]"
           >
-            {modes.map((item) => (
-              <option key={item.mode_id} value={item.mode_id}>
-                {item.mode_id}
-                {item.public_core ? ' — общественное ядро' : ''}
-              </option>
-            ))}
-          </select>
-        </label>
-      ) : null}
-    </article>
+            {selected ? <Check className="size-4" aria-hidden /> : <Plus className="size-4" aria-hidden />}
+            {selected ? 'Выбрано' : 'Выбрать'}
+          </Button>
+        ) : null}
+      </div>
+    </Card>
   )
 }

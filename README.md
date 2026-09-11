@@ -45,6 +45,49 @@ python -m pytest tests/ -q    # 23 проверки формул, границ �
 [`engine/README.md`](engine/README.md). Разбор пространства решений —
 [docs/research/portfolio-space.md](docs/research/portfolio-space.md).
 
+## Материалы решения и как сверить цифры
+
+Требование кейсодержателя: цифры в записке, на слайдах и в выводе кода **обязаны совпадать**.
+Поэтому источник у них один, и совпадение проверяется тестом, а не на глаз.
+
+| Материал | Где |
+|---|---|
+| **Управленческая записка** | [docs/10-management-note.md](docs/10-management-note.md) |
+| **Резюме стресс-сценария**, одна страница | [docs/11-stress-summary.md](docs/11-stress-summary.md) |
+| Рекомендуемый портфель в машиночитаемом виде | [config/decision.json](config/decision.json) |
+| Контрольные выгрузки | [results/](results) |
+
+**Версия исходных данных.** Файлы в [`case/source/`](case/source) побайтово совпадают с
+публичным репозиторием кейсодержателя <https://github.com/SpaceEconomyPolicy/test>,
+ветка `main`, коммит `3fa773b8` от 11.09.2026 01:14 UTC. Проверяется так:
+
+```bash
+git hash-object case/source/data/lots.csv        # 30cff39e…
+git hash-object case/source/case_core.py         # 8fd3e053…
+```
+
+**Как воспроизвести любое число записки:**
+
+```bash
+python -m engine evaluate --scenario STRESS    # девять проверок, разделы 1 и 7 записки
+python -m engine space                         # 5670 / 1031 / 143, разделы 5.1–5.2
+python -m engine pareto --scenario STRESS      # 60 недоминируемых, раздел 5.3
+python -m engine sensitivity --scenario STRESS # границы слома, раздел 7
+python -m engine export                        # все выгрузки в results/
+python -m pytest tests/ -q                     # формулы, границы, фронт и сверка с документами
+```
+
+| Число в записке | Откуда берётся |
+|---|---|
+| `c0` 1153,0 · `opex` 316,75 · `vpub` 1330,4 · `kcash` 1,018 | `results/portfolio_metrics.json` |
+| Расчёт по лотам, раздел 3 | `results/portfolio_detail.csv` |
+| 5670 / 1031 / 143 и связывающие ограничения | `results/portfolio_space.csv` |
+| Запасы по ограничениям, раздел 7 | `results/constraints_STRESS.csv` |
+| Границы слома входов, раздел 7 | `results/sensitivity_STRESS.csv` |
+
+Отдельный набор тестов сверяет **документы с движком**: если записка и расчёт разойдутся,
+`tests/test_documents_match_engine.py` покажет это до защиты, а не на ней.
+
 ## 📌 База знаний → [`docs/`](docs/README.md)
 
 Всё, что мы знаем, по кускам: событие · кейс и расшифровка · гипотезы с вердиктами · стратегия ·

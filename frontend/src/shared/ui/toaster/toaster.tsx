@@ -8,7 +8,9 @@ export function AppToaster() {
       duration={6000}
       position="top-right"
       richColors
-      toastOptions={{ style: { fontFamily: 'inherit' } }}
+      toastOptions={{
+        style: { fontFamily: 'inherit', borderRadius: 18 },
+      }}
     />
   )
 }

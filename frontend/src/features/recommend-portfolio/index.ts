@@ -1,1 +1,6 @@
-export { RecommendPanel } from './ui'
+export { defaultVariant, useActiveVariant } from './model/useActiveVariant'
+export type { ActiveVariantKind, ActiveVariantView } from './model/useActiveVariant'
+export { useAutoRecommendation } from './model/useAutoRecommendation'
+export { useManualRecommendation } from './model/useManualRecommendation'
+export { SearchStats } from './ui/searchStats'
+export { StressSwitch } from './ui/stressSwitch'

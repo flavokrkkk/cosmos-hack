@@ -1,3 +1,5 @@
-export { ComparisonTable } from './comparisonTable'
-export { ConstraintsTable } from './constraintsTable'
-export { MetricsTable } from './metricsTable'
+export { ConstraintTiles } from './constraintTiles'
+export { FeasibilityBadge } from './feasibilityBadge'
+export { LotChip } from './lotChip'
+export { MetricTiles } from './metricTiles'
+export { PortfolioLotCard } from './portfolioLotCard'

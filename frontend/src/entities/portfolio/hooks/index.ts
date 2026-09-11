@@ -1,1 +1,3 @@
-export { portfolioKeys, useCompare, useEvaluate, useRecommend } from './usePortfolio'
+export {
+  portfolioKeys, useCompare, useEvaluate, useExplanation, useRecommendation,
+} from './usePortfolio'

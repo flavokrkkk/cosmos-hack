@@ -1,9 +1,17 @@
 export { portfolioService } from './api'
-export { portfolioKeys, useCompare, useEvaluate, useRecommend } from './hooks'
 export {
-  DELTA_ROWS, DELTA_VERDICT_LABEL, METRIC_ROWS, comparisonCsv, constraintsCsv,
-  decisionJson, deltaVerdict, detailCsv, formatDelta, formatNumber, formatSlack,
-  formatThreshold, metricsJson, scenarioVerdict, selectionLabel, snapshotFiles,
+  portfolioKeys, useCompare, useEvaluate, useExplanation, useRecommendation,
+} from './hooks'
+export {
+  DELTA_ROWS, DELTA_VERDICT_LABEL, EXTRA_METRIC_TILES, METRIC_TILES, METRIC_TILES_COMPACT,
+  PORTFOLIO_SIZE, checkLabel, comparisonCsv, constraintsCsv, decisionJson, deltaVerdict, detailCsv,
+  formatCheckValue, formatDelta, formatMoney, formatMoneyPerYear, formatNumber, formatSlack,
+  formatThreshold, lotIdsKey, metricsJson, scenarioVerdict, selectionKey, selectionLabel,
+  snapshotFiles, sortedLotIds,
 } from './lib'
-export type { DeltaKey, DeltaVerdict, ExportFile, ScenarioVerdict } from './lib'
-export { ComparisonTable, ConstraintsTable, MetricsTable } from './ui'
+export type { DeltaKey, DeltaVerdict, ExportFile, MetricTileDefinition, ScenarioVerdict } from './lib'
+export { useComparison, useSavedVariants, useWorkspace } from './model'
+export type { ActiveVariant, ManualOrigin, SavedSource, SavedVariant, WorkspaceMode } from './model'
+export {
+  ConstraintTiles, FeasibilityBadge, LotChip, MetricTiles, PortfolioLotCard,
+} from './ui'

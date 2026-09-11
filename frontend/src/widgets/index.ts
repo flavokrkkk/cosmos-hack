@@ -1,1 +1,8 @@
+export { Alternatives } from './alternatives'
+export type { AlternativeTarget } from './alternatives'
+export { ExplanationBlock } from './explanation'
+export { LotDetailsHost } from './lotDetails'
+export { ModeSwitch } from './modeSwitch'
+export { PageFooter } from './pageFooter'
+export { PortfolioReview, describeComposition, plural } from './portfolioReview'
 export { SolutionMaterials } from './solutionMaterials'

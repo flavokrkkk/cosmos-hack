@@ -1,1 +1,0 @@
-export { ConstraintsTable } from './constraintsTable'

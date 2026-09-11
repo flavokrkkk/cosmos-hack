@@ -1,1 +1,1 @@
-export { PORTFOLIO_SIZE, usePortfolioDraft } from './model'
+export { useManualSelection } from './model/useManualSelection'

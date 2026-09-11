@@ -1,4 +1,6 @@
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
+import type { PersistQueryClientOptions } from '@tanstack/react-query-persist-client'
 
 import { notifyApiError } from '@shared/lib/notify'
 
@@ -8,10 +10,12 @@ import { normalizeApiError } from './apiError'
  * Мета запросов и мутаций.
  * `skipErrorToast` — когда ошибка показывается в самом интерфейсе (например,
  * под полем формы) и тост был бы дублем.
+ * `persist: false` — результат не кладём в sessionStorage (например, опрос задачи).
  */
 type AppMeta = {
   skipErrorToast?: boolean
   errorMessage?: string
+  persist?: boolean
 }
 
 declare module '@tanstack/react-query' {
@@ -56,3 +60,34 @@ export const queryClient = new QueryClient({
     },
   }),
 })
+
+/**
+ * Кеш запросов переживает перезагрузку вкладки.
+ *
+ * Расчёты детерминированы (те же входы → те же числа), а каждый ключ включает
+ * `dataset_hash`, поэтому восстановленный из sessionStorage ответ не может
+ * относиться к другой версии данных. Живёт ровно столько, сколько вкладка:
+ * sessionStorage — «в рамках сессии», как и рабочее состояние страницы.
+ *
+ * `sessionStorage` может быть недоступен (приватный режим, отключённое хранилище) —
+ * тогда persister не создаётся и приложение работает без восстановления кеша.
+ */
+function createPersistOptions(): Omit<PersistQueryClientOptions, 'queryClient'> | null {
+  try {
+    const storage = window.sessionStorage
+    storage.getItem('__probe__')
+    return {
+      persister: createSyncStoragePersister({ storage, key: 'cosmos-query-cache' }),
+      maxAge: 24 * 60 * 60 * 1000,
+      buster: 'v2',
+      dehydrateOptions: {
+        shouldDehydrateQuery: (query) =>
+          query.state.status === 'success' && query.meta?.persist !== false,
+      },
+    }
+  } catch {
+    return null
+  }
+}
+
+export const persistOptions = createPersistOptions()

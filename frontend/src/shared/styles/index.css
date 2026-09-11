@@ -1,1023 +1,169 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   ТОКЕНЫ
+   ДИЗАЙН-СИСТЕМА
 
-   Три слоя, сверху вниз:
+   Tailwind v4: токены объявлены в @theme и становятся утилитами
+   (`bg-panel`, `text-muted`, `rounded-card`, `shadow-tile`, …).
+   Сырые цвета живут только здесь; компоненты используют роли.
 
-   1. Палитра — единственное место, где стоят сырые цвета.
-   2. Семантика — роли (поверхность, текст, граница, статус). Правила ниже по
-      файлу используют ТОЛЬКО их.
-   3. Шкалы — отступы, радиусы, типографика.
-
-   Когда придёт макет, значения меняются здесь, а правила не переписываются.
-   Если дизайнеру нужна новая роль (например, предупреждение янтарным) —
-   роль добавляется в этот блок, а не хардкодится в правиле.
+   Поверхности сверху вниз: page → panel (большой мягкий контейнер) →
+   card (белая карточка) → tile (белая плитка показателя).
    ═══════════════════════════════════════════════════════════════════════════ */
 
-:root {
-  /* ─── 1. Палитра ─────────────────────────────────────────────────────── */
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
 
-  --c-white: #ffffff;
-  --c-ink-900: #1b2430;
-  --c-ink-500: #5b6675;
-  --c-slate-050: #f4f6f9;
-  --c-slate-200: #d7dde5;
-  --c-blue-600: #2f6feb;
-  /* Затемнённый синий для ТЕКСТА на светлом: #2f6feb на --c-blue-050 даёт
-     4.14:1 и не проходит AA (нужно 4.5). На заливке кнопки #2f6feb остаётся. */
-  --c-blue-700: #2a62d0;
-  --c-blue-050: #eef3fe;
-  --c-green-700: #1e7a4d;
-  --c-green-050: #e8f5ee;
-  --c-red-700: #c0392b;
-  --c-red-050: #fdeceb;
+@theme {
+  --font-sans:
+    'Inter Variable', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
-  /* ─── 2. Семантика ───────────────────────────────────────────────────── */
+  /* Бренд — #0091FF по макету */
+  --color-brand: #0091ff;
+  --color-brand-600: #0080e6;
+  --color-brand-700: #006fc9;
+  --color-brand-100: #d6ecff;
+  --color-brand-50: #e9f4ff;
 
   /* Поверхности */
-  --surface-page: var(--c-slate-050);
-  --surface-card: var(--c-white);
-  --surface-sunken: var(--c-slate-050); /* подложка внутри карточки */
-  --surface-accent: var(--c-blue-050);
-  --surface-pass: var(--c-green-050);
-  --surface-fail: var(--c-red-050);
-  --surface-fill-accent: var(--c-blue-600); /* заливка главной кнопки */
+  --color-page: #eef1f8;
+  --color-panel: #f5f7fb;
+  --color-card: #ffffff;
+  --color-sunken: #eef1f7;
 
   /* Текст */
-  --text-primary: var(--c-ink-900);
-  --text-secondary: var(--c-ink-500);
-  --text-inverse: var(--c-white);
-  --text-accent: var(--c-blue-700);
-  --text-pass: var(--c-green-700);
-  --text-fail: var(--c-red-700);
+  --color-ink: #111318;
+  --color-ink-700: #2f343d;
+  --color-ink-500: #5c6370;
+  --color-muted: #8a8f98;
+  --color-muted-300: #b8bcc4;
 
   /* Границы */
-  --border-default: var(--c-slate-200);
-  --border-accent: var(--c-blue-600);
-  --border-fail: var(--c-red-700);
-
-  /* Фокус с клавиатуры. Смещение наружу обязательно: иначе кольцо тонет
-     в заливке синей кнопки. */
-  --focus-color: var(--c-blue-600);
-  --focus-width: 2px;
-  --focus-offset: 2px;
-
-  /* ─── 3. Шкала отступов ──────────────────────────────────────────────── */
-
-  --space-3xs: 2px;
-  --space-2xs: 4px;
-  --space-xs: 6px;
-  --space-sm: 8px;
-  --space-md: 12px;
-  --space-lg: 16px;
-  --space-xl: 20px;
-  --space-2xl: 24px;
-  --space-3xl: 32px;
-  --space-4xl: 64px;
-
-  /* ─── 4. Радиусы ─────────────────────────────────────────────────────── */
-
-  --radius-sm: 8px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-pill: 999px;
-
-  /* ─── 5. Типографика ─────────────────────────────────────────────────── */
-
-  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  --font-size-100: 11px; /* мелкая подпись в карточке */
-  --font-size-200: 12px; /* бейдж, подпись таблицы */
-  --font-size-300: 13px; /* таблицы, вторичный текст */
-  --font-size-400: 14px; /* основной текст */
-  --font-size-500: 15px; /* лид, h3 */
-  --font-size-600: 18px; /* h2 */
-  --font-size-700: 26px; /* h1 */
-
-  --weight-normal: 400;
-  --weight-medium: 500;
-  --weight-bold: 600;
-
-  --leading-tight: 1.25; /* заголовки и числа */
-  --leading-normal: 1.45; /* текст абзацев */
-
-  /* ─── 6. Совместимость ───────────────────────────────────────────────── */
-  /* Короткие имена из первой версии. Новые правила используют семантику
-     выше; эти живут, чтобы чужой компонент со старым именем не поехал. */
-
-  --bg: var(--surface-page);
-  --panel: var(--surface-card);
-  --border: var(--border-default);
-  --text: var(--text-primary);
-  --muted: var(--text-secondary);
-  --accent: var(--surface-fill-accent);
-  --accent-soft: var(--surface-accent);
-  --danger: var(--text-fail);
-  --danger-soft: var(--surface-fail);
-  --ok: var(--text-pass);
-  --ok-soft: var(--surface-pass);
-
-  /* ─── Применение к документу ─────────────────────────────────────────── */
-
-  /* Светлая тема объявлена явно: без этого системная тёмная перекрашивает
-     нативные select и checkbox в тёмное на светлой странице. */
-  color-scheme: light;
-  font-family: var(--font-sans);
-  line-height: var(--leading-normal);
-  color: var(--text-primary);
-  background: var(--surface-page);
-  accent-color: var(--surface-fill-accent);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1,
-h2,
-h3 {
-  line-height: var(--leading-tight);
-}
-
-button,
-input,
-select {
-  font: inherit;
-}
-
-/* Единое кольцо фокуса на всём, что получает клавиатурный фокус.
-   Раньше оно было только у поля формы, и путь по Tab терялся на кнопках. */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-summary:focus-visible,
-[tabindex]:focus-visible {
-  outline: var(--focus-width) solid var(--focus-color);
-  outline-offset: var(--focus-offset);
-}
-
-/* Якоря «Материалы» / «Сравнение» не должны упирать заголовок в край окна. */
-[id] {
-  scroll-margin-top: var(--space-xl);
-}
-
-/* ─────────────────────────────── каркас ─────────────────────────────────── */
-
-.shell {
-  display: grid;
-  gap: var(--space-xl);
-  width: min(1180px, 100%);
-  margin: 0 auto;
-  padding: var(--space-3xl) var(--space-xl) var(--space-4xl);
-}
-
-.shell__head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-lg);
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.shell__head h1 {
-  margin: var(--space-2xs) 0 0;
-  font-size: var(--font-size-700);
-}
-
-.eyebrow {
-  margin: 0;
-  color: var(--text-accent);
-  font-size: var(--font-size-300);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.version {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-xl);
-  margin: 0;
-  padding: var(--space-md) var(--space-lg);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  background: var(--surface-card);
-}
-
-.version dt {
-  color: var(--text-secondary);
-  font-size: var(--font-size-200);
-}
-
-.version dd {
-  margin: var(--space-3xs) 0 0;
-  font-size: var(--font-size-300);
-  font-weight: var(--weight-bold);
-}
-
-/* ─────────────────────────────── панели ─────────────────────────────────── */
-
-.panel {
-  display: grid;
-  gap: var(--space-md);
-  padding: var(--space-2xl);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
-  background: var(--surface-card);
-}
-
-.panel--accent {
-  border-color: var(--border-accent);
-  background: var(--surface-accent);
-}
-
-/* Сбой: запрос не выполнен, расчёта нет. */
-.panel--warning {
-  border-color: var(--border-fail);
-  background: var(--surface-fail);
-}
-
-/* Заметный, но НЕ ошибочный итог: «допустимого портфеля нет» — это результат
-   перебора, а не отказ. Красным его красить нельзя: красный на защите читается
-   как «у них сломалось». */
-.panel--notice {
-  border-width: 2px;
-  border-color: var(--border-default);
-  background: var(--surface-sunken);
-}
-
-.panel__head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  align-items: center;
-  justify-content: space-between;
-}
-
-.panel__head h2 {
-  margin: 0;
-  font-size: var(--font-size-600);
-}
-
-.panel__subhead {
-  margin: var(--space-sm) 0 0;
-  font-size: var(--font-size-500);
-}
-
-.panel__lead {
-  margin: 0;
-  font-weight: var(--weight-bold);
-}
-
-.panel__muted,
-.panel__note {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-400);
-}
-
-.panel__note {
-  padding-top: var(--space-sm);
-  border-top: 1px solid var(--border-default);
-  font-size: var(--font-size-300);
-}
-
-.priority-list {
-  margin: 0;
-  padding-left: var(--space-xl);
-  color: var(--text-secondary);
-  font-size: var(--font-size-400);
-}
-
-/* ─────────────────────────── элементы управления ────────────────────────── */
-
-/* Работает и на <button>, и на <a>: действие «Собрать вариант вручную» —
-   это переход к каталогу, и ссылка не должна выглядеть подчёркнутым текстом
-   среди кнопок. */
-.btn {
-  display: inline-flex;
-  gap: var(--space-sm);
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-sm) var(--space-lg);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  text-align: center;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.btn:disabled {
-  cursor: default;
-  opacity: 0.5;
-}
-
-.btn--primary {
-  background: var(--surface-fill-accent);
-  color: var(--text-inverse);
-}
-
-.btn--ghost {
-  border-color: var(--border-default);
-  background: var(--surface-card);
-  color: var(--text-primary);
-}
-
-.btn--wide {
-  justify-self: start;
-  padding: var(--space-md) var(--space-3xl);
-}
-
-.btn--tab {
-  border-color: var(--border-default);
-  background: var(--surface-card);
-  color: var(--text-secondary);
-}
-
-.btn--tab.is-active {
-  border-color: var(--border-accent);
-  background: var(--surface-fill-accent);
-  color: var(--text-inverse);
-}
-
-.scenario-switch {
-  display: flex;
-  gap: var(--space-xs);
-}
-
-.switch {
-  display: flex;
-  gap: var(--space-md);
-  align-items: flex-start;
-  font-size: var(--font-size-400);
-}
-
-.switch input {
-  margin-top: var(--space-2xs);
-}
-
-.switch__note {
-  display: block;
-  color: var(--text-secondary);
-  font-size: var(--font-size-300);
-}
-
-.badge {
-  display: inline-block;
-  padding: var(--space-2xs) var(--space-sm);
-  border-radius: var(--radius-pill);
-  font-size: var(--font-size-200);
-  font-weight: var(--weight-bold);
-  line-height: var(--leading-tight);
-  white-space: nowrap;
-}
-
-/* В шапке панели бейдж несёт не статус, а данные («данные 9f2c… · движок …»).
-   Такой длинной строке перенос нужен: без него она не даёт странице сжаться
-   до 320px и появляется горизонтальная прокрутка всей страницы.
-   Статусы PASS/FAIL лежат в таблицах и остаются неразрывными. */
-.panel__head > .badge {
-  white-space: normal;
-}
-
-.badge--pass {
-  background: var(--surface-pass);
-  color: var(--text-pass);
-}
-
-.badge--fail {
-  background: var(--surface-fail);
-  color: var(--text-fail);
-}
-
-.badge--neutral {
-  background: var(--surface-sunken);
-  color: var(--text-secondary);
-}
-
-.badge--accent {
-  background: var(--surface-accent);
-  color: var(--text-accent);
-}
-
-/* ──────────────────────────── карточки лотов ────────────────────────────── */
-
-.lot-grid {
-  display: grid;
-  gap: var(--space-md);
-  /* min() — иначе на узком экране колонка шире вьюпорта и страница едет вбок. */
-  grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
-}
-
-.lot-card {
-  display: grid;
-  gap: var(--space-sm);
-  align-content: start;
-  padding: var(--space-lg);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  background: var(--surface-card);
-}
-
-.lot-card.is-selected {
-  border-color: var(--border-accent);
-  box-shadow: inset 0 0 0 1px var(--border-accent);
-}
-
-.lot-card__head {
-  display: flex;
-  gap: var(--space-md);
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.lot-card__id {
-  margin: 0;
-  font-size: var(--font-size-500);
-  letter-spacing: 0.02em;
-}
-
-.lot-card__title {
-  margin: var(--space-3xs) 0 0;
-  font-size: var(--font-size-300);
-}
-
-.lot-card__meta {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-200);
-}
-
-.lot-card__facts {
-  display: grid;
-  gap: var(--space-xs) var(--space-md);
-  grid-template-columns: 1fr 1fr;
-  margin: 0;
-}
-
-.lot-card__facts dt {
-  color: var(--text-secondary);
-  font-size: var(--font-size-100);
-}
-
-.lot-card__facts dd {
-  margin: 0;
-  font-size: var(--font-size-300);
-  font-weight: var(--weight-bold);
-}
-
-.lot-card__mode {
-  display: grid;
-  gap: var(--space-2xs);
-  padding-top: var(--space-sm);
-  border-top: 1px solid var(--border-default);
-  color: var(--text-secondary);
-  font-size: var(--font-size-200);
-}
-
-.lot-card__mode select {
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  background: var(--surface-card);
-}
-
-/* ──────────────────────────────── таблицы ───────────────────────────────── */
-
-.result {
-  display: grid;
-  gap: var(--space-md);
-}
-
-.result__head {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* Состав портфеля строкой «L01:A, L03:B, …».
-   Одна сущность — один класс. Раньше их было пять (result__, recommendation__,
-   alternatives__, candidates__, compare__), и оформить состав единообразно
-   значило найти и исправить все пять. */
-.selection {
-  display: block;
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-300);
-}
-
-/* Состав как главный идентификатор варианта: шапка результата и рекомендации. */
-.selection--lead {
-  font-size: var(--font-size-500);
-  font-weight: var(--weight-bold);
-}
-
-/* Состав как второстепенная подпись: карточка кандидата, шапка колонки. */
-.selection--muted {
-  font-size: var(--font-size-200);
-  color: var(--text-secondary);
-}
-
-.result__actions {
-  display: flex;
-  gap: var(--space-md);
-  align-items: center;
-}
-
-/* Пересчёт идёт — прежние числа приглушены. Не ниже 0.7: при 0.45 цифру
-   уже не прочитать, а по условию она «устаревшая», а не «скрытая». */
-.result__body.is-stale,
-.is-stale {
-  opacity: 0.7;
-}
-
-.result__tables {
-  display: grid;
-  gap: var(--space-lg);
-  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-300);
-}
-
-/* display у caption не трогаем. От `display: flex` подпись перестаёт быть
-   заголовком таблицы и уезжает ПОД строку шапки — в сравнении вариантов
-   «Сопоставление вариантов» оказывалось ниже названий колонок. */
-.data-table__caption {
-  margin-bottom: var(--space-sm);
-  font-weight: var(--weight-bold);
-  text-align: left;
-}
-
-.data-table__caption .badge {
-  margin-left: var(--space-sm);
-}
-
-.data-table th,
-.data-table td {
-  padding: var(--space-sm);
-  border-bottom: 1px solid var(--border-default);
-  text-align: left;
-  vertical-align: top;
-}
-
-.data-table thead th {
-  color: var(--text-secondary);
-  font-size: var(--font-size-200);
-  font-weight: var(--weight-bold);
-}
-
-.data-table tbody th {
-  font-weight: var(--weight-medium);
-}
-
-/* Число не переносится: «5 200» в две строки читается как два числа. */
-.data-table__num {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.data-table__unit {
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.data-table__note {
-  display: block;
-  color: var(--text-secondary);
-  font-size: var(--font-size-100);
-  font-weight: var(--weight-normal);
-  white-space: normal;
-}
-
-.data-table .is-failed {
-  background: var(--surface-fail);
-}
-
-.space-stats,
-.alternatives {
-  display: grid;
-  gap: var(--space-md);
-  margin: 0;
-  padding: 0;
-}
-
-.space-stats {
-  grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr));
-}
-
-.space-stats dt {
-  color: var(--text-secondary);
-  font-size: var(--font-size-200);
-}
-
-.space-stats dd {
-  margin: var(--space-3xs) 0 0;
-  font-size: var(--font-size-600);
-  font-weight: var(--weight-bold);
-  font-variant-numeric: tabular-nums;
-}
-
-.alternatives {
-  list-style: none;
-}
-
-.alternatives li {
-  display: grid;
-  gap: var(--space-2xs);
-  padding: var(--space-md);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--surface-card);
-}
-
-/* ─────────────────────────────── состояния ──────────────────────────────── */
-
-/*
- * Одна разметка на пять разных сообщений — и все выглядели одинаково: «пусто»,
- * «считаем», «ошибка» и «показанное устарело» различались только текстом.
- * База = «пока показывать нечего» (пустой выбор, неполный портфель), остальные
- * четыре разведены модификаторами.
- */
-.state {
-  margin: 0;
-  padding: var(--space-lg);
-  border: 1px dashed var(--border-default);
-  border-radius: var(--radius-lg);
-  color: var(--text-secondary);
-  font-size: var(--font-size-400);
-}
-
-.state--error {
-  border-color: var(--border-fail);
-  color: var(--text-fail);
-}
-
-/* Пересчёт идёт: подпись словом. Одной прозрачности мало — выцветшие цифры
-   всё равно читаются как актуальные. */
-.state--loading {
-  border-style: solid;
-  border-color: var(--border-accent);
-  color: var(--text-accent);
-}
-
-/* Показанное относится к прошлому расчёту. Не ошибка — но и не ответ на то,
-   что сейчас на экране. */
-.state--stale {
-  border-style: solid;
-  color: var(--text-primary);
-}
-
-/* Пояснение к разделу, а не состояние расчёта. */
-.state--info {
-  border-style: solid;
-  background: var(--surface-sunken);
-}
-
-/* Живая область для сообщений о пересчёте: существует всегда, пустая не
-   занимает место в сетке. */
-.result__status:empty {
-  display: none;
-}
-
-/* ─────────────────────── страница ошибки роутера ────────────────────────── */
-
-.message-page {
-  display: grid;
-  min-height: 100vh;
-  place-items: center;
-  padding: var(--space-2xl);
-}
-
-/* ────────────────── поле формы (shared/ui/TextField) ────────────────────── */
-
-.field {
-  display: grid;
-  gap: var(--space-xs);
-}
-
-.field__label {
-  color: var(--text-secondary);
-  font-size: var(--font-size-400);
-}
-
-.field__input {
-  width: 100%;
-  padding: var(--space-md);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  color: var(--text-primary);
-  background: var(--surface-card);
-}
-
-.field__input[aria-invalid='true'] {
-  border-color: var(--border-fail);
-}
-
-.field__error {
-  margin: 0;
-  color: var(--text-fail);
-  font-size: var(--font-size-300);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   ВРЕМЕННЫЙ СТРУКТУРНЫЙ СЛОЙ
-
-   Только раскладка: чтобы таблицы не разъезжались и списки читались.
-   Дизайн придёт от дизайнера и заменит этот блок целиком. Поэтому здесь нет
-   решений про цвет, типографику и отступы «по вкусу» — их переделывать.
-   Разметка и имена классов при замене не меняются.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-/* Сравнение вариантов */
-.compare,
-.materials {
-  display: grid;
-  gap: var(--space-md);
-}
-
-.compare__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  align-items: center;
-  justify-content: space-between;
-}
-
-.compare__scroll {
-  overflow-x: auto;
-}
-
-.compare__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-300);
-}
-
-.compare__table th,
-.compare__table td {
-  padding: var(--space-sm) var(--space-md);
-  border-bottom: 1px solid var(--border-default);
-  text-align: left;
-  white-space: nowrap;
-}
-
-/* Первая колонка закреплена: вариантов до четырёх, таблица шире экрана, и
-   при прокрутке вправо должно быть видно, к какому показателю относится число.
-   На проекторе это единственное, что спасает сравнение. */
-.compare__table thead th:first-child,
-.compare__table tbody th {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  background: var(--surface-card);
-}
-
-.compare__table tr.compare__row--scenario th {
-  background: var(--surface-sunken);
-}
-
-/* Шапка колонки варианта: название, состав и метка базы — в столбик.
-   Класс висит на <th>, а не на блоке, поэтому flex-строка здесь недопустима:
-   от неё шапка растягивалась на всю таблицу и колонки переставали совпадать
-   со своими числами. */
-.compare__table th.compare__head {
-  vertical-align: bottom;
-}
-
-.compare__title {
-  display: block;
-  font-size: var(--font-size-300);
-  font-weight: var(--weight-bold);
-}
-
-.compare__value,
-.compare__delta {
-  display: block;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-/* Дельта и её словесная расшифровка — отдельными строками под значением.
-   Инлайном получалось «5 300−340выигрыш». */
-.compare__delta {
-  margin-top: var(--space-3xs);
-  font-size: var(--font-size-200);
-}
-
-.compare__delta--gain { color: var(--text-pass); }
-.compare__delta--cost { color: var(--text-fail); }
-.compare__delta--same { color: var(--text-secondary); }
-
-.compare__verdict {
-  margin-left: var(--space-2xs);
-  font-weight: var(--weight-bold);
-}
-
-.compare__row--scenario td,
-.compare__row--scenario th { background: var(--surface-sunken); }
-
-.compare__note {
-  display: block;
-  margin: var(--space-3xs) 0 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-200);
-  white-space: normal;
-}
-
-.compare__note--fail { color: var(--text-fail); }
-
-/* Выбор кандидатов для сравнения */
-.candidates,
-.candidates__body {
-  display: grid;
-  gap: var(--space-sm);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.candidates__row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  align-items: baseline;
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-}
-
-/* Отмеченный кандидат виден и без цвета: рамка плюс подложка. */
-.candidates .is-picked > .candidates__row {
-  border-color: var(--border-accent);
-  background: var(--surface-accent);
-}
-
-.candidates__title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-  align-items: baseline;
-  font-weight: var(--weight-bold);
-}
-
-/* Экспорт */
-.export-list {
-  display: grid;
-  gap: var(--space-sm);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.export-list li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  align-items: center;
-}
-
-/* Материалы решения */
-.materials__groups {
-  display: grid;
-  gap: var(--space-lg);
-  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
-}
-
-.materials__group { display: grid; gap: var(--space-sm); align-content: start; }
-.materials__group h3 { margin: 0; font-size: var(--font-size-500); }
-
-.materials__list {
-  display: grid;
-  gap: var(--space-sm);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.materials__item {
-  display: grid;
-  gap: var(--space-2xs);
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--border-default);
-  border-left-width: 3px;
-  border-radius: var(--radius-md);
-}
-
-.materials__item.is-ready { border-left-color: var(--text-pass); }
-.materials__item.is-draft { border-left-color: var(--text-secondary); }
-.materials__item.is-missing { border-left-color: var(--text-fail); }
-
-.materials__row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.materials__title { font-weight: var(--weight-bold); }
-
-.materials__purpose,
-.materials__meta,
-.materials__note,
-.materials__criteria {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: var(--font-size-200);
-}
-
-/* Формат и путь — две сущности, без разделителя слипались
-   в «Markdowndocs/10-management-note.md». */
-.materials__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-}
-
-.materials__meta code { font-family: var(--font-mono); }
-
-/* Статус материала словом И цветом: «не добавлено» должно быть видно
-   на проекторе так же быстро, как «готово». */
-.badge--ready {
-  background: var(--surface-pass);
-  color: var(--text-pass);
-}
-
-.badge--draft {
-  background: var(--surface-sunken);
-  color: var(--text-secondary);
-}
-
-.badge--missing {
-  background: var(--surface-fail);
-  color: var(--text-fail);
-}
-
-.btn--small { padding: var(--space-2xs) var(--space-md); font-size: var(--font-size-300); }
-
-/* ─────────────────────────── узкий экран ────────────────────────────────── */
-
-@media (max-width: 720px) {
-  .shell {
-    gap: var(--space-lg);
-    padding: var(--space-xl) var(--space-md) var(--space-3xl);
+  --color-line: #e9edf3;
+  --color-line-strong: #d9dee7;
+
+  /* Статусы */
+  --color-fail: #e5484d;
+  --color-fail-bg: #fce9eb;
+  --color-pass: #1e9e5a;
+  --color-pass-bg: #e6f6ec;
+  --color-warn: #c77700;
+  --color-warn-bg: #fff4de;
+
+  /* Радиусы */
+  --radius-panel: 28px;
+  --radius-card: 22px;
+  --radius-tile: 16px;
+  --radius-chip: 14px;
+
+  /* Тени — мягкие, холодные, без жёстких границ */
+  --shadow-panel: 0 18px 40px -16px rgb(21 40 82 / 0.14), 0 2px 8px rgb(21 40 82 / 0.04);
+  --shadow-card: 0 10px 28px -10px rgb(21 40 82 / 0.16), 0 1px 3px rgb(21 40 82 / 0.05);
+  --shadow-card-hover: 0 18px 36px -12px rgb(21 40 82 / 0.22), 0 2px 6px rgb(21 40 82 / 0.06);
+  --shadow-tile: 0 6px 16px -8px rgb(21 40 82 / 0.14), 0 1px 2px rgb(21 40 82 / 0.04);
+  --shadow-chip: 0 2px 6px -1px rgb(21 40 82 / 0.12), 0 1px 1px rgb(21 40 82 / 0.04);
+  --shadow-brand: 0 10px 24px -8px rgb(0 145 255 / 0.55);
+  --shadow-inset: inset 0 1px 3px rgb(21 40 82 / 0.08);
+
+  /* Анимации оверлеев и появления карточек */
+  --animate-fade-in: fade-in 180ms ease-out;
+  --animate-fade-out: fade-out 140ms ease-in;
+  --animate-pop-in: pop-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  --animate-pop-out: pop-out 140ms ease-in;
+  --animate-rise: rise 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes pop-out {
+    from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    to { opacity: 0; transform: translate(-50%, -50%) scale(0.97); }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shimmer {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
-  .shell__head h1 {
-    font-size: var(--font-size-600);
+  body {
+    @apply bg-page font-sans text-ink;
+    font-feature-settings: 'cv11', 'ss01', 'tnum';
+    min-height: 100dvh;
+    margin: 0;
   }
 
-  .panel {
-    padding: var(--space-lg);
+  /* Видимый фокус только с клавиатуры, один стиль на всё приложение. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 3px;
+    border-radius: 6px;
   }
 
-  /* Таблица получает собственную горизонтальную прокрутку: колонок пять,
-     и сжимать их до нечитаемости хуже, чем прокручивать. Обёртки в разметке
-     нет, поэтому скролл-контейнером становится сама таблица. */
-  .data-table {
-    display: block;
-    overflow-x: auto;
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
   }
 
-  /* Название условия остаётся на месте, пока прокручиваешь до колонки
-     «Статус»: иначе PASS/FAIL оказывается неизвестно чьим. */
-  .data-table thead th:first-child,
-  .data-table tbody th {
-    position: sticky;
-    left: 0;
-    z-index: 1;
-    background: var(--surface-card);
+  button {
+    cursor: pointer;
   }
 
-  .data-table tr.is-failed th {
-    background: var(--surface-fail);
+  button:disabled {
+    cursor: not-allowed;
   }
 
-  /* Подпись таблицы не должна уезжать вместе с прокруткой колонок.
-     Внутри display:block таблицы caption становится обычным блоком и
-     остаётся первым по порядку в разметке. */
-  .data-table__caption {
-    display: block;
-    position: sticky;
-    left: 0;
-    width: fit-content;
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.92em;
+  }
+}
+
+@layer components {
+  /* Скелет загрузки: мерцающий градиент на приглушённой подложке. */
+  .skeleton {
+    @apply rounded-tile bg-sunken;
+    background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.7) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+  }
+
+  /* Устаревший результат: приглушён, но читаем. */
+  .is-stale {
+    @apply opacity-60 transition-opacity;
+  }
+}
+
+/* Уважение к настройке «меньше движения»: карточки не крутятся и не всплывают. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
