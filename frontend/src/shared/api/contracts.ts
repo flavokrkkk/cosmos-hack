@@ -8,6 +8,9 @@
 
 export type Scenario = 'BASE' | 'STRESS'
 
+export type ComparisonAnalysisRequest = CompareRequest & { scenario: Scenario }
+export type ComparisonAnalysisResult = RecommendationExplanation & { comparison: ComparisonResult }
+
 export const SCENARIOS: readonly Scenario[] = ['BASE', 'STRESS']
 
 /** Ровно четыре такие пары образуют портфель. */
@@ -155,6 +158,7 @@ export type RecommendationVariant = {
   title: string
   reason: string
   calculation: Calculation
+  explanation: RecommendationExplanation | null
 }
 
 export type RecommendationResult = {
@@ -250,4 +254,8 @@ export type PortfolioExplanationResult = {
   /** `template` — модель недоступна, текст собран сервером по шаблону. */
   generated_by: 'ollama' | 'template'
   warning?: string | null
+}
+
+export type RecommendationExplanation = Omit<PortfolioExplanationResult, 'calculation'> & {
+  input_hash: string
 }

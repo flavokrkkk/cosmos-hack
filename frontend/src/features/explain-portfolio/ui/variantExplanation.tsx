@@ -1,29 +1,18 @@
-import type { Calculation, Scenario } from '@shared/api/contracts'
-import { Button, Tag } from '@shared/ui'
-
-import { useExplanation } from '../model/useExplanation'
+import type { RecommendationExplanation } from '@shared/api/contracts'
+import { Tag } from '@shared/ui'
 
 type Props = {
-  calculation: Calculation
-  scenario: Scenario
+  result: RecommendationExplanation | null
 }
 
-export function VariantExplanation({ calculation, scenario }: Props) {
-  const { status, result, errorMessage, request } = useExplanation(
-    calculation.dataset_hash, calculation, scenario,
-  )
+export function VariantExplanation({ result }: Props) {
+  if (!result) return <p className="mt-3 text-[12px] text-muted">Объяснение отсутствует. Повторите подбор.</p>
+  const scenario = result.scenario
 
   return (
     <div className="mt-4 border-t border-line pt-3 text-[12px] leading-relaxed" aria-label={`Объяснение варианта · ${scenario}`}>
       <p className="mb-2 font-semibold">Объяснение · {scenario}</p>
-      {status === 'idle' || status === 'loading' ? (
-        <p role="status" className="text-muted">Готовим объяснение. Варианты обрабатываются по очереди…</p>
-      ) : status === 'error' ? (
-        <>
-          <p role="alert" className="text-fail">{errorMessage ?? 'Не удалось получить объяснение.'}</p>
-          <Button size="sm" variant="secondary" className="mt-2" onClick={request}>Повторить объяснение</Button>
-        </>
-      ) : result ? (
+      {result ? (
         <>
           <Tag tone={result.generated_by === 'ollama' ? 'brand' : 'warn'}>
             {result.generated_by === 'ollama' ? 'Ollama' : 'Шаблон бэкенда'}
@@ -50,9 +39,7 @@ export function VariantExplanation({ calculation, scenario }: Props) {
             {result.model ? <p className="mt-2 text-muted">Модель: {result.model}</p> : null}
             {result.warning ? <p className="mt-2 text-warn">{result.warning}</p> : null}
           </details>
-          {result.generated_by === 'template' ? (
-            <Button size="sm" variant="secondary" className="mt-2" onClick={request}>Повторить с Ollama</Button>
-          ) : null}
+          {result.generated_by === 'template' ? <p className="mt-2 text-warn">Для повторной генерации запустите подбор заново.</p> : null}
         </>
       ) : null}
     </div>

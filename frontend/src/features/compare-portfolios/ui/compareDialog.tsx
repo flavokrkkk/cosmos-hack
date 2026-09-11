@@ -2,12 +2,12 @@ import { useMemo, useState } from 'react'
 
 import {
   DELTA_ROWS, DELTA_VERDICT_LABEL, deltaVerdict, formatDelta, formatNumber, scenarioVerdict,
-  selectionKey, selectionLabel, useCompare, useComparison,
+  selectionKey, selectionLabel, useCompare, useComparison, useComparisonAnalysis,
 } from '@entities/portfolio'
 import type { ComparisonResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
-import { Button, Dialog, DialogContent, Tag } from '@shared/ui'
+import { Button, Dialog, DialogContent, Tag, Segmented, Tooltip } from '@shared/ui'
 
 import { MAX_VARIANTS, MIN_VARIANTS, type Candidate } from '../model/candidates'
 
@@ -60,7 +60,7 @@ function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open'
   const result = compare.data ?? stored ?? undefined
   const resultKey = result ? result.variants.map((v) => selectionKey(v.selection)).join(' vs ') : ''
   const pickedKey = picked.join(' vs ')
-  const isStale = Boolean(result) && resultKey !== pickedKey
+  const isStale = Boolean(result) && (resultKey !== pickedKey || result!.variants.some((variant) => variant.dataset_hash !== datasetHash))
 
   function toggle(id: string) {
     setPicked((current) => {
@@ -167,10 +167,70 @@ function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open'
                   : selected.map((c) => c.title)
               }
             />
+            {!isStale && !compare.isPending ? (
+              <ComparisonAnalysis key={JSON.stringify(result.variants.map((variant) => variant.input_hash))} result={result} />
+            ) : null}
           </div>
         )}
       </section>
     </div>
+  )
+}
+
+function ComparisonAnalysis({ result }: { result: ComparisonResult }) {
+  const [scenario, setScenario] = useState<Scenario>('STRESS')
+  const [launchedKey, setLaunchedKey] = useState<string | null>(null)
+  const request = {
+    variants: result.variants.map((variant) => ({ dataset_hash: variant.dataset_hash, selection: variant.selection })),
+    scenario,
+  }
+  const requestKey = JSON.stringify(request)
+  const launched = launchedKey === requestKey
+  const query = useComparisonAnalysis(request, launched)
+  const analysis = launched ? query.data : undefined
+  return (
+    <section className="mt-5 rounded-card bg-panel p-5" aria-busy={query.isFetching}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-[18px] font-semibold">AI-анализ сравнения</h3>
+        <Segmented size="sm" value={scenario} onChange={(value: Scenario) => setScenario(value)}
+          options={SCENARIOS.map((value) => ({ value, label: value }))} label="Сценарий AI-анализа сравнения" />
+      </div>
+      <p className="mt-2 text-[13px] text-muted">
+        Первый, второй и остальные варианты — колонки таблицы слева направо.
+        AI объяснит компромиссы относительно первого, но не выберет победителя.
+      </p>
+      <Button className="mt-4" size="md" loading={query.isFetching} onClick={() => {
+        if (launched) void query.refetch()
+        else setLaunchedKey(requestKey)
+      }}>Проанализировать с AI</Button>
+      {query.isFetching ? <p role="status" className="mt-3 text-[13px] text-muted">Готовим анализ выбранных портфелей — до минуты. Таблица уже доступна.</p> : null}
+      {launched && query.isError ? <p className="mt-3 text-[13px] text-fail">Анализ не получен: {query.error.message}. Расчёты в таблице доступны.</p> : null}
+      {analysis && !query.isFetching ? (
+        <div className="mt-4 flex flex-col gap-3">
+          <Tag tone={analysis.generated_by === 'ollama' ? 'brand' : 'warn'}>
+            {analysis.generated_by === 'ollama' ? 'Суммаризировано AI' : 'Шаблон по расчёту'} · {analysis.scenario}
+          </Tag>
+          <p className="font-semibold">{analysis.explanation.headline}</p>
+          <p className="text-[14px]">{analysis.explanation.summary}</p>
+          {([
+            ['Преимущества и различия', analysis.explanation.strengths],
+            ['Компромиссы и ограничения', analysis.explanation.limitations],
+          ] as const).map(([title, points]) => (
+            <div key={title}>
+              <h4 className="mb-2 text-[13px] font-semibold">{title}</h4>
+              <ul className="list-inside list-disc space-y-2 text-[13px]">
+                {points.map((point, index) => (
+                  <li key={index}><Tooltip content={point.fact_ids.map((id) => analysis.facts.find((fact) => fact.id === id)?.text).join(' ')}>
+                    <span className="cursor-help border-b border-dotted border-muted">{point.text}</span>
+                  </Tooltip></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          {analysis.warning ? <p className="text-[12px] text-warn">{analysis.warning}</p> : null}
+        </div>
+      ) : null}
+    </section>
   )
 }
 

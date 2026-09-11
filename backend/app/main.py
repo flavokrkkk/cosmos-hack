@@ -7,7 +7,9 @@ from starlette.concurrency import run_in_threadpool
 from app.api.v1.routers import api_v1_routers
 from app.core.clients.ollama_client import OllamaClient
 from app.core.services.ollama_service import OllamaService
+from app.core.services.comparison_analysis_service import ComparisonAnalysisService
 from app.core.services.recommendation_service import RecommendationService
+from app.core.services.recommendation_summary_service import RecommendationSummaryService
 from app.infrastructure.config.config import settings
 from app.infrastructure.logging.logger import configure_logging, get_logger
 from app.infrastructure.middleware.logging_middleware import LoggingMiddleware
@@ -35,6 +37,8 @@ async def lifespan(app: FastAPI):
         ollama_client,
         settings.ollama.model,
     )
+    app.state.recommendation_summary_service = RecommendationSummaryService()
+    app.state.comparison_analysis_service = ComparisonAnalysisService()
     logger.info(
         "ollama_client_configured",
         base_url=settings.ollama.base_url,
@@ -46,6 +50,7 @@ async def lifespan(app: FastAPI):
         logger.info("portfolio_engine_ready")
         yield
     finally:
+        await app.state.recommendation_summary_service.close()
         await ollama_client.close()
         logger.info("application_shutdown")
 

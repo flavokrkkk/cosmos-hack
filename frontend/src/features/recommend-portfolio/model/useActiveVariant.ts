@@ -1,5 +1,5 @@
 import { useEvaluate, useSavedVariants, useWorkspace, type SavedVariant } from '@entities/portfolio'
-import type { Calculation, RecommendationResult, RecommendationVariant } from '@shared/api/contracts'
+import type { Calculation, RecommendationExplanation, RecommendationResult, RecommendationVariant } from '@shared/api/contracts'
 
 export type ActiveVariantKind = 'team' | 'reference' | 'saved'
 
@@ -9,6 +9,7 @@ export type ActiveVariantView = {
   title: string
   reason: string
   calculation: Calculation | undefined
+  explanation?: RecommendationExplanation | null
   savedVariant?: SavedVariant
   /** Индекс в `result.alternatives`, если открыта опорная точка. */
   alternativeIndex?: number
@@ -45,6 +46,9 @@ export function useActiveVariant(
       title: savedVariant.name,
       reason: savedVariant.comment,
       calculation: evaluation.data,
+      explanation: [result?.recommended, ...(result?.alternatives ?? [])].find(
+        (variant) => variant?.calculation.input_hash === evaluation.data?.input_hash,
+      )?.explanation,
       savedVariant,
       isDefault: false,
       isLoading: evaluation.isPending,
@@ -94,6 +98,7 @@ function defaultView(result: RecommendationResult | undefined): ActiveVariantVie
     title: fallback.variant.title,
     reason: fallback.variant.reason,
     calculation: fallback.variant.calculation,
+    explanation: fallback.variant.explanation,
     isDefault: true,
     isLoading: false,
     isError: false,
@@ -107,6 +112,7 @@ function referenceView(variant: RecommendationVariant, index: number, isDefault:
     title: variant.title,
     reason: variant.reason,
     calculation: variant.calculation,
+    explanation: variant.explanation,
     alternativeIndex: index,
     isDefault,
     isLoading: false,

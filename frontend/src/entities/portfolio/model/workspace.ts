@@ -34,8 +34,6 @@ type WorkspaceState = {
   /** Лоты ручной проверки, 0–4 штуки; режимы к ним назначает сервер. */
   manualLotIds: string[]
   manualOrigin: ManualOrigin
-  /** Для каких пар `input_hash:scenario` пользователь запросил объяснение: результат живёт в кеше запросов. */
-  explanationRequests: Record<string, true>
 }
 
 type WorkspaceActions = {
@@ -54,8 +52,6 @@ type WorkspaceActions = {
   clearManual: () => void
   /** «Изменить вручную»: копия состава варианта, оригинал не трогаем. */
   startManualFrom: (lotIds: string[]) => void
-  requestExplanation: (key: string) => void
-  forgetExplanation: (key: string) => void
 }
 
 const INITIAL: WorkspaceState = {
@@ -67,7 +63,6 @@ const INITIAL: WorkspaceState = {
   activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
   manualLotIds: [],
   manualOrigin: 'empty',
-  explanationRequests: {},
 }
 
 /**
@@ -158,14 +153,6 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
           activeVariant: { ...state.activeVariant, manual: { kind: 'default' } },
         })),
 
-      requestExplanation: (key) =>
-        set((state) => ({ explanationRequests: { ...state.explanationRequests, [key]: true } })),
-
-      forgetExplanation: (key) =>
-        set((state) => {
-          const { [key]: _removed, ...explanationRequests } = state.explanationRequests
-          return { explanationRequests }
-        }),
     }),
     {
       name: 'cosmos-workspace',
@@ -182,7 +169,6 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
         activeVariant: state.activeVariant,
         manualLotIds: state.manualLotIds,
         manualOrigin: state.manualOrigin,
-        explanationRequests: state.explanationRequests,
       }),
     },
   ),

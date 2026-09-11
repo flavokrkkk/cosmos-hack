@@ -166,6 +166,7 @@ class RecommendationVariant(PortfolioSchema):
     title: str
     reason: str
     calculation: Calculation
+    explanation: "RecommendationExplanation | None" = None
 
 
 class RecommendationResult(PortfolioSchema):
@@ -227,3 +228,34 @@ class PortfolioExplanationResult(PortfolioSchema):
     model: str | None
     generated_by: Literal["ollama", "template"]
     warning: str | None = None
+
+
+class RecommendationExplanation(PortfolioSchema):
+    input_hash: str
+    scenario: Scenario
+    facts: list[ExplanationFact]
+    explanation: PortfolioExplanation
+    model: str | None
+    generated_by: Literal["ollama", "template"]
+    warning: str | None = None
+
+
+class ComparisonAnalysisRequest(CompareRequest):
+    scenario: Scenario = "STRESS"
+
+    @model_validator(mode="after")
+    def distinct_complete_variants(self) -> Self:
+        selections = [tuple(sorted((item.lot_id, item.mode_id) for item in variant.selection)) for variant in self.variants]
+        if any(len(selection) != 4 for selection in selections):
+            raise ValueError("Для анализа нужны полные портфели из четырёх лотов")
+        if len(set(selections)) != len(selections):
+            raise ValueError("Выберите разные портфели для анализа")
+        return self
+
+
+class ComparisonAnalysisResult(RecommendationExplanation):
+    comparison: ComparisonResult
+
+
+RecommendationVariant.model_rebuild()
+RecommendationResult.model_rebuild()

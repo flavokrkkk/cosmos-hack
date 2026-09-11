@@ -34,7 +34,6 @@ export function AutoScreen({ catalog }: Props) {
   const result = query.data
   const active = useActiveVariant(catalog.dataset_hash, result)
 
-  const scenario = useWorkspace((state) => state.scenario)
   const openVariant = useWorkspace((state) => state.openVariant)
   const startManualFrom = useWorkspace((state) => state.startManualFrom)
   const setRequireStress = useWorkspace((state) => state.setRequireStress)
@@ -164,7 +163,7 @@ export function AutoScreen({ catalog }: Props) {
             variantTitle={active.title}
             isDefault={active.isDefault}
             reason={active.reason}
-            isLoading={active.isLoading}
+            isLoading={query.isFetching || active.isLoading}
             isError={active.isError}
             onRetry={active.retry}
             onBackToDefault={result?.status === 'ok' ? () => openVariant({ kind: 'default' }) : undefined}
@@ -177,7 +176,7 @@ export function AutoScreen({ catalog }: Props) {
             }}
           />
 
-          <ExplanationBlock datasetHash={catalog.dataset_hash} calculation={query.isFetching || active.isLoading || active.isError ? undefined : active.calculation} scenario={scenario} />
+          <ExplanationBlock result={active.explanation} isLoading={query.isFetching || active.isLoading} onRetry={launch} />
         </>
       ) : null}
 
@@ -257,7 +256,7 @@ function LoadingBlock() {
     <section className="flex flex-col items-center gap-8" role="status" aria-live="polite">
       <div className="text-center">
         <h2 className="text-[24px] font-bold tracking-[-0.015em]">Подбираем портфель…</h2>
-        <p className="mt-2 text-[13.5px] text-muted">Перебираем конфигурации и проверяем ограничения</p>
+        <p className="mt-2 text-[13.5px] text-muted">Проверяем ограничения и готовим объяснения всех вариантов. Это может занять до полутора минут.</p>
       </div>
       <ul className="grid w-full max-w-[1180px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[0, 1, 2, 3].map((index) => (

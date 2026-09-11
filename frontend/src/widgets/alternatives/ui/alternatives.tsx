@@ -101,7 +101,7 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
                     ) : null}
                   </dl>
                 ) : null}
-                <VariantExplanation calculation={variant.calculation} scenario={scenario} />
+                <VariantExplanation result={variant.explanation} />
                 <div className="mt-auto pt-5">
                   <Button
                     size="md"

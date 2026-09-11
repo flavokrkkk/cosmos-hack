@@ -168,8 +168,9 @@ export function ManualScreen({ catalog }: Props) {
                 <Panel aria-busy role="status">
                   <PanelHeader className="mb-3">
                     <PanelTitle className="text-[20px]">Показатели</PanelTitle>
-                    <Tag tone="brand">подбираем режимы…</Tag>
+                    <Tag tone="brand">подбор и AI-объяснения…</Tag>
                   </PanelHeader>
+                  <p className="mb-3 text-[13px] text-muted">Сервер подбирает режимы и готовит объяснения всех вариантов одним запросом. Это может занять до полутора минут.</p>
                   <div className="grid grid-cols-2 gap-3">
                     {[0, 1, 2, 3].map((index) => <Skeleton key={index} className="h-[76px]" />)}
                   </div>
@@ -197,6 +198,9 @@ export function ManualScreen({ catalog }: Props) {
 
             {showResult && active.calculation?.metrics ? (
               <div className="rise-in flex flex-col gap-5">
+                <Button loading={query.isFetching} onClick={() => void query.refetch()}>
+                  Подобрать заново
+                </Button>
                 <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
                   <PanelHeader className="mb-3">
                     <PanelTitle className="text-[20px]">Показатели</PanelTitle>
@@ -242,7 +246,7 @@ export function ManualScreen({ catalog }: Props) {
 
       {showResult && result ? (
         <div className="rise-in flex flex-col gap-14">
-          <ExplanationBlock datasetHash={catalog.dataset_hash} calculation={active.calculation} scenario={scenario} />
+          <ExplanationBlock result={active.explanation} isLoading={query.isFetching} onRetry={() => void query.refetch()} />
           <Alternatives
             title="Другие режимы для выбранных лотов"
             subtitle="Опорные точки фронта внутри выбранных четырёх лотов: те же лоты, другие сочетания режимов A/B/C."

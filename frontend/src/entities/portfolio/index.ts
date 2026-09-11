@@ -1,6 +1,6 @@
 export { portfolioService } from './api'
 export {
-  portfolioKeys, useCompare, useEvaluate, useExplanation, useRecommendation,
+  portfolioKeys, useCompare, useComparisonAnalysis, useEvaluate, useRecommendation,
 } from './hooks'
 export {
   DELTA_ROWS, DELTA_VERDICT_LABEL, EXTRA_METRIC_TILES, METRIC_TILES, METRIC_TILES_COMPACT,

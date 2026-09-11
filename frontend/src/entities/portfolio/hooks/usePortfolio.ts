@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 
 import type {
-  CompareRequest, EvaluateRequest, PortfolioExplanationRequest, RecommendRequest, Scenario,
+  CompareRequest, ComparisonAnalysisRequest, EvaluateRequest, RecommendRequest,
   SelectionItem,
 } from '@shared/api/contracts'
 
@@ -13,8 +13,6 @@ export const portfolioKeys = {
     ['portfolio', 'evaluate', datasetHash, selectionKey(selection)] as const,
   recommend: (datasetHash: string, requireStress: boolean, lotIds: readonly string[] | null) =>
     ['portfolio', 'recommend', datasetHash, requireStress, lotIds ? sortedLotIds(lotIds) : null] as const,
-  explanation: (datasetHash: string, selection: readonly SelectionItem[], scenario: Scenario) =>
-    ['portfolio', 'explanation', datasetHash, selectionKey(selection), scenario] as const,
 }
 
 /**
@@ -45,23 +43,24 @@ type RecommendParams = {
 }
 
 /**
- * Подбор — запрос, а не мутация: результат полностью определяется входами
- * (версия данных, условие STRESS, набор лотов), поэтому кешируется по ним,
- * переживает перезагрузку и не запрашивается дважды для одних условий.
- * «Подобрать заново» с теми же условиями — `refetch()`.
+ * Подбор возвращает расчёты вместе с пакетными объяснениями.
+ * Повторная генерация и срок кеширования управляются бэкендом.
  */
 export function useRecommendation({ datasetHash, requireStress, lotIds, enabled }: RecommendParams) {
   return useQuery({
     queryKey: portfolioKeys.recommend(datasetHash ?? '', requireStress, lotIds),
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       portfolioService.recommend({
         dataset_hash: datasetHash as string,
         require_stress: requireStress,
         method_id: 'pareto_lexicographic_v1',
         lot_ids: lotIds ? sortedLotIds(lotIds) : null,
-      } satisfies RecommendRequest),
+      } satisfies RecommendRequest, signal),
     enabled: enabled && Boolean(datasetHash) && (lotIds === null || lotIds.length === 4),
-    staleTime: Infinity,
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false,
     /* Ошибку показываем на странице рядом с кнопкой «Повторить», тост был бы дублем. */
     meta: { skipErrorToast: true },
   })
@@ -79,29 +78,15 @@ export function useCompare() {
   })
 }
 
-/**
- * Объяснение — запрос, включаемый по действию пользователя (`enabled`), а не
- * мутация: результат определяется составом, сценарием и версией данных, поэтому
- * кешируется по ним и переживает перезагрузку. Бэкенд может отвечать десятки
- * секунд; повтор при сетевой ошибке не нужен — пользователь нажмёт «Повторить».
- */
-export function useExplanation(
-  datasetHash: string | undefined,
-  selection: readonly SelectionItem[],
-  scenario: Scenario,
-  enabled: boolean,
-) {
+export function useComparisonAnalysis(request: ComparisonAnalysisRequest, enabled: boolean) {
   return useQuery({
-    queryKey: portfolioKeys.explanation(datasetHash ?? '', selection, scenario),
-    queryFn: ({ signal }) =>
-      portfolioService.explain({
-        dataset_hash: datasetHash as string,
-        selection: [...selection],
-        scenario,
-      } satisfies PortfolioExplanationRequest, signal),
-    enabled: enabled && Boolean(datasetHash) && selection.length === 4,
-    staleTime: Infinity,
+    queryKey: ['portfolio', 'comparison-analysis', request],
+    queryFn: ({ signal }) => portfolioService.analyzeComparison(request, signal),
+    enabled,
+    staleTime: 0,
     retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     meta: { skipErrorToast: true },
   })
 }

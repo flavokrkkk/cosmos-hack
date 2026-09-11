@@ -12,6 +12,9 @@ from app.core.services.portfolio_engine.decision import load_decision
 from app.core.services.portfolio_service import PortfolioService
 from app.core.services.recommendation_service import RecommendationService, rank_candidates
 from app.main import app
+from app.api.v1.dependencies import get_ollama_service, get_recommendation_summary_service
+from app.core.services.recommendation_summary_service import RecommendationSummaryService
+from app.infrastructure.errors.ollama_errors import OllamaUnavailableError
 
 
 SELECTION = [{"lot_id": lot, "mode_id": mode} for lot, mode in
@@ -30,11 +33,22 @@ def catalog(service):
 
 @pytest.fixture
 def client():
+    class OfflineOllama:
+        model = "test-offline"
+
+        async def explain_portfolios(self, portfolios):
+            raise OllamaUnavailableError("offline")
+
+    summaries = RecommendationSummaryService()
+    app.dependency_overrides[get_ollama_service] = lambda: OfflineOllama()
+    app.dependency_overrides[get_recommendation_summary_service] = lambda: summaries
     instance = TestClient(app)
     try:
         yield instance
     finally:
         instance.close()
+        app.dependency_overrides.pop(get_ollama_service, None)
+        app.dependency_overrides.pop(get_recommendation_summary_service, None)
 
 
 def test_catalog_sources_and_mutation_isolation(service, catalog):

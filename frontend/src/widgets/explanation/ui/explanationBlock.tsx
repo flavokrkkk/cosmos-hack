@@ -1,14 +1,13 @@
 import { Sparkles } from 'lucide-react'
 
-import { useExplanation, type ExplanationStatus } from '@features'
-import type { Calculation, ExplanationFact, ExplanationPoint, Scenario } from '@shared/api/contracts'
+import type { RecommendationExplanation, ExplanationFact, ExplanationPoint } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Button, Card, Panel, Skeleton, Tag, Tooltip } from '@shared/ui'
 
 type Props = {
-  datasetHash: string
-  calculation: Calculation | undefined
-  scenario: Scenario
+  result: RecommendationExplanation | null | undefined
+  isLoading?: boolean
+  onRetry?: () => void
   className?: string
 }
 
@@ -20,9 +19,8 @@ type Props = {
  * Ollama не блокирует подбор, сравнение, сохранение и экспорт — блок просто
  * говорит об этом словами.
  */
-export function ExplanationBlock({ datasetHash, calculation, scenario, className }: Props) {
-  const explanation = useExplanation(datasetHash, calculation, scenario)
-  const { status, result } = explanation
+export function ExplanationBlock({ result, isLoading, onRetry, className }: Props) {
+  const status = isLoading ? 'loading' : result ? 'succeeded' : 'unavailable'
 
   return (
     <section
@@ -48,7 +46,9 @@ export function ExplanationBlock({ datasetHash, calculation, scenario, className
           <StatusLabel status={status} generatedBy={result?.generated_by} model={result?.model ?? null} />
         </div>
 
-        <Body explanation={explanation} scenario={scenario} />
+        {isLoading ? <Skeleton className="h-16 w-full" /> : result ? (
+          <ExplanationText result={result} onRetry={onRetry} />
+        ) : <p className="text-[14px] text-muted">Для этого варианта нет объяснения в текущем результате подбора.</p>}
       </Panel>
     </section>
   )
@@ -57,7 +57,7 @@ export function ExplanationBlock({ datasetHash, calculation, scenario, className
 function StatusLabel({
   status, generatedBy, model,
 }: {
-  status: ExplanationStatus
+  status: 'loading' | 'succeeded' | 'unavailable'
   generatedBy: 'ollama' | 'template' | undefined
   model: string | null
 }) {
@@ -72,68 +72,11 @@ function StatusLabel({
   return <span className="text-[14px] font-medium text-brand">Объяснение AI · необязательно</span>
 }
 
-function Body({
-  explanation, scenario,
-}: {
-  explanation: ReturnType<typeof useExplanation>
-  scenario: Scenario
-}) {
-  const { status, result, errorMessage, request } = explanation
-
-  switch (status) {
-    case 'unavailable':
-      return <p className="text-[14px] text-muted">Объяснение доступно для полного портфеля из четырёх лотов.</p>
-
-    case 'idle':
-      return (
-        <div className="flex flex-col items-start gap-4">
-          <p className="max-w-[560px] text-[14px] leading-relaxed text-muted">
-            Модель изложит, почему портфель проходит или не проходит проверки сценария {scenario}, опираясь
-            только на факты расчёта. Числа подставляет сервер — свободный текст их не содержит.
-          </p>
-          <Button size="md" onClick={request}>
-            <Sparkles className="size-4" aria-hidden />
-            Объяснить выбор
-          </Button>
-        </div>
-      )
-
-    case 'loading':
-      return (
-        <div className="flex flex-col gap-3" role="status" aria-live="polite">
-          <p className="text-[13px] text-muted">
-            Модель формирует объяснение — на процессоре это занимает одну–две минуты. Расчёт выше уже готов и от ответа не зависит.
-          </p>
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-        </div>
-      )
-
-    case 'error':
-      return (
-        <div className="flex flex-col items-start gap-3">
-          <p className="text-[14px] text-fail">
-            Не удалось сформировать объяснение{errorMessage ? `: ${errorMessage}` : ''}.
-          </p>
-          <p className="text-[13px] text-muted">
-            Подбор, проверки, сравнение и экспорт от этого не зависят: числа выше посчитаны движком.
-          </p>
-          <Button size="sm" variant="secondary" onClick={request}>Повторить</Button>
-        </div>
-      )
-
-    case 'succeeded':
-      if (!result) return null
-      return <ExplanationText result={result} onRetry={request} />
-  }
-}
-
 function ExplanationText({
   result, onRetry,
 }: {
-  result: NonNullable<ReturnType<typeof useExplanation>['result']>
-  onRetry: () => void
+  result: RecommendationExplanation
+  onRetry?: () => void
 }) {
   const factById = new Map(result.facts.map((fact) => [fact.id, fact]))
   const { explanation } = result
@@ -153,13 +96,13 @@ function ExplanationText({
       {result.warning ? <p className="text-[12px] text-warn">{result.warning}</p> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[11.5px] text-muted">
-          Сценарий {result.scenario}. Каждый тезис ссылается на факт расчёта — наведите, чтобы увидеть, на какой.
+          Объяснение для условия поиска {result.scenario}. Каждый тезис ссылается на факт расчёта — наведите, чтобы увидеть, на какой.
         </p>
         {/* Шаблон — не приговор: когда модель поднимется, можно запросить текст заново. */}
-        {result.generated_by === 'template' ? (
+        {result.generated_by === 'template' && onRetry ? (
           <Button size="sm" variant="secondary" onClick={onRetry}>
             <Sparkles className="size-3.5" aria-hidden />
-            Запросить у модели снова
+            Повторить подбор и объяснение
           </Button>
         ) : null}
       </div>

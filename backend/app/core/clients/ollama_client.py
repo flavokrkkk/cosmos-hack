@@ -42,6 +42,8 @@ class OllamaClient:
         format_schema: Mapping[str, Any] | None = None,
         think: bool = False,
         num_predict: int = 600,
+        num_ctx: int | None = None,
+        timeout_seconds: float | None = None,
     ) -> OllamaChatResult:
         body: dict[str, Any] = {
             "model": model,
@@ -52,10 +54,13 @@ class OllamaClient:
         }
         if format_schema is not None:
             body["format"] = dict(format_schema)
+        if num_ctx is not None:
+            body["options"]["num_ctx"] = num_ctx
         try:
             async with self._session.post(
                 "/api/chat",
                 json=body,
+                **({"timeout": aiohttp.ClientTimeout(total=timeout_seconds)} if timeout_seconds is not None else {}),
             ) as response:
                 response.raise_for_status()
                 payload = await response.json()
