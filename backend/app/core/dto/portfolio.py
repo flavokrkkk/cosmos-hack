@@ -1,4 +1,6 @@
+from datetime import datetime
 from typing import Annotated, Literal, Self
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -31,6 +33,18 @@ class RecommendRequest(PortfolioSchema):
     dataset_hash: DatasetHash
     require_stress: bool = Field(default=True, strict=True)
     method_id: Literal["pareto_lexicographic_v1"] = "pareto_lexicographic_v1"
+    lot_ids: list[Annotated[str, Field(min_length=1, max_length=32)]] | None = Field(
+        default=None, min_length=4, max_length=4,
+        description="Четыре фиксированных лота для подбора режимов; null — полный автоподбор.",
+    )
+
+    @model_validator(mode="after")
+    def unique_fixed_lots(self) -> Self:
+        if self.lot_ids is not None:
+            if len(set(self.lot_ids)) != len(self.lot_ids):
+                raise ValueError("Каждый лот можно выбрать только один раз")
+            self.lot_ids = sorted(self.lot_ids)
+        return self
 
 
 class CompareRequest(PortfolioSchema):
@@ -171,3 +185,58 @@ class ComparisonResult(PortfolioSchema):
     variants: list[Calculation]
     deltas: list[dict[str, float]]
     baseline_index: int = 0
+
+
+class PortfolioExplanationRequest(PortfolioSchema):
+    dataset_hash: DatasetHash
+    selection: list[SelectionItem] = Field(min_length=4, max_length=4)
+    scenario: Scenario = "STRESS"
+
+    @model_validator(mode="after")
+    def unique_lots(self) -> Self:
+        if len({item.lot_id for item in self.selection}) != len(self.selection):
+            raise ValueError("Каждый лот можно выбрать только один раз")
+        self.selection = sorted(self.selection, key=lambda item: (item.lot_id, item.mode_id))
+        return self
+
+
+class ExplanationFact(PortfolioSchema):
+    id: str
+    text: str
+    source: Literal["calculation", "case"]
+
+
+class ExplanationPoint(PortfolioSchema):
+    text: str
+    fact_ids: list[str]
+
+
+class PortfolioExplanation(PortfolioSchema):
+    headline: str
+    summary: str
+    strengths: list[ExplanationPoint]
+    limitations: list[ExplanationPoint]
+
+
+class PortfolioExplanationResult(PortfolioSchema):
+    calculation: Calculation
+    scenario: Scenario
+    facts: list[ExplanationFact]
+    explanation: PortfolioExplanation
+    model: str | None
+    generated_by: Literal["ollama", "template"]
+    warning: str | None = None
+
+
+class ExplanationJobCreated(PortfolioSchema):
+    id: UUID
+    status: Literal["queued"]
+
+
+class ExplanationJob(PortfolioSchema):
+    id: UUID
+    status: Literal["queued", "running", "succeeded", "failed"]
+    created_at: datetime
+    updated_at: datetime
+    result: PortfolioExplanationResult | None = None
+    error: str | None = None

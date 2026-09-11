@@ -85,7 +85,7 @@ class OllamaSettings(Config):
         "http://localhost:11434",
         validation_alias="COSMOS_OLLAMA_BASE_URL",
     )
-    model: str = Field("qwen3:4b", validation_alias="COSMOS_OLLAMA_MODEL")
+    model: str = Field("qwen3:4b-instruct", validation_alias="COSMOS_OLLAMA_MODEL")
     timeout_seconds: float = Field(
         180.0,
         validation_alias="COSMOS_OLLAMA_TIMEOUT_SECONDS",

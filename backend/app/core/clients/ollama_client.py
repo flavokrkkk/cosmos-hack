@@ -1,4 +1,5 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 import aiohttp
 
@@ -38,16 +39,23 @@ class OllamaClient:
         model: str,
         messages: Sequence[OllamaMessage],
         temperature: float = 0.2,
+        format_schema: Mapping[str, Any] | None = None,
+        think: bool = False,
+        num_predict: int = 600,
     ) -> OllamaChatResult:
+        body: dict[str, Any] = {
+            "model": model,
+            "messages": [message.model_dump() for message in messages],
+            "stream": False,
+            "think": think,
+            "options": {"temperature": temperature, "num_predict": num_predict},
+        }
+        if format_schema is not None:
+            body["format"] = dict(format_schema)
         try:
             async with self._session.post(
                 "/api/chat",
-                json={
-                    "model": model,
-                    "messages": [message.model_dump() for message in messages],
-                    "stream": False,
-                    "options": {"temperature": temperature},
-                },
+                json=body,
             ) as response:
                 response.raise_for_status()
                 payload = await response.json()

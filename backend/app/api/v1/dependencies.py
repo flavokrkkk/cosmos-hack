@@ -7,8 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dto.admin import BaseAdminSchema
 from app.core.repositories.admin_repository import AdminRepository
+from app.core.repositories.portfolio_explanation_repository import PortfolioExplanationRepository
 from app.core.services.auth_service import AuthService
 from app.core.services.ollama_service import OllamaService
+from app.core.services.portfolio_explanation_service import PortfolioExplanationService
 
 
 token_scheme = HTTPBearer(auto_error=False)
@@ -27,6 +29,12 @@ async def get_auth_service(
 
 async def get_ollama_service(request: Request) -> OllamaService:
     return request.app.state.ollama_service
+
+
+async def get_portfolio_explanation_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> PortfolioExplanationService:
+    return PortfolioExplanationService(PortfolioExplanationRepository(session))
 
 
 async def get_current_user(

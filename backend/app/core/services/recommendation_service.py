@@ -6,6 +6,7 @@ from app.core.dto.portfolio import (
 )
 from app.core.services.portfolio_engine import space
 from app.core.services.portfolio_service import ENGINE_VERSION, METHOD, PortfolioService, input_hash, verify_dataset
+from app.infrastructure.errors.portfolio_errors import InvalidPortfolio
 
 
 PRIORITIES = ["vpub", "c0", "opex", "kcash", "t_rep", "readiness", "resilience", "scale", "stable_id"]
@@ -20,12 +21,15 @@ def rank_candidates(frame):
     return result.sort_values(PRIORITIES, ascending=ASCENDING, kind="stable").reset_index(drop=True)
 
 
-@lru_cache(maxsize=2)
-def _recommend(dataset_hash: str, require_stress: bool) -> RecommendationResult:
+@lru_cache(maxsize=142)
+def _recommend(dataset_hash: str, require_stress: bool, lot_ids: tuple[str, ...] | None = None) -> RecommendationResult:
     frame = space.enumerate_space()
+    if lot_ids is not None:
+        frame = frame[frame.lots.map(lambda value: tuple(sorted(value.split("+"))) == lot_ids)]
     candidates = space.feasible("STRESS" if require_stress else "BASE", frame)
     front = rank_candidates(space.pareto_front(candidates))
-    request = RecommendRequest(dataset_hash=dataset_hash, require_stress=require_stress)
+    request = RecommendRequest(dataset_hash=dataset_hash, require_stress=require_stress,
+                               lot_ids=list(lot_ids) if lot_ids is not None else None)
     result = RecommendationResult(
         input_hash=input_hash({**request.model_dump(), "engine_version": ENGINE_VERSION}), request=request,
         status="no_feasible" if front.empty else "ok", considered_count=len(frame),
@@ -62,8 +66,14 @@ def _recommend(dataset_hash: str, require_stress: bool) -> RecommendationResult:
 class RecommendationService:
     def recommend(self, request: RecommendRequest) -> RecommendationResult:
         verify_dataset(request.dataset_hash)
+        if request.lot_ids is not None:
+            known_lots = {lot.lot_id for lot in PortfolioService().catalog().lots}
+            unknown = set(request.lot_ids) - known_lots
+            if unknown:
+                raise InvalidPortfolio(f"Неизвестные лоты: {', '.join(sorted(unknown))}")
+        lot_ids = tuple(sorted(request.lot_ids)) if request.lot_ids is not None else None
         with _search_lock:
-            result = _recommend(request.dataset_hash, request.require_stress)
+            result = _recommend(request.dataset_hash, request.require_stress, lot_ids)
         return result.model_copy(deep=True)
 
     def warmup(self) -> None:

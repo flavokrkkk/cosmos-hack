@@ -56,7 +56,7 @@ services:
     image: ollama/ollama:latest
     environment:
       OLLAMA_HOST: http://ollama:11434
-      OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b}
+      OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b-instruct}
     entrypoint: ["/bin/sh", "-c"]
     command: ["ollama pull \"$${OLLAMA_MODEL}\""]
     depends_on:

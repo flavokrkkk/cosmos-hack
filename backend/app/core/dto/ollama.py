@@ -15,3 +15,15 @@ class OllamaChatResult(BaseModel):
     total_duration: int | None = None
     prompt_eval_count: int | None = None
     eval_count: int | None = None
+
+
+class PortfolioExplanationPoint(BaseModel):
+    text: str
+    fact_ids: list[str]
+
+
+class PortfolioExplanationDraft(BaseModel):
+    headline: str
+    summary: str
+    strengths: list[PortfolioExplanationPoint]
+    limitations: list[PortfolioExplanationPoint]

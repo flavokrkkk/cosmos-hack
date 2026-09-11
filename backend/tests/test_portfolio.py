@@ -191,10 +191,58 @@ def test_api_recommend_without_selection(client, catalog):
     assert response.json()["recommended"]["calculation"]["status"] == "complete"
 
 
+@pytest.mark.parametrize("require_stress", [False, True])
+def test_recommend_modes_for_fixed_lots(client, catalog, require_stress):
+    ids = [item["lot_id"] for item in SELECTION]
+    request = {"dataset_hash": catalog.dataset_hash, "lot_ids": ids, "require_stress": require_stress}
+    response = client.post("/portfolio/recommend", json=request)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert data["considered_count"] == 81
+    assert data["request"]["lot_ids"] == sorted(ids)
+    frame = space.enumerate_space()
+    frame = frame[frame.lots.map(lambda value: set(value.split("+")) == set(ids))]
+    candidates = space.feasible("STRESS" if require_stress else "BASE", frame)
+    assert data["base_count"] == int(frame.BASE_ok.sum())
+    assert data["stress_count"] == int(frame.STRESS_ok.sum())
+    assert data["feasible_count"] == len(candidates)
+    expected = rank_candidates(candidates).iloc[0].stable_id
+    selection = data["recommended"]["calculation"]["selection"]
+    assert space.format_selection((item["lot_id"], item["mode_id"]) for item in selection) == expected
+    for variant in [data["recommended"], *data["alternatives"]]:
+        assert {item["lot_id"] for item in variant["calculation"]["selection"]} == set(ids)
+    reversed_response = client.post("/portfolio/recommend", json={**request, "lot_ids": ids[::-1]})
+    assert reversed_response.json() == data
+    unrestricted = client.post("/portfolio/recommend", json={"dataset_hash": catalog.dataset_hash})
+    assert unrestricted.json()["considered_count"] == 5670
+
+
+@pytest.mark.parametrize("ids", [[], ["FIRE"], ["FIRE", "AGRI", "ENV"],
+    ["FIRE", "FLOOD", "AGRI", "ENV", "TRANS"], ["FIRE", "FIRE", "ENV", "TRANS"],
+    ["FIRE", "AGRI", "ENV", "MISSING"]])
+def test_fixed_lots_reject_invalid_selection(client, catalog, ids):
+    response = client.post("/portfolio/recommend", json={"dataset_hash": catalog.dataset_hash, "lot_ids": ids})
+    assert response.status_code == 422
+
+
+def test_fixed_lots_no_feasible_does_not_replace_lots(client, catalog):
+    response = client.post("/portfolio/recommend", json={"dataset_hash": catalog.dataset_hash,
+        "lot_ids": ["FLOOD", "AGRI", "ARCTIC", "TRANS"], "require_stress": True})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["considered_count"] == 81
+    assert data["status"] == "no_feasible"
+    assert data["recommended"] is None
+    assert data["alternatives"] == []
+
+
 def test_portfolio_openapi_has_no_authentication(client):
     paths = client.get("/openapi.json").json()["paths"]
     for path, method in [("/portfolio/catalog", "get"), ("/portfolio/evaluate", "post"),
-                         ("/portfolio/recommend", "post"), ("/portfolio/compare", "post")]:
+                         ("/portfolio/recommend", "post"), ("/portfolio/compare", "post"),
+                         ("/portfolio/explanations", "post"),
+                         ("/portfolio/explanations/{job_id}", "get")]:
         assert not paths[path][method].get("security")
     assert paths["/admin/auth/current_user"]["get"]["security"]
 
