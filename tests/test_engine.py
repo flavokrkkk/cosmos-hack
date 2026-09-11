@@ -226,3 +226,70 @@ def test_c0_breaking_point_matches_portfolio_c0():
     assert point["portfolio_c0"] == pytest.approx(1153.0)
     assert point["stress_slack"] == pytest.approx(1180 - 1153.0)
     assert point["breaks_below_limit"] == pytest.approx(point["portfolio_c0"])
+
+
+# --------------------------------------------------------------------------- #
+# 6. Корректность Парето-фронта: полнота и независимость от округления
+# --------------------------------------------------------------------------- #
+def _dominated_by_any(highs, lows, index):
+    """Есть ли конфигурация, не худшая по всем показателям и лучшая хотя бы по одному."""
+    not_worse = (highs >= highs[index]).all(axis=1) & (lows <= lows[index]).all(axis=1)
+    better = (highs > highs[index]).any(axis=1) | (lows < lows[index]).any(axis=1)
+    return bool((not_worse & better).any())
+
+
+def test_pareto_front_is_complete():
+    """Ни одна конфигурация ВНЕ фронта не осталась недоминируемой.
+
+    Проверка `test_pareto_front_is_non_dominated` говорит только, что внутри фронта
+    нет доминирования. Это не то же самое: фронт мог бы недосчитать варианты и
+    всё равно пройти ту проверку. Здесь смотрим с другой стороны — каждая
+    отброшенная конфигурация обязана иметь того, кто её доминирует.
+    """
+    feasible_frame = space.feasible("STRESS").reset_index(drop=True)
+    front = space.pareto_front(feasible_frame)
+    in_front = set(zip(front.lots, front.modes))
+
+    highs = feasible_frame[list(space.MAXIMIZE)].to_numpy()
+    lows = feasible_frame[list(space.MINIMIZE)].to_numpy()
+
+    missed = [
+        (feasible_frame.lots[i], feasible_frame.modes[i])
+        for i in range(len(feasible_frame))
+        if (feasible_frame.lots[i], feasible_frame.modes[i]) not in in_front
+        and not _dominated_by_any(highs, lows, i)
+    ]
+    assert missed == [], f"недоминируемые конфигурации вне фронта: {missed}"
+
+
+def test_pareto_front_does_not_depend_on_rounding():
+    """Фронт на отображаемых числах совпадает с фронтом на канонических.
+
+    `space.metrics_row` округляет показатели для вывода и CSV. Парето считается
+    по этим же колонкам, поэтому теоретически два варианта, различающиеся за
+    пределами округления, могли слипнуться и один ошибочно вытеснить другой.
+    Пересчитываем фронт по неокруглённым значениям из `evaluate` и сравниваем
+    состав.
+    """
+    import numpy as np
+
+    feasible_frame = space.feasible("STRESS").reset_index(drop=True)
+    rounded = set(zip(*map(tuple, space.pareto_front(feasible_frame)[["lots", "modes"]].values.T)))
+
+    exact_rows = []
+    for row in feasible_frame.itertuples():
+        _, metrics = canonical.evaluate(list(zip(row.lots.split("+"), row.modes)))
+        exact_rows.append([
+            metrics["vpub_mrub_per_year"], metrics["kcash"], metrics["t_rep"],
+            metrics["readiness_1_5"], metrics["resilience_1_5"], metrics["scale_1_5"],
+            metrics["c0_mrub"], metrics["opex_mrub_per_year"],
+        ])
+    exact = np.array(exact_rows, dtype=float)
+    highs, lows = exact[:, :6], exact[:, 6:]
+
+    exact_front = {
+        (feasible_frame.lots[i], feasible_frame.modes[i])
+        for i in range(len(exact))
+        if not _dominated_by_any(highs, lows, i)
+    }
+    assert exact_front == rounded, f"округление меняет состав фронта: {exact_front ^ rounded}"

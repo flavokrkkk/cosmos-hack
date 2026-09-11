@@ -36,7 +36,7 @@ python -m pip install -r requirements.txt
 python -m engine evaluate     # портфель + PASS/FAIL по ограничениям, BASE и STRESS
 python -m engine space        # полный перебор 5670 конфигураций
 python -m engine sensitivity  # запас по входным данным и где портфель ломается
-python -m pytest tests/ -q    # 21 проверка формул и границ
+python -m pytest tests/ -q    # 23 проверки формул, границ и фронта
 ```
 
 Портфель меняется **без правки кода** — [`config/decision.json`](config/decision.json) или

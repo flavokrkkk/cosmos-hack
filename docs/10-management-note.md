@@ -628,7 +628,7 @@ ENV 0,73 · FIRE 0,68). Значимо, что **самый тиражируем
 Все числа воспроизводятся без правки кода; соответствие «число → файл выгрузки» и полный порядок
 запуска — в README репозитория. Ключевые команды: `python -m engine evaluate --scenario STRESS`
 (девять проверок), `compare` (три варианта), `space` (перебор 5670), `sensitivity` (границы слома),
-`python -m pytest tests/ -q` (21 проверка формул и границ). Портфель меняется через
+`python -m pytest tests/ -q` (23 проверки формул, границ и Парето-фронта). Портфель меняется через
 `config/decision.json` или флаг `--portfolio FIRE:A,AGRI:A,TRANS:B,ENV:A`. Выгрузки —
 `results/`: `portfolio_metrics.json`, `portfolio_detail.csv`, `portfolio_space.csv`,
 `constraints_STRESS.csv`, `sensitivity_STRESS.csv`. Цифры записки, презентации и вывода

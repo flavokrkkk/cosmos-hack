@@ -16,7 +16,7 @@
 ```bash
 python -m pip install -r requirements.txt
 python -m engine evaluate          # рекомендуемый портфель, BASE и STRESS
-python -m pytest tests/ -q         # 21 проверка формул и границ
+python -m pytest tests/ -q         # 23 проверки формул, границ и фронта
 python -m engine selfcheck        # воспроизводимость и контроль пространства
 ```
 
