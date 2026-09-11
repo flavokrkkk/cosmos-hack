@@ -38,7 +38,7 @@ _11.09.2026 · [База знаний](README.md) · план работ, не �
 - [Постановка](../case/statement.pdf) и [критерии](../case/criteria.pdf) — обязательный результат.
 - [README кейсодержателя](../case/source/README.md), особенно §4–10, §13 и §14 — инструкция
   по расчётам, выбору, границам изменений и проверке. Также предоставлен
-  [исходный README](../doc-1789140634/test-main/README.md).
+  [исходный README](../case/source/README.md).
 - [Код организаторов](../case/source/case_core.py), [лоты](../case/source/data/lots.csv),
   [режимы](../case/source/data/access_modes.csv), [config](../case/source/config/case_config.json)
   — канонические расчёты и входы версии 1.1.

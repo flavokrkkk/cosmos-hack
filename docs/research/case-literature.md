@@ -11,7 +11,7 @@ DOI ниже извлечены из предоставленных PDF, онл�
 
 Dmitry Payson, *Public goods and the evaluation of complex outcomes in space economy* (2026).
 [DOI](https://doi.org/10.1016/j.spacepol.2026.101762).
-Локальный файл: `КосмоХакатон /Public goods and the evaluation of complex outcomes in space economy.pdf`.
+Локальный файл: `docs/research/papers/Public goods and the evaluation of complex outcomes in space economy.pdf`.
 Опорные разделы: аннотация, §6.1–6.2, PDF с. 9–10.
 
 **НАХОДКА:** статья соединяет классификацию экономических благ и Total Economic Value,
@@ -28,7 +28,7 @@ Dmitry Payson, *Public goods and the evaluation of complex outcomes in space eco
 
 Zancan et al., *Navigating procurement strategies adoption in the New Space transition:
 Drivers and conditions* (2026). [DOI](https://doi.org/10.1016/j.spacepol.2025.101735).
-Локальный файл: `КосмоХакатон /Navigating procurement strategies adoption in the New Space transition.pdf`.
+Локальный файл: `docs/research/papers/Navigating procurement strategies adoption in the New Space transition.pdf`.
 Опорные разделы: аннотация, §5–6, PDF с. 9–11.
 
 **НАХОДКА:** качественный анализ 23 программ/проектов связывает выбор закупки со зрелостью
@@ -44,7 +44,7 @@ Drivers and conditions* (2026). [DOI](https://doi.org/10.1016/j.spacepol.2025.10
 
 Takata, Hidaka, *New public-private partnership based on the interactive collaboration
 in the space sector* (2025). [DOI](https://doi.org/10.1016/j.actaastro.2025.02.009).
-Локальный файл: `КосмоХакатон /New public-private partnership based on the interactive collaboration.pdf`.
+Локальный файл: `docs/research/papers/New public-private partnership based on the interactive collaboration.pdf`.
 Опорный раздел: §6, PDF с. 10–11.
 
 **НАХОДКА:** на японских проектах авторы исследуют двустороннее сотрудничество,
@@ -59,7 +59,7 @@ in the space sector* (2025). [DOI](https://doi.org/10.1016/j.actaastro.2025.02.0
 
 Melamed et al., *Going to outer space with new space: The rise and consequences of evolving
 public-private partnerships* (2024). [DOI](https://doi.org/10.1016/j.spacepol.2024.101626).
-Локальный файл: `КосмоХакатон /The rise and consequences of evolving public-private partnerships.pdf`.
+Локальный файл: `docs/research/papers/The rise and consequences of evolving public-private partnerships.pdf`.
 Опорный раздел: §9, PDF с. 15.
 
 **НАХОДКА:** расширение участия New Space приносит возможности, но сопровождается рисками
@@ -73,7 +73,7 @@ public-private partnerships* (2024). [DOI](https://doi.org/10.1016/j.spacepol.20
 
 OECD, *The Space Economy at a Glance 2026*.
 [DOI](https://doi.org/10.1787/cbf9b240-en).
-Локальный файл: `КосмоХакатон /Space Economy.pdf` (142 страницы).
+Локальный файл: `docs/research/papers/Space Economy.pdf` (142 страницы).
 Опорные разделы: Foreword, Editorial, Reader’s guide, PDF с. 5, 7, 11–12.
 
 **НАХОДКА:** отчёт рассматривает космическую экономику шире производства аппаратов:
