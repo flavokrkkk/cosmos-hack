@@ -1,0 +1,1 @@
+export { ConstraintsTable } from './constraintsTable'

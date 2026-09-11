@@ -53,9 +53,10 @@ python -m pytest tests/ -q    # 21 проверка формул и границ
 ## Каркас приложений
 
 - `frontend/` — React + TypeScript + Vite, слои `app`, `pages`, `widgets`,
-  `features`, `entities`, `shared` как в `flowers_store`;
+  `features`, `entities`, `shared`. Одна страница — дашборд подбора портфеля,
+  **без авторизации**: эксперт должен запускать решение без логина (README кейса §14);
 - `backend/` — FastAPI с тем же разделением на `api`, `core` и
-  `infrastructure`; из прикладных API пока есть только авторизация;
+  `infrastructure`; портфельные маршруты `/portfolio/{catalog,evaluate,recommend,compare}`;
 - `docker-compose.yml` — полный запуск;
 - `docker-compose.local.yml` — PostgreSQL, Redis и Ollama для разработки
   приложений напрямую на машине.

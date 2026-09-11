@@ -5,7 +5,11 @@
   --text: #1b2430;
   --muted: #5b6675;
   --accent: #2f6feb;
+  --accent-soft: #eef3fe;
   --danger: #c0392b;
+  --danger-soft: #fdeceb;
+  --ok: #1e7a4d;
+  --ok-soft: #e8f5ee;
 
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: var(--text);
@@ -25,38 +29,35 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
-/* Layout-страницы с центрированным блоком (вход, ошибка) */
-.auth-page,
-.message-page {
+/* ─────────────────────────────── каркас ─────────────────────────────────── */
+
+.shell {
   display: grid;
-  min-height: 100vh;
-  place-items: center;
-  padding: 24px;
+  gap: 20px;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 28px 20px 64px;
 }
 
-/* Контентная страница */
-.page {
-  display: grid;
-  min-height: 100vh;
-  place-items: center;
-  padding: 24px;
+.shell__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 
-.page__panel {
-  display: grid;
-  width: min(640px, 100%);
-  gap: 12px;
-  padding: 40px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: var(--panel);
+.shell__head h1 {
+  margin: 4px 0 0;
+  font-size: 26px;
 }
 
-.page__eyebrow {
+.eyebrow {
   margin: 0;
   color: var(--accent);
   font-size: 13px;
@@ -65,23 +66,423 @@ input {
   text-transform: uppercase;
 }
 
-.page__muted {
-  margin: 0;
-  color: var(--muted);
-}
-
-/* Форма входа */
-.login-form {
-  display: grid;
-  width: min(420px, 100%);
+.version {
+  display: flex;
+  flex-wrap: wrap;
   gap: 18px;
-  padding: 36px;
+  margin: 0;
+  padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: 24px;
+  border-radius: 12px;
   background: var(--panel);
 }
 
-/* Поле формы (shared/ui/TextField) */
+.version dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.version dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ─────────────────────────────── панели ─────────────────────────────────── */
+
+.panel {
+  display: grid;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+}
+
+.panel--accent {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.panel--warning {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel__head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.panel__subhead {
+  margin: 8px 0 0;
+  font-size: 15px;
+}
+
+.panel__lead {
+  margin: 0;
+  font-weight: 600;
+}
+
+.panel__muted,
+.panel__note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.panel__note {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.priority-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ─────────────────────────── элементы управления ────────────────────────── */
+
+.btn {
+  padding: 9px 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn--ghost {
+  border-color: var(--border);
+  background: var(--panel);
+  color: var(--text);
+}
+
+.btn--wide {
+  justify-self: start;
+  padding: 12px 28px;
+}
+
+.btn--tab {
+  border-color: var(--border);
+  background: var(--panel);
+  color: var(--muted);
+}
+
+.btn--tab.is-active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.scenario-switch {
+  display: flex;
+  gap: 6px;
+}
+
+.switch {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+}
+
+.switch input {
+  margin-top: 3px;
+}
+
+.switch__note {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.badge {
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge--pass {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.badge--fail {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.badge--neutral {
+  background: var(--bg);
+  color: var(--muted);
+}
+
+/* ──────────────────────────── карточки лотов ────────────────────────────── */
+
+.lot-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+.lot-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.lot-card.is-selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.lot-card__head {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.lot-card__id {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+
+.lot-card__title {
+  margin: 2px 0 0;
+  font-size: 13px;
+}
+
+.lot-card__meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lot-card__facts {
+  display: grid;
+  gap: 6px 12px;
+  grid-template-columns: 1fr 1fr;
+  margin: 0;
+}
+
+.lot-card__facts dt {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.lot-card__facts dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lot-card__mode {
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lot-card__mode select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--panel);
+}
+
+/* ──────────────────────────────── таблицы ───────────────────────────────── */
+
+.result {
+  display: grid;
+  gap: 12px;
+}
+
+.result__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.result__selection,
+.recommendation__selection {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.result__actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.result__body.is-stale {
+  opacity: 0.45;
+}
+
+.result__tables {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table__caption {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.data-table th,
+.data-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table thead th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.data-table tbody th {
+  font-weight: 500;
+}
+
+.data-table__num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.data-table__unit {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.data-table__note {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.data-table .is-failed {
+  background: var(--danger-soft);
+}
+
+.space-stats,
+.alternatives {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.space-stats {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.space-stats dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.space-stats dd {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.alternatives {
+  list-style: none;
+}
+
+.alternatives li {
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.alternatives__selection {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+}
+
+/* ─────────────────────────────── состояния ──────────────────────────────── */
+
+.state {
+  margin: 0;
+  padding: 16px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.state--error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ─────────────────────── страница ошибки роутера ────────────────────────── */
+
+.message-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+/* ────────────────── поле формы (shared/ui/TextField) ────────────────────── */
+
 .field {
   display: grid;
   gap: 6px;
@@ -114,24 +515,4 @@ input {
   margin: 0;
   color: var(--danger);
   font-size: 13px;
-}
-
-.login-form button {
-  padding: 12px 16px;
-  border: none;
-  border-radius: 12px;
-  background: var(--accent);
-  color: #fff;
-  cursor: pointer;
-}
-
-.login-form button:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.form-error {
-  margin: 0;
-  color: var(--danger);
-  font-size: 14px;
 }

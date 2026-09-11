@@ -20,9 +20,13 @@
       "@/*": ["./src/*"],
       "@app/*": ["./src/app/*"],
       "@pages/*": ["./src/pages/*"],
+      "@widgets": ["./src/widgets/index.ts"],
       "@widgets/*": ["./src/widgets/*"],
+      "@features": ["./src/features/index.ts"],
       "@features/*": ["./src/features/*"],
+      "@entities": ["./src/entities/index.ts"],
       "@entities/*": ["./src/entities/*"],
+      "@shared": ["./src/shared/index.ts"],
       "@shared/*": ["./src/shared/*"]
     },
 

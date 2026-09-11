@@ -1,15 +1,19 @@
 # Frontend
 
-React 19 + TypeScript + Vite. Стартер под Кейс 02 очищен от магазинных остатков
-`flowers_store` и готов к тому, чтобы сразу после объявления кейса писать предметный код.
+React 19 + TypeScript + Vite. Одна страница — **дашборд подбора портфеля**: каталог
+восьми лотов, автоподбор, ручная правка, показатели и девять проверок в BASE и STRESS.
+
+**Авторизации нет.** Портфельные маршруты бэкенда открыты, и по README кейсодержателя
+(§14, сценарий 5 «Доступ без авторов») эксперт должен запускать решение без логина
+и личных ключей. Логин, гварды и токены удалены — были в стартовом каркасе.
 
 ## Стек
 
 | Задача | Чем решаем |
 |---|---|
-| Роутинг | `react-router-dom` (`pages/routes.tsx`, гварды в `entities/viewer`) |
+| Роутинг | `react-router-dom` — один маршрут `/` в `pages/routes.tsx` |
 | Серверное состояние | `@tanstack/react-query` |
-| HTTP | `axios` — единый клиент в `shared/api` с auth-интерцептором |
+| HTTP | `axios` — один клиент `apiClient` в `shared/api`, без интерцепторов |
 | **Формы** | **`react-hook-form` + `yup`** через `@hookform/resolvers/yup` |
 | **Ошибки и тосты** | `sonner` + единый `ApiError` в `shared/api`, глобальный перехват в `QueryCache`/`MutationCache` |
 | Поля форм | `shared/ui/TextField` — подпись, инпут, ошибка, a11y |
@@ -29,30 +33,55 @@ app -> pages -> widgets -> features -> entities -> shared
 `@`, `@app`, `@pages`, `@widgets`, `@features`, `@entities`, `@shared`.
 Длинные относительные пути не использовать.
 
+## Контракт с бэкендом
+
+`shared/api/contracts.ts` — **зеркало `backend/app/core/dto/portfolio.py`**: имена полей
+и литералы совпадают с pydantic-моделями буква в букву, один файл на один файл.
+Расхождение видно обычным диффом. Своих трактовок в нём нет.
+
+| Маршрут бэкенда | Где вызывается |
+|---|---|
+| `GET /portfolio/catalog` | `entities/case` → `useCatalog()` |
+| `POST /portfolio/evaluate` | `entities/portfolio` → `useEvaluate()` |
+| `POST /portfolio/recommend` | `entities/portfolio` → `useRecommend()` |
+| `POST /portfolio/compare` | `entities/portfolio` → `portfolioService.compare()` |
+
+`dataset_hash` из каталога обязателен во всех запросах: бэкенд проверяет, что фронтенд
+считает на той же версии данных.
+
 ## Что уже есть
 
-- `entities/session` — авторизация: `useLogin`, `useCurrentUser`, `LoginForm`, типы.
-  Бэкенд-маршруты `/admin/auth/*` — начальный контракт API (AGENTS.md), не меняются;
-  сущность фронтенда нейтральная — `session`.
-- `entities/viewer` — контекст текущего пользователя и гварды `privatePage` / `publicPage`.
-- `shared/lib/token` — токены в localStorage. Раньше это была `entities/token`, и её
-  импортировал `shared/api` — нарушение FSD (shared → entities). Токен перенесён в `shared`.
-- `shared/api` — `axiosAuth` / `axiosNoAuth` (обновление токена по 401), `queryClient`
-  с глобальным перехватом ошибок, `ApiError` / `normalizeApiError`.
+- `entities/case` — каталог: `useCatalog()`, `LotCard`. Карточка показывает **исходные**
+  значения лота, без коэффициентов режима.
+- `entities/portfolio` — расчёт: `useEvaluate()`, `useRecommend()`, `MetricsTable`,
+  `ConstraintsTable`, форматирование в `lib/format.ts`.
+- `features/edit-portfolio` — `usePortfolioDraft()`: ручная копия портфеля. Рекомендация
+  алгоритма в неё не мутируется, `replace()` создаёт копию.
+- `features/recommend-portfolio` — `RecommendPanel`: правило выбора показывается **до**
+  запуска, метод помечен как допущение команды.
+- `shared/api` — `apiClient`, `queryClient` с глобальным перехватом ошибок,
+  `ApiError` / `normalizeApiError`, `contracts.ts`.
 - `shared/lib/notify` — `notifyApiError`, `notifySuccess`, `notifyInfo`;
-  `shared/lib/form` — `applyApiErrorToForm`.
-- `shared/ui/TextField` — переиспользуемое поле формы.
-- `shared/lib/routeVariables` — имена маршрутов (`ERouteNames`), хардкодить пути не нужно.
+  `shared/lib/form` — `applyApiErrorToForm`; `shared/ui/TextField` — поле формы.
+  Форм на дашборде пока нет: это заготовка под конструктор, решение по RHF + yup
+  зафиксировано в [docs/05-decisions.md](../docs/05-decisions.md).
 
-`features/`, `widgets/` и доменные `entities` под лоты, портфель и сценарий **пусты
-намеренно**: это кейс-код, он добавляется после брифинга отдельными коммитами. План —
-[docs/06-engine-spec.md](../docs/06-engine-spec.md).
+## Три правила, которые нельзя нарушать в UI
+
+Они взяты из README кейсодержателя и стоят баллов:
+
+1. **Исходные и пересчитанные числа подписаны отдельно.** На карточке лота — каталог,
+   в таблице портфеля — после коэффициентов режима. Смешивать нельзя.
+2. **Переключатель BASE/STRESS меняет только пороги.** Ни состав портфеля, ни режимы,
+   ни цены лотов при этом не меняются — иначе это скрытая подмена решения.
+3. **`kcash` — покрытие расходов, не прибыль.** `vpub` не складывается с `cash`.
+   Формулировки закреплены в `entities/portfolio/lib/format.ts`, менять без причины нельзя.
 
 ## Формы: канонический пример
 
 Схема на `yup`, типы выводятся из схемы через `InferType`, поля — через `register`.
-Ошибки бэкенда раскладывает `applyApiErrorToForm`. Образец для копирования:
-`entities/session/ui/loginForm/loginForm.tsx`.
+Ошибки бэкенда раскладывает `applyApiErrorToForm`. Форм на дашборде пока нет —
+шаблон ниже для конструктора портфеля.
 
 ```tsx
 const schema = yup.object({
@@ -137,11 +166,11 @@ catch (error) {
 
 ## Рецепт: новый вертикальный срез за 5 шагов
 
-Когда объявят кейс и появятся лоты — добавляем срез по этому шаблону
-(образец для копирования — `entities/session`):
+Образец для копирования — `entities/case` (чтение) и `entities/portfolio` (чтение + действие):
 
-1. **Типы и API** — `entities/<сущность>/types/apiTypes.ts` и
-   `api/<сущность>Service.ts` (класс + экземпляр, ходит через `axiosAuth` / `axiosNoAuth`).
+1. **Типы и API** — типы берём из `shared/api/contracts.ts` (зеркало DTO бэкенда,
+   своих не заводим), сервис — `entities/<сущность>/api/<сущность>Service.ts`,
+   ходит через `apiClient`.
 2. **Хуки** — `hooks/use*.ts` на React Query: `useQuery` для чтения, `useMutation` для записи.
    Ключи запросов — массивом: `['portfolio', 'lots']`.
 3. **UI сущности** — `ui/…` (формы на RHF + yup, поля из `shared/ui`).
