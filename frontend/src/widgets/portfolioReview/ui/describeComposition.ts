@@ -24,7 +24,8 @@ export function describeComposition(detail: LotDetail[]): string {
   const modes = [...new Set(rest.map((item) => item.mode_id))].sort()
   const modeText = `${modes.length > 1 ? 'в режимах' : 'в режиме'} ${modes.join(' и ')}`
   const restText = `${rest.length} ${plural(rest.length, ['сервисом', 'сервисами', 'сервисами'])} ${modeText}`
-  return `${capitalize(coreText)} ${rest.length === 1 ? 'дополнен' : 'дополнены'} ${restText}`
+  /* Сказуемое согласуется с подлежащим — числом лотов в ядре, а не дополнений. */
+  return `${capitalize(coreText)} ${core.length === 1 ? 'дополнен' : 'дополнены'} ${restText}`
 }
 
 function capitalize(text: string): string {

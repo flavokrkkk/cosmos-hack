@@ -57,8 +57,8 @@ app -> pages -> widgets -> features -> entities -> shared
 | `shared/ui` | Button, Panel/Card/Tile, Tag, Segmented, Switch, Dialog, Tooltip, StatTile, Skeleton, Collapsible, IconButton, ModeBadge, SectionHeading, TextField, Toaster |
 | `shared/api` | `apiClient`, `queryClient` + `persistOptions`, `ApiError`, `contracts.ts` — зеркало DTO |
 | `entities/case` | каталог: `useCatalog`, `LotCard`, `RecommendedLotCard`, `LotDetailDialog`, `LotIcon`, `CapabilityTags`, стор модалки `useLotDetails`, презентация лота (иконки, расшифровки, описание режима по коэффициентам) |
-| `entities/portfolio` | запросы `useRecommendation` / `useEvaluate` / `useCompare` / `useExplanation`, сторы `useWorkspace` (сессия) / `useSavedVariants` (localStorage) / `useComparison`, форматирование, выгрузка `snapshot.ts`, UI: `PortfolioLotCard`, `LotChip`, `MetricTiles`, `ExtraMetrics`, `ConstraintTiles`, `FeasibilityBadge` |
-| `features` | `recommend-portfolio` (автоподбор, подбор режимов для ручных лотов, открытый вариант, тумблер STRESS, счётчики), `edit-portfolio` (ручной выбор), `compare-portfolios` (кандидаты + диалог), `save-variant` (диалоги сохранения и списка), `export-calculation`, `explain-portfolio` |
+| `entities/portfolio` | запросы `useRecommendation` / `useRecommendationExplanations` / `useEvaluate` / `useCompare` / `useComparisonAnalysis`, сторы `useWorkspace` (сессия) / `useSavedVariants` (localStorage) / `useComparison`, форматирование, выгрузка `snapshot.ts`, UI: `PortfolioLotCard`, `LotChip`, `MetricTiles`, `ExtraMetrics`, `ScenarioHeadroom`, `PortfolioProgress`, `ConstraintTiles`, `FeasibilityBadge` |
+| `features` | `recommend-portfolio` (автоподбор и подбор режимов в два шага, открытый вариант, `explanationFor`, тумблер STRESS, счётчики), `edit-portfolio` (ручной выбор), `compare-portfolios` (кандидаты + диалог с AI-анализом), `save-variant` (диалоги сохранения и списка), `export-calculation` |
 | `widgets` | `ModeSwitch`, `PortfolioReview` (текущий портфель + проверка + ограничения + действия), `Alternatives`, `ExplanationBlock`, `LotDetailsHost`, `SolutionMaterials`, `PageFooter` |
 
 Алиасы настроены и в `vite.config.ts`, и в `tsconfig.app.json`:
@@ -72,15 +72,21 @@ app -> pages -> widgets -> features -> entities -> shared
 | Маршрут бэкенда | Где вызывается |
 |---|---|
 | `GET /portfolio/catalog` | `entities/case` → `useCatalog()` |
-| `POST /portfolio/recommend` | `useRecommendation()` — полный автоподбор (`lot_ids: null`) и подбор режимов для четырёх ручных лотов |
-| `POST /portfolio/evaluate` | `useEvaluate()` — пересчёт сохранённого варианта |
+| `POST /portfolio/recommend` (`with_explanations: false`) | `useRecommendation()` — числа и фронт за доли секунды: полный автоподбор (`lot_ids: null`) и подбор режимов для четырёх ручных лотов |
+| `POST /portfolio/recommend` (`with_explanations: true`) | `useRecommendationExplanations()` — второй запрос за пакетным объяснением всех вариантов; блок «Почему такой выбор?» ждёт его отдельно |
+| `POST /portfolio/evaluate` | `useEvaluate()` — пересчёт сохранённого варианта и прогресс сборки при 1–3 лотах |
 | `POST /portfolio/compare` | `useCompare()` — диалог сравнения |
-| `POST /portfolio/explain` | `useExplanation()` — один синхронный запрос по кнопке |
+| `POST /portfolio/compare/analyze` | `useComparisonAnalysis()` — AI-анализ сравнения по кнопке внутри диалога |
 
 Семантика ответа `recommend` после правки бэкенда 12.09: `recommended` — **портфель команды**
 (если лежит на фронте области поиска), `alternatives` — **опорные точки фронта**. Интерфейс
 нигде не называет их «рекомендацией алгоритма»; если портфеля команды нет, по умолчанию
 открыта первая опорная точка и это сказано словами.
+
+Объяснения приходят в том же ответе `recommend` (`variant.explanation`), но только при
+`with_explanations: true`. Поэтому подбор идёт в два шага: первый запрос без объяснений
+показывает числа сразу, второй — тот же ключ плюс объяснения — заполняет блок «Почему такой
+выбор?» когда ответит модель; шаблонный ответ при недоступной Ollama помечается и не персистится.
 
 ## Состояние и сохранение «в рамках сессии»
 
@@ -101,12 +107,14 @@ app -> pages -> widgets -> features -> entities -> shared
 
 ## Три правила, которые нельзя нарушать в UI
 
-1. **Исходные и пересчитанные числа подписаны отдельно.** Каталог и веер показывают исходные
-   значения; карточка лота в портфеле — «исходное × коэффициент = после режима»; модалка лота —
-   «исходно N · ×k в режиме A». Все три числа приходят с бэкенда, в браузере не умножают.
-2. **Переключатель BASE/STRESS меняет только пороги.** Состав, режимы и цены не меняются.
-   Тумблер «Искать только проходящие STRESS» — условие СЛЕДУЮЩЕГО подбора; после его смены
-   старый результат подписан «условие изменено».
+1. **Исходные и пересчитанные числа подписаны отдельно.** Каталог показывает исходные
+   значения; веер открытого варианта — значения после режима (подпись режима рядом);
+   карточка лота в портфеле — «исходное × коэффициент = после режима»; модалка лота —
+   «исходно N · ×k в режиме A». Все числа приходят с бэкенда, в браузере не умножают.
+2. **Переключатель BASE/STRESS меняет только пороги.** Состав, режимы и цены не меняются;
+   строка под показателями показывает лимит, факт и запас выбранного сценария.
+   Тумблер «Искать только проходящие STRESS» — условие поиска: после первого запуска его
+   смена сразу перезапускает подбор.
 3. **`kcash` — покрытие расходов, не прибыль.** `vpub` не складывается с `cash`. Подписи
    закреплены в `entities/portfolio/lib/format.ts` (`METRIC_TILES`), менять без причины нельзя.
 

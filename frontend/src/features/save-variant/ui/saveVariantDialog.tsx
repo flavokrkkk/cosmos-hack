@@ -68,7 +68,7 @@ export function SaveVariantDialog({
       <DialogContent
         size="sm"
         title="Сохранить вариант"
-        description="Сохраняются состав, режимы и версия данных; показатели при открытии считаются заново."
+        description="Состав, режимы и версия данных; показатели при открытии считаются заново."
       >
         <form noValidate onSubmit={submit} className="flex flex-col gap-4">
           <TextField

@@ -35,8 +35,8 @@ const MOTION = 'transition-[background-color,color,box-shadow] duration-300 ease
 export function StatTile({ label, value, hint, tone = 'neutral', className, onClick, title }: Props) {
   const body = (
     <>
-      <span className="stat-label block text-[12px] leading-tight text-muted">{label}</span>
-      <span className="mt-2 block text-[18px] leading-tight font-semibold tracking-[-0.01em] whitespace-nowrap tabular-nums">
+      <span className="stat-label block text-[12.5px] leading-tight text-muted">{label}</span>
+      <span className="mt-2 block text-[16px] leading-tight font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums">
         {value}
       </span>
       {hint ? <span className="stat-hint mt-1 block text-[11.5px] leading-snug text-muted">{hint}</span> : null}

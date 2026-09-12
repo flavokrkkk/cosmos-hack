@@ -99,6 +99,7 @@ function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open'
                 >
                   <input
                     type="checkbox"
+                    aria-label={candidate.title}
                     className="mt-1 size-4 shrink-0 accent-brand"
                     checked={checked}
                     disabled={disabled}
@@ -196,14 +197,13 @@ function ComparisonAnalysis({ result }: { result: ComparisonResult }) {
           options={SCENARIOS.map((value) => ({ value, label: value }))} label="Сценарий AI-анализа сравнения" />
       </div>
       <p className="mt-2 text-[13px] text-muted">
-        Первый, второй и остальные варианты — колонки таблицы слева направо.
-        AI объяснит компромиссы относительно первого, но не выберет победителя.
+        Компромиссы относительно первого варианта (колонки слева направо); победителя модель не выбирает.
       </p>
       <Button className="mt-4" size="md" loading={query.isFetching} onClick={() => {
         if (launched) void query.refetch()
         else setLaunchedKey(requestKey)
       }}>Проанализировать с AI</Button>
-      {query.isFetching ? <p role="status" className="mt-3 text-[13px] text-muted">Готовим анализ выбранных портфелей — до минуты. Таблица уже доступна.</p> : null}
+      {query.isFetching ? <p role="status" className="mt-3 text-[13px] text-muted">Модель отвечает — до полутора минут на процессоре.</p> : null}
       {launched && query.isError ? <p className="mt-3 text-[13px] text-fail">Анализ не получен: {query.error.message}. Расчёты в таблице доступны.</p> : null}
       {analysis && !query.isFetching ? (
         <div className="mt-4 flex flex-col gap-3">

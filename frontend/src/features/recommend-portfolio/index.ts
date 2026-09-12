@@ -1,5 +1,6 @@
 export { defaultVariant, useActiveVariant } from './model/useActiveVariant'
 export type { ActiveVariantKind, ActiveVariantView } from './model/useActiveVariant'
+export { explanationFor } from './model/explanations'
 export { useAutoRecommendation } from './model/useAutoRecommendation'
 export { useManualRecommendation } from './model/useManualRecommendation'
 export { SearchStats } from './ui/searchStats'

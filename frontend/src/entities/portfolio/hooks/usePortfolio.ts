@@ -1,8 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 
 import type {
-  CompareRequest, ComparisonAnalysisRequest, EvaluateRequest, RecommendRequest,
-  SelectionItem,
+  CompareRequest, ComparisonAnalysisRequest, EvaluateRequest, RecommendRequest, SelectionItem,
 } from '@shared/api/contracts'
 
 import { portfolioService } from '../api'
@@ -11,8 +10,10 @@ import { selectionKey, sortedLotIds } from '../lib/selection'
 export const portfolioKeys = {
   evaluate: (datasetHash: string, selection: readonly SelectionItem[]) =>
     ['portfolio', 'evaluate', datasetHash, selectionKey(selection)] as const,
-  recommend: (datasetHash: string, requireStress: boolean, lotIds: readonly string[] | null) =>
-    ['portfolio', 'recommend', datasetHash, requireStress, lotIds ? sortedLotIds(lotIds) : null] as const,
+  recommend: (
+    datasetHash: string, requireStress: boolean, lotIds: readonly string[] | null, withExplanations: boolean,
+  ) =>
+    ['portfolio', 'recommend', datasetHash, requireStress, lotIds ? sortedLotIds(lotIds) : null, withExplanations] as const,
 }
 
 /**
@@ -34,32 +35,39 @@ export function useEvaluate(datasetHash: string | undefined, selection: readonly
   })
 }
 
-type RecommendParams = {
+export type RecommendParams = {
   datasetHash: string | undefined
   requireStress: boolean
-  /** Ровно четыре лота для подбора режимов; `null` — полный автоподбор. */
+  /** Четыре–восемь лотов-кандидатов; `null` — полный автоподбор. */
   lotIds: readonly string[] | null
   enabled: boolean
 }
 
+function recommendRequest(params: RecommendParams, withExplanations: boolean): RecommendRequest {
+  return {
+    dataset_hash: params.datasetHash as string,
+    require_stress: params.requireStress,
+    method_id: 'pareto_lexicographic_v1',
+    lot_ids: params.lotIds ? sortedLotIds(params.lotIds) : null,
+    with_explanations: withExplanations,
+  }
+}
+
+function recommendEnabled({ datasetHash, lotIds, enabled }: RecommendParams): boolean {
+  return enabled && Boolean(datasetHash) && (lotIds === null || (lotIds.length >= 4 && lotIds.length <= 8))
+}
+
 /**
- * Подбор возвращает расчёты вместе с пакетными объяснениями.
- * Повторная генерация и срок кеширования управляются бэкендом.
+ * Подбор в два шага. Первый — только расчёт и фронт (`with_explanations: false`,
+ * доли секунды): числа видны сразу. Результат определяется входами, поэтому
+ * кешируется по ним и переживает перезагрузку; «Подобрать заново» — `refetch()`.
  */
-export function useRecommendation({ datasetHash, requireStress, lotIds, enabled }: RecommendParams) {
+export function useRecommendation(params: RecommendParams) {
   return useQuery({
-    queryKey: portfolioKeys.recommend(datasetHash ?? '', requireStress, lotIds),
-    queryFn: ({ signal }) =>
-      portfolioService.recommend({
-        dataset_hash: datasetHash as string,
-        require_stress: requireStress,
-        method_id: 'pareto_lexicographic_v1',
-        lot_ids: lotIds ? sortedLotIds(lotIds) : null,
-      } satisfies RecommendRequest, signal),
-    enabled: enabled && Boolean(datasetHash) && (lotIds === null || lotIds.length === 4),
-    staleTime: 0,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    queryKey: portfolioKeys.recommend(params.datasetHash ?? '', params.requireStress, params.lotIds, false),
+    queryFn: ({ signal }) => portfolioService.recommend(recommendRequest(params, false), signal, 30_000),
+    enabled: recommendEnabled(params),
+    staleTime: Infinity,
     retry: false,
     /* Ошибку показываем на странице рядом с кнопкой «Повторить», тост был бы дублем. */
     meta: { skipErrorToast: true },
@@ -67,10 +75,25 @@ export function useRecommendation({ datasetHash, requireStress, lotIds, enabled 
 }
 
 /**
- * Сопоставление вариантов — действие по кнопке.
- * Считает бэкенд той же арифметикой, что и одиночные портфели; фронтенд дельты
- * не выводит. Принимает 2–4 полных портфеля — иначе 422.
+ * Второй шаг — тот же подбор с пакетным объяснением от модели. Бэкенд считает
+ * объяснение один раз на все варианты и кеширует; на процессоре это до
+ * полутора минут, поэтому запрос идёт после первого и никого не блокирует.
+ * В браузере не персистится: шаблонный ответ при недоступной модели не должен
+ * пережить перезагрузку.
  */
+export function useRecommendationExplanations(params: RecommendParams) {
+  return useQuery({
+    queryKey: portfolioKeys.recommend(params.datasetHash ?? '', params.requireStress, params.lotIds, true),
+    queryFn: ({ signal }) => portfolioService.recommend(recommendRequest(params, true), signal, 150_000),
+    enabled: recommendEnabled(params),
+    staleTime: Infinity,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    meta: { skipErrorToast: true, persist: false },
+  })
+}
+
 export function useCompare() {
   return useMutation({
     mutationFn: (request: CompareRequest) => portfolioService.compare(request),

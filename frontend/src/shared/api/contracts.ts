@@ -205,6 +205,12 @@ export type RecommendRequest = {
    * Бэкенд сортирует список и отклоняет дубликаты и неизвестные ID (422).
    */
   lot_ids?: string[] | null
+  /**
+   * `false` — только расчёт и фронт, без пакетного объяснения Ollama (доли секунды).
+   * Фронтенд сначала показывает числа, а объяснения запрашивает вторым вызовом.
+   * На `input_hash` флаг не влияет.
+   */
+  with_explanations?: boolean
 }
 
 export type CompareRequest = {

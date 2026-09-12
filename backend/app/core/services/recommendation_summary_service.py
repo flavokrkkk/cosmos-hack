@@ -26,7 +26,11 @@ class RecommendationSummaryService:
 
     async def recommend(self, request: RecommendRequest, ollama: OllamaService) -> RecommendationResult:
         result = await run_in_threadpool(RecommendationService().recommend, request)
-        if result.status == "no_feasible":
+        # В ответе повторяем реальное условие вызова: движок строит request без флага.
+        result.request = result.request.model_copy(update={"with_explanations": request.with_explanations})
+        # Без объяснений отдаём чистый расчёт сразу: фронтенд показывает числа,
+        # а пакетное объяснение запрашивает вторым вызовом с with_explanations=true.
+        if result.status == "no_feasible" or not request.with_explanations:
             return result
         key = input_hash({"result": result.model_dump(), "model": ollama.model, "prompt": PROMPT_VERSION})
         cached = self._cache.get(key)

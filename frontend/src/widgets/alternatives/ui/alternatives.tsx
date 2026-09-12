@@ -3,8 +3,7 @@ import {
 } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 
-import { formatMoney, formatNumber, selectionLabel, useWorkspace } from '@entities/portfolio'
-import { VariantExplanation } from '@features/explain-portfolio'
+import { selectionLabel } from '@entities/portfolio'
 import type { RecommendationResult, RecommendationVariant } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
@@ -37,14 +36,19 @@ function iconFor(title: string, isTeam: boolean): LucideIcon {
   return Shuffle
 }
 
+/** Первое предложение — карточке хватает сути, полный текст остаётся в подсказке. */
+function firstSentence(text: string): string {
+  const match = text.match(/^[^.!?]+[.!?]/)
+  return match ? match[0] : text
+}
+
 /**
- * «Альтернативы и сравнение»: портфель команды и опорные точки фронта —
- * крайние значения по каждому показателю среди недоминируемых вариантов.
- * Это границы возможного, а не то, что следует выбрать. «Открыть этот вариант»
- * меняет просмотр, но НЕ принимает вариант решением команды.
+ * «Альтернативы и сравнение»: портфель команды и опорные точки фронта — крайние
+ * значения по каждому показателю среди недоминируемых. Карточка держит только
+ * суть: название, состав, допустимость и действие; числа — в проверке и сравнении.
+ * «Открыть этот вариант» меняет просмотр, но НЕ принимает вариант решением команды.
  */
 export function Alternatives({ title, subtitle, result, active, onOpen, className }: Props) {
-  const scenario = useWorkspace((state) => state.scenario)
   const items: { target: AlternativeTarget; variant: RecommendationVariant }[] = [
     ...(result.recommended ? [{ target: 'team' as const, variant: result.recommended }] : []),
     ...result.alternatives.map((variant, index) => ({ target: index, variant })),
@@ -61,8 +65,6 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
           const isActive = active === target
           const Icon = iconFor(variant.title, isTeam)
           const feasible = variant.calculation.feasible_by_scenario
-          const metrics = variant.calculation.metrics
-          const budget = variant.calculation.checks[scenario]?.find((check) => check.code === 'c0_limit')
           return (
             <li key={variant.calculation.input_hash} className="flex w-full sm:w-[calc(50%-12px)] lg:w-[262px]">
               <Card
@@ -78,8 +80,8 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
                   {isTeam ? <Tag tone="brand">выбран командой</Tag> : <Tag tone="muted">опорная точка</Tag>}
                 </div>
                 <h3 className="mt-7 text-[17px] leading-tight font-bold tracking-[-0.01em]">{variant.title}</h3>
-                <p className="mt-1.5 line-clamp-4 text-[13px] leading-snug text-muted" title={variant.reason}>
-                  {variant.reason}
+                <p className="mt-1.5 line-clamp-2 text-[13px] leading-snug text-muted" title={variant.reason}>
+                  {firstSentence(variant.reason)}
                 </p>
                 <p className="mt-3 text-[12px] text-ink-500 tabular-nums">
                   {selectionLabel(variant.calculation.selection)}
@@ -87,21 +89,10 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
                 <div className="mt-2 flex gap-1.5">
                   {SCENARIOS.map((scenario) => (
                     <Tag key={scenario} tone={feasible[scenario] ? 'pass' : 'fail'}>
-                      {scenario} {feasible[scenario] ? 'проходит' : 'не проходит'}
+                      {scenario} {feasible[scenario] ? '✓' : '✕'}
                     </Tag>
                   ))}
                 </div>
-                {metrics ? (
-                  <dl className="mt-3 grid grid-cols-2 gap-2 text-[12px] tabular-nums">
-                    <div><dt className="text-muted">C0</dt><dd>{formatMoney(metrics.c0_mrub)}</dd></div>
-                    <div><dt className="text-muted">VPUB / год</dt><dd>{formatMoney(metrics.vpub_mrub_per_year)}</dd></div>
-                    <div><dt className="text-muted">KCASH</dt><dd>{formatNumber(metrics.kcash)}</dd></div>
-                    {budget?.slack != null ? (
-                      <div><dt className="text-muted">Запас · {scenario}</dt><dd className={budget.passed ? 'text-pass' : 'text-fail'}>{formatMoney(budget.slack)}</dd></div>
-                    ) : null}
-                  </dl>
-                ) : null}
-                <VariantExplanation result={variant.explanation} />
                 <div className="mt-auto pt-5">
                   <Button
                     size="md"

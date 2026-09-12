@@ -17,7 +17,7 @@ type Props = {
  */
 export function MetricTiles({ metrics, tiles = METRIC_TILES, columns = 3, className }: Props) {
   return (
-    <div className={cn('grid gap-3', columns === 3 ? 'sm:grid-cols-3' : 'grid-cols-2', className)}>
+    <div className={cn('grid grid-cols-2 gap-3', columns === 3 && 'sm:grid-cols-3', className)}>
       {tiles.map((tile) => {
         const value = Number(metrics[tile.key])
         return (

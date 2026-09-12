@@ -43,7 +43,7 @@ export const DELTA_ROWS: readonly DeltaRow[] = [
   { key: 'opex_mrub_per_year', title: 'Годовые расходы', unit: 'млн ₽/год', better: 'less' },
   { key: 'cash_mrub_per_year', title: 'Денежные поступления', unit: 'млн ₽/год', better: 'more' },
   { key: 'kcash', title: 'Покрытие расходов', unit: '', better: 'more' },
-  { key: 't_rep', title: 'Средняя тиражируемость', unit: '', better: 'more' },
+  { key: 't_rep', title: 'Средний t_rep', unit: '', better: 'more' },
 ]
 
 /** Дельта меньше этого по модулю считается совпадением: артефакт float. */

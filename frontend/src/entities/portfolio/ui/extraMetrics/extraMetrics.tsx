@@ -29,7 +29,6 @@ export function ExtraMetrics({ metrics, shown = [], rest = [] }: Props) {
         {metrics.capability_set.map((group) => (
           <Tag key={group} tone="muted">{group}</Tag>
         ))}
-        <span className="ml-1">· индексы — средние по четырём лотам, шкала 1–5</span>
       </p>
     </Collapsible>
   )

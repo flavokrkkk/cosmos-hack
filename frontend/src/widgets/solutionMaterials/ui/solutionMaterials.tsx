@@ -35,19 +35,17 @@ export function SolutionMaterials({ catalog, isDraft }: Props) {
         summary={<span>готово {ready} из {total}</span>}
       >
         <p className="mb-4 max-w-[760px] text-[13px] leading-snug text-muted">
-          Состав сдачи по критериям: продуктовая часть П1–П9 и техническая Т1–Т5. Раздел показывает,
-          что подготовлено, а что ещё нет; он ничего не создаёт и не публикует.
+          Состав сдачи по критериям П1–П9 и Т1–Т5.
           {catalog ? (
             <>
-              {' '}Версия данных <code>{catalog.dataset_hash.slice(0, 12)}…</code>, движок {catalog.engine_version}.
+              {' '}Данные <code>{catalog.dataset_hash.slice(0, 12)}…</code>, движок {catalog.engine_version}.
             </>
           ) : null}
         </p>
 
         {isDraft ? (
           <p className="mb-4 rounded-2xl bg-brand-50 px-4 py-2.5 text-[12.5px] text-brand-700">
-            Наверху открыт вариант, собранный или выбранный вручную. Материалы ниже относятся к
-            финальному решению команды и от этого не меняются.
+            Наверху открыт черновик; материалы ниже относятся к решению команды.
           </p>
         ) : null}
 
@@ -88,9 +86,7 @@ export function SolutionMaterials({ catalog, isDraft }: Props) {
         </div>
 
         <p className="mt-4 text-[11.5px] leading-snug text-muted">
-          Пути указаны относительно корня репозитория и показаны текстом: страница файлы репозитория по
-          ссылке не открывает. «Готово» означает, что файл лежит в репозитории, а не что его содержимое
-          принято командой.
+          Пути — относительно корня репозитория. «Готово» — файл в репозитории, не одобрение содержания.
         </p>
       </Collapsible>
     </Panel>

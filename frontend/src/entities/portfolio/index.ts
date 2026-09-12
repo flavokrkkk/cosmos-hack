@@ -1,7 +1,9 @@
 export { portfolioService } from './api'
 export {
   portfolioKeys, useCompare, useComparisonAnalysis, useEvaluate, useRecommendation,
+  useRecommendationExplanations,
 } from './hooks'
+export type { RecommendParams } from './hooks'
 export {
   DELTA_ROWS, DELTA_VERDICT_LABEL, EXTRA_METRIC_TILES, METRIC_TILES, METRIC_TILES_COMPACT,
   PORTFOLIO_SIZE, checkLabel, comparisonCsv, constraintsCsv, decisionJson, deltaVerdict, detailCsv,

@@ -58,7 +58,7 @@ export function PortfolioReview({
   const dependent = calculation ? scenarioDependentCodes(calculation) : undefined
 
   return (
-    <div className="rise-in grid gap-6 lg:grid-cols-2">
+    <div className="rise-in grid gap-6 lg:grid-cols-2 lg:items-start">
       <Panel aria-busy={isLoading} className={cn(isLoading && 'is-stale')}>
         <PanelHeader className="mb-2 items-start">
           <div>
@@ -84,7 +84,6 @@ export function PortfolioReview({
         {calculation?.detail.length ? (
           <p className="mb-4 max-w-[640px] text-[13px] leading-snug text-muted" title={reason || undefined}>
             {describeComposition(calculation.detail)}
-            {reason ? <><br /><span className="line-clamp-2">{reason}</span></> : null}
           </p>
         ) : null}
 
@@ -99,7 +98,7 @@ export function PortfolioReview({
           </div>
         ) : null}
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid content-start gap-4 sm:grid-cols-2">
           {calculation
             ? calculation.detail.map((detail) => {
                 const lot = lotById.get(detail.lot_id)
@@ -134,7 +133,7 @@ export function PortfolioReview({
           {complete && calculation.metrics ? (
             <>
               <MetricTiles metrics={calculation.metrics} />
-              <ScenarioHeadroom calculation={calculation} scenario={scenario} className="mt-3" />
+              <ScenarioHeadroom calculation={calculation} scenario={scenario} isTeam={variantKind === 'team'} className="mt-3" />
               <ExtraMetrics metrics={calculation.metrics} shown={METRIC_TILES} />
             </>
           ) : (

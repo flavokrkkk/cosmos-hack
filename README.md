@@ -67,6 +67,11 @@ git hash-object case/source/data/lots.csv        # 30cff39e…
 git hash-object case/source/case_core.py         # 8fd3e053…
 ```
 
+Сводный `dataset_hash` этого набора, который бэкенд отдаёт в `GET /portfolio/catalog`
+и который показан в подвале интерфейса:
+`1700fdbd1f2d51b7b639304323147dfa592a71d541c9ea723dca32b66fe38f22`. Другое значение
+означает другие исходные данные.
+
 **Как воспроизвести любое число записки:**
 
 ```bash

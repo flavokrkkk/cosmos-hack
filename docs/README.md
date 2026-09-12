@@ -58,7 +58,9 @@ NDVI-кит снят из репо, тег `ndvi-kit`.
   (см. [research/README.md](research/README.md)).
 - **Frontend собран под дизайн-систему макетов (12.09):** автоподбор, ручная проверка,
   сравнение, сохранение, экспорт и объяснение работают на живом бэкенде; состояние — в
-  сессии браузера. См. [05-decisions.md](05-decisions.md#12092026--frontend-собран-заново-под-дизайн-систему-макетов)
+  сессии браузера. Независимая валидация фронта и всех ручек —
+  [notes/2026-09-12-frontend-case-validation.md](notes/2026-09-12-frontend-case-validation.md).
+  Ожидаемый `dataset_hash` официальных данных — `1700fdbd…` (полностью в корневом README). См. [05-decisions.md](05-decisions.md#12092026--frontend-собран-заново-под-дизайн-систему-макетов)
   и [notes/2026-09-12-frontend-design-system.md](notes/2026-09-12-frontend-design-system.md).
 - **Выбран портфель: «Сбалансированный»** — `FIRE:A, AGRI:A, TRANS:B, ENV:A`
   (решение Egor, 11.09). Проходит BASE и STRESS без пересмотра. Основание и цифры —

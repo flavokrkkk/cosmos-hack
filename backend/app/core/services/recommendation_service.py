@@ -95,7 +95,7 @@ def _recommend(dataset_hash: str, require_stress: bool, lot_ids: tuple[str, ...]
     request = RecommendRequest(dataset_hash=dataset_hash, require_stress=require_stress,
                                lot_ids=list(lot_ids) if lot_ids is not None else None)
     result = RecommendationResult(
-        input_hash=input_hash({**request.model_dump(), "engine_version": ENGINE_VERSION}), request=request,
+        input_hash=input_hash({**request.model_dump(exclude={"with_explanations"}), "engine_version": ENGINE_VERSION}), request=request,
         status="no_feasible" if front.empty else "ok", considered_count=len(frame),
         base_count=int(frame.BASE_ok.sum()), stress_count=int(frame.STRESS_ok.sum()),
         feasible_count=len(candidates), pareto_count=len(front), method=METHOD,

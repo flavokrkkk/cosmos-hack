@@ -34,7 +34,7 @@ export function ExportButton({ calculation, catalog, className }: Props) {
     <Tooltip
       content={
         ready
-          ? `Скачать ${files.length} файлов расчёта: ${files.map((file) => file.name).join(', ')}. decision.json хранит dataset_hash, engine_version и input_hash — при тех же значениях повторный расчёт обязан дать те же числа.`
+          ? `Скачать ${files.length} файлов расчёта: ${files.map((file) => file.name).join(', ')}. calculation_snapshot.json хранит dataset_hash, engine_version и input_hash — при тех же значениях повторный расчёт обязан дать те же числа.`
           : 'Выгрузка доступна для полного портфеля из четырёх лотов'
       }
     >

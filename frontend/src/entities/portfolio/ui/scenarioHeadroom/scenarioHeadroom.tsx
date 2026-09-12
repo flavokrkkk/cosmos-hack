@@ -1,6 +1,6 @@
 import type { Calculation, Scenario } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
-import { Tag } from '@shared/ui'
+import { Tag, Tooltip } from '@shared/ui'
 
 import { scenarioVerdict } from '../../lib/compare'
 import { formatMoney } from '../../lib/format'
@@ -8,16 +8,18 @@ import { formatMoney } from '../../lib/format'
 type Props = {
   calculation: Calculation
   scenario: Scenario
+  /** Открыт портфель команды: в STRESS добавляется ответ команды на стресс (бриф T2). */
+  isTeam?: boolean
   className?: string
 }
 
 /**
  * Что именно меняет переключатель BASE/STRESS (бриф T1): лимит стартовых
- * затрат, факт, запас или превышение и общий вердикт. Показатели портфеля от
- * сценария не зависят, поэтому без этой строки переключение выглядело бы
- * «ничего не изменилось». Все числа — из `checks[scenario]`, запас считал бэкенд.
+ * затрат, факт, запас или превышение и вердикт — одной строкой. Показатели
+ * портфеля от сценария не зависят, поэтому без этой строки переключение
+ * выглядело бы «ничего не изменилось». Числа — из `checks[scenario]`.
  */
-export function ScenarioHeadroom({ calculation, scenario, className }: Props) {
+export function ScenarioHeadroom({ calculation, scenario, isTeam = false, className }: Props) {
   const checks = calculation.checks[scenario]
   const budget = checks?.find((check) => check.code === 'c0_limit')
   const verdict = scenarioVerdict(calculation, scenario)
@@ -29,38 +31,36 @@ export function ScenarioHeadroom({ calculation, scenario, className }: Props) {
 
   const conclusion = verdict.feasible
     ? scenario === 'STRESS'
-      ? 'Портфель выдерживает сокращение бюджета без пересмотра состава.'
-      : 'Портфель укладывается в базовые пороги.'
+      ? 'выдерживает сокращение бюджета'
+      : 'укладывается в базовые пороги'
     : exceeded
-      ? 'Лимит стартовых затрат превышен — нужен пересмотр состава или режимов.'
-      : `Лимит выдержан, но нарушено других условий: ${failedOthers}.`
+      ? 'лимит превышен — нужен пересмотр'
+      : `нарушено других условий: ${failedOthers}`
 
   return (
     <div
       key={scenario}
       className={cn(
-        'animate-fade-in rounded-tile bg-sunken/70 px-4 py-3 text-[12.5px] leading-snug text-ink-700',
+        'animate-fade-in flex flex-wrap items-center gap-x-2 gap-y-1 rounded-tile bg-sunken/70 px-4 py-2.5 text-[12.5px] leading-snug text-ink-700',
         className,
       )}
       role="status"
     >
-      <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
-        <Tag tone={verdict.feasible ? 'pass' : 'fail'}>{scenario}</Tag>
-        <span>
-          лимит стартовых затрат <strong className="tabular-nums">{formatMoney(budget.threshold)}</strong>,
-          факт <strong className="tabular-nums">{formatMoney(budget.actual)}</strong> —{' '}
-          {exceeded ? (
-            <strong className="text-fail tabular-nums">превышение {formatMoney(Math.abs(slack))}</strong>
-          ) : (
-            <strong className="text-pass tabular-nums">запас {formatMoney(slack)}</strong>
-          )}
-          . {conclusion}
-        </span>
-      </p>
-      <p className="mt-1 text-[11.5px] text-muted">
-        Показатели портфеля от сценария не зависят: переключатель меняет только пороги проверки —
-        состав, режимы и цены лотов те же.
-      </p>
+      <Tooltip content="Сценарий меняет только пороги проверки: состав, режимы и показатели портфеля те же.">
+        <Tag tone={verdict.feasible ? 'pass' : 'fail'} tabIndex={0} className="cursor-help">{scenario}</Tag>
+      </Tooltip>
+      <span className="tabular-nums">
+        лимит C0 <strong>{formatMoney(budget.threshold)}</strong> · факт <strong>{formatMoney(budget.actual)}</strong> ·{' '}
+        {exceeded ? (
+          <strong className="text-fail">превышение {formatMoney(Math.abs(slack))}</strong>
+        ) : (
+          <strong className="text-pass">запас {formatMoney(slack)}</strong>
+        )}
+      </span>
+      <span className="text-muted">— {conclusion}</span>
+      {isTeam && scenario === 'STRESS' && verdict.feasible ? (
+        <span className="text-muted">· решение команды: портфель сохраняется без пересмотра</span>
+      ) : null}
     </div>
   )
 }

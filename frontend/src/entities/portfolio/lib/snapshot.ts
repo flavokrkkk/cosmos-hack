@@ -81,7 +81,8 @@ export function constraintsCsv(calculation: Calculation, scenario: Scenario): Ex
 }
 
 /**
- * `decision.json` — то, что делает расчёт воспроизводимым.
+ * `calculation_snapshot.json` — то, что делает расчёт воспроизводимым.
+ * Имя не совпадает с `config/decision.json`: это снимок расчёта, а не решение команды.
  *
  * Здесь ответы бэкенда лежат дословно: `dataset_hash` привязывает снимок к
  * версии исходных данных, `input_hash` — к конкретному составу, `engine_version`
@@ -94,7 +95,7 @@ export function decisionJson(
   comparison?: ComparisonResult,
 ): ExportFile {
   return {
-    name: 'decision.json',
+    name: 'calculation_snapshot.json',
     mime: 'application/json;charset=utf-8',
     content: json({
       case_id: catalog.case_id,

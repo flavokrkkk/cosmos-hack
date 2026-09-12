@@ -36,7 +36,7 @@ export function ConstraintTiles({ checks, scenarioDependent, scenario, className
             <StatTile
               label={checkLabel(check)}
               value={formatCheckValue(check)}
-              hint={scenarioDependent?.has(check.code) ? `порог сценария ${scenario ?? ''}`.trim() : undefined}
+              hint={scenarioDependent?.has(check.code) ? `порог ${scenario ?? ''}`.trim() : undefined}
               tone={check.passed ? 'neutral' : 'fail'}
             />
           </div>

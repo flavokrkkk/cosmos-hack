@@ -10,7 +10,8 @@ import {
   CompareDialog, ExportButton, SaveVariantDialog, SearchStats, StressSwitch, buildCandidates,
   useActiveVariant, useAutoRecommendation, useManualRecommendation, useManualSelection,
 } from '@features'
-import type { CaseCatalog, RecommendationResult, Scenario } from '@shared/api/contracts'
+import { normalizeApiError } from '@shared/api'
+import type { Calculation, CaseCatalog, RecommendationResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Button, Panel, PanelHeader, PanelTitle, Segmented, Skeleton, Tag } from '@shared/ui'
@@ -34,7 +35,8 @@ const SCENARIO_OPTIONS = SCENARIOS.map((scenario) => ({ value: scenario, label: 
  */
 export function ManualScreen({ catalog }: Props) {
   const selection = useManualSelection()
-  const { query } = useManualRecommendation(catalog.dataset_hash)
+  const manualRecommendation = useManualRecommendation(catalog.dataset_hash)
+  const { query, explanations } = manualRecommendation
   const auto = useAutoRecommendation(catalog.dataset_hash)
   const result = query.data
   const active = useActiveVariant(catalog.dataset_hash, result)
@@ -62,7 +64,13 @@ export function ManualScreen({ catalog }: Props) {
     () => selection.lotIds.map((lotId) => ({ lot_id: lotId, mode_id: placeholderMode })),
     [selection.lotIds, placeholderMode],
   )
-  const partial = useEvaluate(catalog.dataset_hash, partialSelection, selection.count > 0 && !selection.isComplete)
+  /* Тот же расчёт служит диагностикой при 4/4 без допустимых режимов: показываем,
+     какие условия нарушаются даже когда все лоты в общественном ядре (Т3). */
+  const partial = useEvaluate(
+    catalog.dataset_hash,
+    partialSelection,
+    selection.count > 0 && (!selection.isComplete || query.data?.status === 'no_feasible'),
+  )
   const modeByLot = useMemo(
     () => new Map((active.calculation?.detail ?? []).map((item) => [item.lot_id, item.mode_id])),
     [active.calculation],
@@ -104,8 +112,8 @@ export function ManualScreen({ catalog }: Props) {
           />
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(340px,1fr)]">
-          <ul className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(340px,1fr)] lg:items-start">
+          <ul className="grid content-start gap-5 sm:grid-cols-2">
             {catalog.lots.map((lot) => (
               <li key={lot.lot_id} className="flex">
                 <LotCard
@@ -149,12 +157,11 @@ export function ManualScreen({ catalog }: Props) {
                       )
                     })}
                   </ul>
-                  <p className="mt-3 text-[12.5px] text-muted">
-                    {complete
-                      ? 'Режимы A/B/C подбирает сервер: перебираются все сочетания внутри этих четырёх лотов.'
-                      : `Выберите ещё ${selection.remaining} — режимы A/B/C подберёт сервер после четвёртого лота.`}
-                    {selection.origin === 'copy' ? ' Состав скопирован из открытого варианта.' : ''}
-                  </p>
+                  {!complete ? (
+                    <p className="mt-3 text-[12.5px] text-muted">
+                      Выберите ещё {selection.remaining} — режимы A/B/C подберёт сервер
+                    </p>
+                  ) : null}
                   {complete ? <StressSwitch compact className="mt-4 justify-between" /> : null}
                   {!complete && partial.data ? (
                     <PortfolioProgress calculation={partial.data} scenario={scenario} className="mt-4" />
@@ -168,9 +175,8 @@ export function ManualScreen({ catalog }: Props) {
                 <Panel aria-busy role="status">
                   <PanelHeader className="mb-3">
                     <PanelTitle className="text-[20px]">Показатели</PanelTitle>
-                    <Tag tone="brand">подбор и AI-объяснения…</Tag>
+                    <Tag tone="brand">подбираем режимы…</Tag>
                   </PanelHeader>
-                  <p className="mb-3 text-[13px] text-muted">Сервер подбирает режимы и готовит объяснения всех вариантов одним запросом. Это может занять до полутора минут.</p>
                   <div className="grid grid-cols-2 gap-3">
                     {[0, 1, 2, 3].map((index) => <Skeleton key={index} className="h-[76px]" />)}
                   </div>
@@ -193,14 +199,17 @@ export function ManualScreen({ catalog }: Props) {
             ) : null}
 
             {complete && result?.status === 'no_feasible' ? (
-              <NoModesBlock result={result} onSearchInBase={() => setRequireStress(false)} />
+              <NoModesBlock
+                result={result}
+                diagnostic={partial.data}
+                scenario={scenario}
+                placeholderMode={placeholderMode}
+                onSearchInBase={() => setRequireStress(false)}
+              />
             ) : null}
 
             {showResult && active.calculation?.metrics ? (
               <div className="rise-in flex flex-col gap-5">
-                <Button loading={query.isFetching} onClick={() => void query.refetch()}>
-                  Подобрать заново
-                </Button>
                 <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
                   <PanelHeader className="mb-3">
                     <PanelTitle className="text-[20px]">Показатели</PanelTitle>
@@ -208,11 +217,11 @@ export function ManualScreen({ catalog }: Props) {
                   </PanelHeader>
                   {active.kind === 'reference' || active.kind === 'team' ? (
                     <p className="mb-3 text-[12.5px] text-muted">
-                      {active.kind === 'team' ? 'Портфель команды' : `Опорная точка: ${active.title}`} · сценарий {scenario}
+                      {active.kind === 'team' ? 'Портфель команды' : active.title}
                     </p>
                   ) : null}
                   <MetricTiles metrics={active.calculation.metrics} tiles={METRIC_TILES_COMPACT} columns={2} />
-                  <ScenarioHeadroom calculation={active.calculation} scenario={scenario} className="mt-3" />
+                  <ScenarioHeadroom calculation={active.calculation} scenario={scenario} isTeam={active.kind === 'team'} className="mt-3" />
                   <ExtraMetrics
                     metrics={active.calculation.metrics}
                     shown={METRIC_TILES_COMPACT}
@@ -246,15 +255,21 @@ export function ManualScreen({ catalog }: Props) {
 
       {showResult && result ? (
         <div className="rise-in flex flex-col gap-14">
-          <ExplanationBlock result={active.explanation} isLoading={query.isFetching} onRetry={() => void query.refetch()} />
+          <ExplanationBlock
+            result={manualRecommendation.explanationFor(active.calculation?.input_hash)}
+            isLoading={explanations.isFetching}
+            errorMessage={explanations.isError ? normalizeApiError(explanations.error).message : undefined}
+            onRetry={() => void explanations.refetch()}
+          />
           <Alternatives
             title="Другие режимы для выбранных лотов"
-            subtitle="Опорные точки фронта внутри выбранных четырёх лотов: те же лоты, другие сочетания режимов A/B/C."
+            subtitle="Те же четыре лота, другие сочетания режимов A/B/C."
             result={result}
             active={activeTarget}
-            onOpen={(target) =>
+            onOpen={(target) => {
               openVariant(target === 'team' ? { kind: 'default' } : { kind: 'alternative', index: target })
-            }
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
           />
         </div>
       ) : null}
@@ -283,22 +298,46 @@ export function ManualScreen({ catalog }: Props) {
   )
 }
 
-function NoModesBlock({ result, onSearchInBase }: { result: RecommendationResult; onSearchInBase: () => void }) {
+/**
+ * Допустимых режимов нет. Чтобы эксперт видел «вариант с нарушением» (Т3), ниже —
+ * диагностика того же состава с режимом общественного ядра у всех лотов: какие из
+ * девяти условий не проходят. Это не подмена состава: лоты те же, режим — заглушка.
+ */
+function NoModesBlock({
+  result, diagnostic, scenario, placeholderMode, onSearchInBase,
+}: {
+  result: RecommendationResult
+  diagnostic: Calculation | undefined
+  scenario: Scenario
+  placeholderMode: string
+  onSearchInBase: () => void
+}) {
   const canSearchInBase = result.request.require_stress && result.base_count > 0
+  const checks = diagnostic?.checks[scenario]
   return (
-    <Panel>
-      <PanelTitle className="text-[20px]">Сочетания режимов нет</PanelTitle>
-      <p className="mt-2 text-[13.5px] leading-snug text-ink-500">
-        Для выбранных лотов нет сочетания режимов, выполняющего требования
-        {result.request.require_stress ? ' STRESS' : ' BASE'}. Состав не подменяем.
-      </p>
-      <SearchStats result={result} className="mt-3 justify-start" />
-      <div className="mt-4 flex flex-wrap gap-2">
+    <>
+      <Panel>
+        <PanelTitle className="text-[20px]">Сочетания режимов нет</PanelTitle>
+        <p className="mt-2 text-[13.5px] leading-snug text-ink-500">
+          Ни одно сочетание режимов для этих лотов не проходит
+          {result.request.require_stress ? ' STRESS' : ' BASE'} — замените один из лотов.
+        </p>
+        <SearchStats result={result} className="mt-3 justify-start" />
         {canSearchInBase ? (
-          <Button size="sm" onClick={onSearchInBase}>Искать без условия STRESS</Button>
+          <Button size="sm" className="mt-4" onClick={onSearchInBase}>Искать без условия STRESS</Button>
         ) : null}
-        <span className="self-center text-[12.5px] text-muted">или замените один из лотов слева</span>
-      </div>
-    </Panel>
+      </Panel>
+      {diagnostic && checks ? (
+        <Panel>
+          <PanelHeader className="mb-3">
+            <PanelTitle className="text-[20px]">Что нарушается</PanelTitle>
+            <FeasibilityBadge calculation={diagnostic} scenario={scenario} size="sm" />
+          </PanelHeader>
+          <p className="mb-3 text-[12.5px] text-muted">Все лоты в режиме {placeholderMode} · сценарий {scenario}</p>
+          <ScenarioHeadroom calculation={diagnostic} scenario={scenario} className="mb-3" />
+          <ConstraintTiles checks={checks} scenarioDependent={scenarioDependentCodes(diagnostic)} scenario={scenario} />
+        </Panel>
+      ) : null}
+    </>
   )
 }

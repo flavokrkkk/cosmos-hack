@@ -60,10 +60,6 @@ export function PortfolioProgress({ calculation, scenario, className }: Props) {
           ))}
         </p>
       ) : null}
-      <p className="text-[12px] leading-snug text-muted">
-        Затраты, поступления и общественное ядро появятся после четвёртого лота — их считают с
-        режимами A/B/C, которые назначит сервер.
-      </p>
     </div>
   )
 }

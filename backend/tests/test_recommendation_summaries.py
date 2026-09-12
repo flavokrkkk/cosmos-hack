@@ -249,3 +249,20 @@ def test_manual_selection_contains_batch_explanations_for_all_variants():
             assert variant.explanation.generated_by == "ollama"
             assert variant.explanation.input_hash == variant.calculation.input_hash
     asyncio.run(run())
+
+
+def test_without_explanations_returns_calculation_only_and_skips_ollama():
+    """Первый шаг фронтенда: числа без ожидания модели, input_hash тот же."""
+    async def run():
+        service, ollama = RecommendationSummaryService(), FakeBatch()
+        fast = await service.recommend(request().model_copy(update={"with_explanations": False}), ollama)
+        assert ollama.calls == []
+        assert fast.status == "ok" and variants(fast)
+        assert all(variant.explanation is None for variant in variants(fast))
+        full = await service.recommend(request(), ollama)
+        assert len(ollama.calls) == 1
+        assert full.input_hash == fast.input_hash
+        for before, after in zip(variants(fast), variants(full)):
+            assert before.calculation == after.calculation
+            assert after.explanation is not None
+    asyncio.run(run())

@@ -39,6 +39,14 @@ class RecommendRequest(PortfolioSchema):
         ),
     )
 
+    with_explanations: bool = Field(
+        default=True, strict=True,
+        description=(
+            "false — только расчёт и фронт, без пакетного объяснения Ollama: ответ за доли секунды. "
+            "Фронтенд сначала показывает числа, а объяснения запрашивает вторым вызовом."
+        ),
+    )
+
     @model_validator(mode="after")
     def unique_fixed_lots(self) -> Self:
         if self.lot_ids is not None:

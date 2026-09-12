@@ -7,19 +7,24 @@ import {
   CompareDialog, SaveVariantDialog, SearchStats, StressSwitch, buildCandidates,
   useActiveVariant, useAutoRecommendation, useManualRecommendation,
 } from '@features'
+import { normalizeApiError } from '@shared/api'
 import type { CaseCatalog, RecommendationResult } from '@shared/api/contracts'
 import { Button, Panel, SectionHeading, Skeleton, Tag } from '@shared/ui'
 import {
   Alternatives, ExplanationBlock, LotDetailsHost, PortfolioReview, type AlternativeTarget,
 } from '@widgets'
 
-import { HowWeChoose } from './howWeChoose'
-
 type Props = {
   catalog: CaseCatalog
 }
 
 const TILTS = [-2, -0.6, 0.6, 2]
+
+/** Первое предложение — заголовку хватает сути, полный текст остаётся в подсказке. */
+function firstSentence(text: string): string {
+  const match = text.match(/^[^.!?]+[.!?]/)
+  return match ? match[0] : text
+}
 
 /**
  * Экран «Автоподбор».
@@ -29,7 +34,8 @@ const TILTS = [-2, -0.6, 0.6, 2]
  * Получение результата само по себе не означает, что команда приняла его решением.
  */
 export function AutoScreen({ catalog }: Props) {
-  const { query, launched, searchRequireStress, launch } = useAutoRecommendation(catalog.dataset_hash)
+  const auto = useAutoRecommendation(catalog.dataset_hash)
+  const { query, explanations, launched, searchRequireStress, launch } = auto
   const manual = useManualRecommendation(catalog.dataset_hash)
   const result = query.data
   const active = useActiveVariant(catalog.dataset_hash, result)
@@ -70,9 +76,8 @@ export function AutoScreen({ catalog }: Props) {
           as="h1"
           eyebrow="Профиль"
           title={method?.title ?? 'Подбор портфеля'}
-          description="Алгоритм перебирает комбинации из четырёх уникальных лотов и режимов A/B/C, отбрасывает нарушающие ограничения и оставляет недоминируемые. Выбор одной точки фронта — решение команды, а не результат вычисления."
+          description="Перебор четвёрок лотов и режимов A/B/C, отсев по ограничениям, фронт недоминируемых. Выбор точки фронта — решение команды."
         />
-        {method ? <HowWeChoose method={method} /> : null}
         <StressSwitch />
       </div>
 
@@ -87,8 +92,7 @@ export function AutoScreen({ catalog }: Props) {
           <h2 className="text-[20px] font-bold">Подбор не выполнен</h2>
           <p className="mt-2 text-[14px] text-fail">{query.error.message}</p>
           <p className="mt-2 text-[13px] text-muted">
-            Это сбой запроса, а не результат расчёта: допустимость портфелей не проверена, и делать
-            вывод «подходящих вариантов нет» по этой ошибке нельзя.
+            Это сбой запроса, а не результат расчёта: вывод «подходящих вариантов нет» по нему делать нельзя.
           </p>
           <Button className="mt-5" onClick={launch}>Повторить</Button>
         </Panel>
@@ -98,9 +102,7 @@ export function AutoScreen({ catalog }: Props) {
         <NoFeasibleBlock
           result={result}
           isRerunning={query.isFetching}
-          onSearchInBase={() => {
-            setRequireStress(false)
-          }}
+          onSearchInBase={() => setRequireStress(false)}
           onManual={() => {
             startManualFrom([])
             window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -114,11 +116,15 @@ export function AutoScreen({ catalog }: Props) {
             <h2 className="text-[24px] leading-tight font-bold tracking-[-0.015em]">
               {active.kind === 'team' ? 'Портфель команды' : active.title}
             </h2>
-            <p className="max-w-[560px] text-[13.5px] leading-snug text-muted">
-              {active.reason}
-            </p>
+            {active.kind !== 'team' && active.reason ? (
+              <p className="max-w-[560px] text-[13.5px] leading-snug text-muted" title={active.reason}>
+                {firstSentence(active.reason)}
+              </p>
+            ) : null}
             <div className="flex flex-wrap items-center justify-center gap-2">
-              {active.kind !== 'saved' ? <Tag tone="muted" size="md">условие поиска: {searchRequireStress ? 'проходят STRESS' : 'проходят BASE'}</Tag> : null}
+              {active.kind !== 'saved' ? (
+                <Tag tone="muted" size="md">условие поиска: {searchRequireStress ? 'проходят STRESS' : 'проходят BASE'}</Tag>
+              ) : null}
               {query.isFetching ? <Tag tone="brand" size="md">идёт новый подбор…</Tag> : null}
             </div>
           </div>
@@ -176,7 +182,12 @@ export function AutoScreen({ catalog }: Props) {
             }}
           />
 
-          <ExplanationBlock result={active.explanation} isLoading={query.isFetching || active.isLoading} onRetry={launch} />
+          <ExplanationBlock
+            result={auto.explanationFor(active.calculation?.input_hash)}
+            isLoading={explanations.isFetching}
+            errorMessage={explanations.isError ? normalizeApiError(explanations.error).message : undefined}
+            onRetry={() => void explanations.refetch()}
+          />
         </>
       ) : null}
 
@@ -184,7 +195,7 @@ export function AutoScreen({ catalog }: Props) {
         <Alternatives
           className="rise-in"
           title="Альтернативы и сравнение"
-          subtitle="Опорные точки фронта — крайние значения по каждому показателю среди недоминируемых вариантов. Это границы возможного, а не то, что следует выбрать."
+          subtitle="Опорные точки фронта — границы возможного, а не готовый выбор."
           result={result}
           active={activeTarget}
           onOpen={(target) => {
@@ -228,17 +239,12 @@ function LaunchBlock({
 }) {
   return (
     <div className="flex flex-col items-center gap-10">
-      <div className="flex flex-col items-center gap-3">
-        <Button onClick={onLaunch} loading={isRunning} className="h-[52px] px-8 text-[16px]">
-          Подобрать портфель
-        </Button>
-        <p className="text-[13px] text-muted">
-          Сравним варианты из {catalog.lots.length} лотов и покажем фронт: портфель команды и опорные точки.
-        </p>
-      </div>
+      <Button onClick={onLaunch} loading={isRunning} className="h-[52px] px-8 text-[16px]">
+        Подобрать портфель
+      </Button>
 
       <section className="flex w-full flex-col items-center gap-6">
-        <SectionHeading title="Восемь лотов кейса" description="Все лоты участвуют в поиске. Числа на карточках — исходные значения каталога, без коэффициентов режима." />
+        <SectionHeading title="Восемь лотов кейса" />
         <ul className="grid w-full gap-5 sm:grid-cols-2 xl:grid-cols-4">
           {catalog.lots.map((lot) => (
             <li key={lot.lot_id} className="flex">
@@ -256,7 +262,7 @@ function LoadingBlock() {
     <section className="flex flex-col items-center gap-8" role="status" aria-live="polite">
       <div className="text-center">
         <h2 className="text-[24px] font-bold tracking-[-0.015em]">Подбираем портфель…</h2>
-        <p className="mt-2 text-[13.5px] text-muted">Проверяем ограничения и готовим объяснения всех вариантов. Это может занять до полутора минут.</p>
+        <p className="mt-2 text-[13.5px] text-muted">Перебираем конфигурации и проверяем ограничения</p>
       </div>
       <ul className="grid w-full max-w-[1180px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[0, 1, 2, 3].map((index) => (
@@ -287,15 +293,15 @@ function NoFeasibleBlock({
     <Panel className="mx-auto w-full max-w-[720px] text-center">
       <h2 className="text-[22px] font-bold tracking-[-0.01em]">Допустимого портфеля нет</h2>
       <p className="mt-2 text-[14px] text-ink-500">
-        При выбранных условиях (поиск среди проходящих {result.request.require_stress ? 'STRESS' : 'BASE'})
-        допустимый портфель не найден.
+        Среди проходящих {result.request.require_stress ? 'STRESS' : 'BASE'} допустимых конфигураций не найдено.
       </p>
       <SearchStats result={result} className="mt-4" />
-      <p className="mx-auto mt-4 max-w-[520px] text-[13px] leading-snug text-muted">
-        {canSearchInBase
-          ? `${result.base_count} конфигураций проходят BASE, но ни одна не выдерживает сокращение бюджета. «Искать в BASE» меняет условие поиска: найденный портфель проверку STRESS не проходил.`
-          : `Ни одна из ${result.considered_count} конфигураций не проходит даже BASE. Ограничения не ослабляем и «наименее плохой» вариант допустимым не показываем.`}
-      </p>
+      {canSearchInBase ? (
+        <p className="mx-auto mt-4 max-w-[520px] text-[13px] leading-snug text-muted">
+          {result.base_count} конфигураций проходят BASE. «Искать в BASE» меняет условие: такой портфель
+          проверку STRESS не проходил.
+        </p>
+      ) : null}
       <div className="mt-5 flex flex-wrap justify-center gap-3">
         {canSearchInBase ? (
           <Button onClick={onSearchInBase} loading={isRerunning}>Искать в BASE</Button>

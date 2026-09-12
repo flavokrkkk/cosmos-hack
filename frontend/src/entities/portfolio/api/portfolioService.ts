@@ -11,8 +11,8 @@ export const portfolioService = {
     apiClient.post<Calculation>('/portfolio/evaluate', request),
 
   /** Перебор пространства (полный или внутри четырёх лотов): портфель команды и опорные точки фронта. */
-  recommend: (request: RecommendRequest, signal?: AbortSignal) =>
-    apiClient.post<RecommendationResult>('/portfolio/recommend', request, { timeout: 115_000, signal }),
+  recommend: (request: RecommendRequest, signal?: AbortSignal, timeout = 30_000) =>
+    apiClient.post<RecommendationResult>('/portfolio/recommend', request, { timeout, signal }),
 
   /** Сопоставление нескольких вариантов по одним показателям. */
   compare: (request: CompareRequest) =>
