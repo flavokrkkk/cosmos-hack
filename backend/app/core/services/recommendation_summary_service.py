@@ -5,11 +5,11 @@ from time import monotonic
 from starlette.concurrency import run_in_threadpool
 
 from app.core.dto.portfolio import ExplanationFact, RecommendRequest, RecommendationExplanation, RecommendationResult
-from app.core.services.ollama_service import OllamaService
+from app.core.services.ollama_service import OLLAMA_DISABLED_MESSAGE, OllamaService
 from app.core.services.explanation_evidence import portfolio_evidence, render_evidence, number
 from app.core.services.portfolio_service import input_hash
 from app.core.services.recommendation_service import RecommendationService
-from app.infrastructure.errors.ollama_errors import OllamaError, OllamaResponseError
+from app.infrastructure.errors.ollama_errors import OllamaDisabledError, OllamaError, OllamaResponseError
 from app.infrastructure.logging.logger import get_logger
 
 
@@ -32,7 +32,7 @@ class RecommendationSummaryService:
         # а пакетное объяснение запрашивает вторым вызовом с with_explanations=true.
         if result.status == "no_feasible" or not request.with_explanations:
             return result
-        key = input_hash({"result": result.model_dump(), "model": ollama.model, "prompt": PROMPT_VERSION})
+        key = input_hash({"result": result.model_dump(), "model": ollama.model, "enabled": ollama.enabled, "prompt": PROMPT_VERSION})
         cached = self._cache.get(key)
         if cached and cached[0] > monotonic():
             self._cache.move_to_end(key)
@@ -76,6 +76,8 @@ class RecommendationSummaryService:
             model = None
             warning = None
             try:
+                if not ollama.enabled:
+                    raise OllamaDisabledError(OLLAMA_DISABLED_MESSAGE)
                 # Время ожидания занятой модели тоже входит в предел HTTP-запроса.
                 async with asyncio.timeout(self._timeout):
                     async with self._slot:
@@ -89,6 +91,8 @@ class RecommendationSummaryService:
                 titles = {f"v{index}": variant.title for index, variant in enumerate(variants)}
                 explanations = {item.key: render_evidence(titles[item.key], facts_by_key[item.key], item) for item in draft.items}
                 model = response.model
+            except OllamaDisabledError:
+                warning = OLLAMA_DISABLED_MESSAGE
             except (OllamaError, TimeoutError) as error:
                 logger.warning("recommendation_summary_fallback", reason=str(error), input_hash=result.input_hash)
                 warning = "Пакетное объяснение Ollama недоступно; показан шаблон по расчёту. Повторите подбор позже."
@@ -105,7 +109,7 @@ class RecommendationSummaryService:
                     composition="generative" if explanations else "extractive",
                 )
             # Сбой не закрепляем надолго: следующий подбор сможет повторить генерацию.
-            self._cache[key] = (monotonic() + (86400 if explanations else 15), result)
+            self._cache[key] = (monotonic() + (86400 if explanations or not ollama.enabled else 15), result)
             self._cache.move_to_end(key)
             while len(self._cache) > 128:
                 self._cache.popitem(last=False)

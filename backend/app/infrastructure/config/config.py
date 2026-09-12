@@ -35,6 +35,7 @@ class AppSettings(Config):
 
 
 class OllamaSettings(Config):
+    enabled: bool = Field(False, validation_alias="COSMOS_OLLAMA_ENABLED")
     base_url: str = Field(
         "http://localhost:11434",
         validation_alias="COSMOS_OLLAMA_BASE_URL",

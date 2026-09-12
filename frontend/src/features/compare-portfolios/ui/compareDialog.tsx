@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react'
 
 import {
-  DELTA_ROWS, DELTA_VERDICT_LABEL, deltaVerdict, formatDelta, formatNumber, scenarioVerdict,
+  DELTA_ROWS, DELTA_VERDICT_LABEL, comparisonValue, deltaVerdict, formatDelta, formatNumber, scenarioVerdict,
   selectionKey, selectionLabel, useCompare, useComparison, useComparisonAnalysis,
 } from '@entities/portfolio'
-import type { ComparisonResult, Scenario } from '@shared/api/contracts'
+import type { CalculationInputs, ComparisonResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Button, Dialog, DialogContent, Tag, Segmented, Tooltip } from '@shared/ui'
@@ -15,6 +15,7 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   datasetHash: string
+  inputs: CalculationInputs | null
   candidates: Candidate[]
   /** Что отметить при открытии: обычно открытый вариант и рекомендация. */
   initialIds: string[]
@@ -28,7 +29,7 @@ type Props = {
  * только пороги. Дельты подписаны по каждому показателю отдельно — «выигрыш»
  * или «плата»; общего балла нет, он потребовал бы весов.
  */
-export function CompareDialog({ open, onOpenChange, datasetHash, candidates, initialIds }: Props) {
+export function CompareDialog({ open, onOpenChange, datasetHash, inputs, candidates, initialIds }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -37,13 +38,13 @@ export function CompareDialog({ open, onOpenChange, datasetHash, candidates, ini
         description={`Выберите от ${MIN_VARIANTS} до ${MAX_VARIANTS} вариантов. Показатели остальных сравниваются с первым выбранным.`}
       >
         {/* Содержимое монтируется при каждом открытии — состояние отметок стартует заново. */}
-        <CompareBody datasetHash={datasetHash} candidates={candidates} initialIds={initialIds} />
+        <CompareBody datasetHash={datasetHash} inputs={inputs} candidates={candidates} initialIds={initialIds} />
       </DialogContent>
     </Dialog>
   )
 }
 
-function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open' | 'onOpenChange'>) {
+function CompareBody({ datasetHash, inputs, candidates, initialIds }: Omit<Props, 'open' | 'onOpenChange'>) {
   const compare = useCompare()
   const remember = useComparison((state) => state.set)
   const [picked, setPicked] = useState<string[]>(() =>
@@ -73,7 +74,7 @@ function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open'
   function run() {
     const titles = selected.map((c) => c.title)
     compare.mutate(
-      { variants: selected.map((c) => ({ dataset_hash: datasetHash, selection: c.selection })) },
+      { variants: selected.map((c) => ({ dataset_hash: datasetHash, inputs, selection: c.selection })) },
       { onSuccess: (data) => remember(data, titles) },
     )
   }
@@ -168,7 +169,7 @@ function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open'
               }
             />
             {!isStale && !compare.isPending ? (
-              <ComparisonAnalysis key={JSON.stringify(result.variants.map((variant) => variant.input_hash))} result={result} />
+              <ComparisonAnalysis key={JSON.stringify(result.variants.map((variant) => variant.input_hash))} result={result} inputs={inputs} />
             ) : null}
           </div>
         )}
@@ -177,11 +178,11 @@ function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open'
   )
 }
 
-function ComparisonAnalysis({ result }: { result: ComparisonResult }) {
+function ComparisonAnalysis({ result, inputs }: { result: ComparisonResult; inputs: CalculationInputs | null }) {
   const [scenario, setScenario] = useState<Scenario>('STRESS')
   const [launchedKey, setLaunchedKey] = useState<string | null>(null)
   const request = {
-    variants: result.variants.map((variant) => ({ dataset_hash: variant.dataset_hash, selection: variant.selection })),
+    variants: result.variants.map((variant) => ({ dataset_hash: variant.dataset_hash, inputs, selection: variant.selection })),
     scenario,
   }
   const requestKey = JSON.stringify(request)
@@ -191,20 +192,20 @@ function ComparisonAnalysis({ result }: { result: ComparisonResult }) {
   return (
     <section className="mt-5 rounded-card bg-panel p-5" aria-busy={query.isFetching}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-[18px] font-semibold">AI-анализ сравнения</h3>
+        <h3 className="text-[18px] font-semibold">Объяснение сравнения</h3>
         <Segmented size="sm" value={scenario} onChange={(value: Scenario) => setScenario(value)}
-          options={SCENARIOS.map((value) => ({ value, label: value }))} label="Сценарий AI-анализа сравнения" />
+          options={SCENARIOS.map((value) => ({ value, label: value }))} label="Сценарий объяснения сравнения" />
       </div>
       <Button className="mt-4" size="md" loading={query.isFetching} onClick={() => {
         if (launched) void query.refetch()
         else setLaunchedKey(requestKey)
-      }}>Проанализировать с AI</Button>
+      }}>Объяснить различия</Button>
       {query.isFetching ? <p role="status" className="mt-3 text-[13px] text-muted">Готовим анализ…</p> : null}
       {launched && query.isError ? <p className="mt-3 text-[13px] text-fail">Анализ не получен: {query.error.message}. Расчёты в таблице доступны.</p> : null}
       {analysis && !query.isFetching ? (
         <div className="mt-4 flex flex-col gap-3">
-          <Tag tone={analysis.generated_by === 'ollama' ? 'brand' : 'warn'}>
-            {analysis.generated_by === 'ollama' ? 'Анализ AI' : 'Анализ по шаблону'} · {analysis.scenario}
+          <Tag tone={analysis.generated_by === 'ollama' ? 'brand' : 'muted'}>
+            {analysis.generated_by === 'ollama' ? 'Анализ AI' : 'Анализ по расчётам'} · {analysis.scenario}
           </Tag>
           <p className="font-semibold">{analysis.explanation.headline}</p>
           <p className="text-[14px]">{analysis.explanation.summary}</p>
@@ -265,7 +266,7 @@ function ComparisonTable({ result, titles }: { result: ComparisonResult; titles:
                 </span>
               </th>
               {variants.map((variant, index) => {
-                const value = variant.metrics ? variant.metrics[row.key] : null
+                const value = comparisonValue(variant, row.key)
                 const delta = result.deltas[index]?.[row.key]
                 const verdict = delta === undefined ? 'same' : deltaVerdict(delta, row.better)
                 const last = index === variants.length - 1

@@ -2,7 +2,7 @@
 
 ## Принятый гибрид и комплект для проверки — 12.09.2026
 
-Текущая реализация использует единственный `hybrid_maximin_v1`: денежное ограничение → максимум Q → максимум S. Шесть шкал и автоматический Δ раскрыты в [обосновании](docs/22-hybrid-selection.md). По умолчанию алгоритм выбирает FIRE:A, AGRI:C, TRANS:C, ENV:A; S=92,25 млн ₽/год, Q=0,5, Δ=9,5 млн ₽/год. Старые описания ниже сохранены как история разработки.
+Текущая реализация использует единственный `hybrid_maximin_v1`: максимум Q → максимум S; при явно заданном Δ сначала применяется денежное ограничение. Шесть шкал и автоматический Δ раскрыты в [обосновании](docs/22-hybrid-selection.md). По умолчанию алгоритм выбирает FIRE:A, AGRI:C, TRANS:C, ENV:A; S=92,25 млн ₽/год, Q=0,5, Δ=9,5 млн ₽/год. Старые описания ниже сохранены как история разработки.
 
 Автономный расчётный комплект по пункту 13 инструкции: [team-submission/README.md](team-submission/README.md). Он запускается без API, Ollama, регистрации и ключей. Финальная записка и презентация проверяются отдельно по перечню материалов в комплекте.
 
@@ -17,27 +17,80 @@ python scripts/build_submission.py
 Кейс 02 «Космос как инфраструктура», кейсодержатель АНО «КЭП».
 Межрегиональный портфель космических сервисов общего пользования: 11–13 сентября 2026.
 
-## Реализация приложения — актуализация 12.09
+## Быстрый запуск для проверки
 
-Добавлен backend-срез: портфельный API с автоподбором, альтернативами,
-проверками BASE/STRESS, сравнением и синхронным объяснением через Ollama.
-Фронтенд реализован: одна страница дашборда на контракте бэкенда, проверяется `npm run build`.
-Расчётное ядро теперь находится в
-`backend/app/core/services/portfolio_engine`; корневой `engine` — совместимость прежнего CLI.
-Исторические описания стартового каркаса ниже не отражают добавленные портфельные маршруты.
-
-Запуск и контракты — [backend/README.md](backend/README.md) и
-[frontend/README.md](frontend/README.md). Для проверки из корня:
+Нужен Docker Desktop (macOS/Windows) или Docker Engine с Compose (Linux).
+Из корня чистого checkout:
 
 ```bash
-backend/.venv/bin/python -m pytest tests/ backend/tests/ -q
-backend/.venv/bin/python -m engine selfcheck
+docker compose up -d --build --wait
 ```
 
-Предварительно установить `backend/requirements-dev.txt` в Python 3.12.
-Проверен 61 Python-тест, self-check, контейнерная сборка и реальный вызов Ollama.
-Портфельный API стартует без PostgreSQL и Redis.
-Сохранение решений, веб-экспорт, финальные материалы и расширения — следующие этапы.
+Откройте **http://localhost:5173**. API и Swagger: **http://localhost:8000/docs**.
+По умолчанию запускаются только frontend и backend, **Ollama отключена**.
+Все расчёты, проверки BASE/STRESS, изменение лотов и режимов, сравнение,
+сохранение и экспорт работают без LLM. Пояснения формируются сразу из расчётных
+данных и помечаются как шаблонные. Регистрация, личные API-ключи, PostgreSQL,
+Redis и платные сервисы не нужны.
+
+Первой сборке нужен интернет для зависимостей и Docker-образов. Модель не
+скачивается. После сборки и при наличии образов расчёты работают локально.
+
+### Включить или отключить Ollama
+
+Для удобного переключения есть скрипт на стандартной библиотеке Python
+(подходит Python 3.9+, для расчётного CLI нужен Python 3.12):
+
+```bash
+python3 scripts/run_local.py --ollama off   # без модели, даже если в .env включена LLM
+python3 scripts/run_local.py --ollama on    # Ollama в Docker + загрузка модели
+python3 scripts/run_local.py --ollama host  # Ollama уже установлена на этой машине
+```
+
+В Windows используйте `python` вместо `python3`. Скрипт не переписывает `.env`,
+пересоздаёт backend с выбранной настройкой и не удаляет загруженные модели.
+`off` останавливает только контейнеры Ollama этого Compose-проекта; установленную
+на компьютере Ollama не трогает.
+
+В режиме `on` скачивается публичная `qwen3:4b-instruct` (около 2,5 ГБ), затем
+хранится в volume `ollama-data`. Повторное включение использует этот кеш.
+Пока загрузка или генерация не завершена, численные результаты доступны.
+Прогресс загрузки: `docker compose logs -f ollama-pull`.
+
+В режиме `host` заранее установите Ollama и выполните `ollama pull qwen3:4b-instruct`.
+Backend обращается к `http://host.docker.internal:11434`; на Linux Ollama должна
+принимать подключения от Docker. Собственный адрес задаётся через
+`--ollama-url http://АДРЕС:11434`. На Mac установленная Ollama может использовать
+GPU, а Docker Desktop не предоставляет ей GPU passthrough.
+[Официальная документация Ollama](https://docs.ollama.com/faq).
+
+Явный выбор модели: `python3 scripts/run_local.py --ollama on --model qwen3:4b-instruct`.
+Для отдельного экземпляра: `--project-name cosmos-demo --env-file /путь/к/настройкам.env`.
+Состояние режима: **http://localhost:8000/health**, поле `capabilities.ollama_enabled`.
+Это настройка вызовов модели, а не обещание, что модель уже скачана и отвечает.
+
+**Веса модели в Git не включаются.** Перенос в Git не уменьшит объём загрузки;
+GitHub блокирует обычные файлы больше 100 MiB. Для нашего проверяемого результата
+модель необязательна, поэтому достаточно опциональной загрузки и сохраняемого
+volume. [Лимиты GitHub](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github),
+[хранение Ollama в Docker](https://docs.ollama.com/docker).
+
+### Что проверить в интерфейсе
+
+1. Запустить автоподбор и сверить состав с текущей рекомендацией.
+2. Открыть «Изменить лоты и режимы», изменить A/B/C или лот и пересчитать.
+3. Проверить BASE и STRESS, включая вариант с нарушением: видны порог, факт и PASS/FAIL.
+4. Сопоставить исходный и изменённый варианты, сохранить или выгрузить расчёт.
+
+Поиск среди 4–8 кандидатов сохраняется; итоговый портфель содержит ровно четыре
+лота. Прямой редактор проверяет именно введённый состав, без скрытого подбора
+других режимов. Подробные контракты — [backend/README.md](backend/README.md),
+фронтенд — [frontend/README.md](frontend/README.md).
+
+«Исходные данные» открывает редактор всех восьми лотов и коэффициентов режимов
+A/B/C. Изменения действуют как явный сценарий текущей сессии и запускают новый
+расчёт; официальные файлы кейса не перезаписываются. Кнопка «Вернуть официальные»
+сбрасывает сценарий.
 
 ## 🚀 Кейс опубликован: «Космос как инфраструктура»
 
@@ -55,7 +108,7 @@ python -m engine sensitivity  # запас по входным данным и �
 python -m pytest tests/ -q    # проверки формул, границ, фронта и сверки документов с расчётом
 ```
 
-Портфель меняется **без правки кода** — [`config/decision.json`](config/decision.json) или
+Условия поиска задаются **без правки кода** в [`config/decision.json`](config/decision.json), точный состав для проверки —
 флаг `--portfolio FIRE:A,AGRI:A,TRANS:A,ENV:A`. Контракт для backend и что делать нельзя —
 [`engine/README.md`](engine/README.md). Разбор пространства решений —
 [docs/research/portfolio-space.md](docs/research/portfolio-space.md).
@@ -70,13 +123,13 @@ python -m pytest tests/ -q    # проверки формул, границ, ф�
 | **Управленческая записка**, 12 страниц + приложения | [docs/management-note.pdf](docs/management-note.pdf), исходник [docs/23-management-note.md](docs/23-management-note.md) |
 | **Резюме стресс-сценария**, одна страница | [docs/stress-summary.pdf](docs/stress-summary.pdf), исходник [docs/24-stress-summary.md](docs/24-stress-summary.md) |
 | Как вычислен портфель | [docs/22-hybrid-selection.md](docs/22-hybrid-selection.md) |
-| Рекомендуемый портфель в машиночитаемом виде | [config/decision.json](config/decision.json) |
+| Рекомендуемый портфель и результат выбора | [results/hybrid_analysis.json](results/hybrid_analysis.json) |
 | Контрольные выгрузки | [results/](results) |
 | Автономный комплект по п. 13 | [team-submission/](team-submission) |
 
 Записки `docs/10-` и `docs/11-` — историческая версия под прежний портфель, в сдачу не входят.
 
-Сверка чисел автоматизирована: `python scripts/sync_documents.py` сравнивает 46 величин
+Сверка чисел автоматизирована: `python scripts/sync_documents.py` сравнивает величины
 в документах с выгрузками движка, `--fix` подставляет новые значения. Вёрстка PDF и контроль
 объёма — `python scripts/render_pdf.py`.
 
@@ -99,7 +152,7 @@ git hash-object case/source/case_core.py         # 8fd3e053…
 ```bash
 python -m engine evaluate --scenario STRESS    # девять проверок, разделы 1 и 7 записки
 python -m engine space                         # 5670 / 1031 / 143, разделы 5.1–5.2
-python -m engine pareto --scenario STRESS      # 60 недоминируемых, раздел 5.3
+python -m engine pareto --scenario STRESS      # недоминируемые варианты, раздел 5.3
 python -m engine sensitivity --scenario STRESS # границы слома, раздел 7
 python -m engine export                        # все выгрузки в results/
 python -m pytest tests/ -q                     # формулы, границы, фронт и сверка с документами
@@ -107,7 +160,7 @@ python -m pytest tests/ -q                     # формулы, границы,
 
 | Число в записке | Откуда берётся |
 |---|---|
-| `c0` 1153,0 · `opex` 316,75 · `vpub` 1330,4 · `kcash` 1,018 | `results/portfolio_metrics.json` |
+| C0, OPEX, VPUB, CASH, KCASH и индексы текущего портфеля | `results/portfolio_metrics.json` |
 | Расчёт по лотам, раздел 3 | `results/portfolio_detail.csv` |
 | 5670 / 1031 / 143 и связывающие ограничения | `results/portfolio_space.csv` |
 | Запасы по ограничениям, раздел 7 | `results/constraints_STRESS.csv` |
@@ -122,102 +175,60 @@ python -m pytest tests/ -q                     # формулы, границы,
 рубрика/сдача/таймлайн · **дип-ресерч** (кейсодержатель, РФ-механизмы, международные модели,
 экономика лотов, параметры движка). Начать с [docs/README.md](docs/README.md).
 
-## Каркас приложений
+## Приложения и настройки
 
 - `frontend/` — React + TypeScript + Vite, слои `app`, `pages`, `widgets`,
-  `features`, `entities`, `shared`. Одна страница — дашборд подбора портфеля,
-  **без авторизации**: эксперт должен запускать решение без логина (README кейса §14);
-- `backend/` — FastAPI с тем же разделением на `api`, `core` и
-  `infrastructure`; маршруты `/portfolio/{catalog,evaluate,recommend,compare,explain}`;
-- `docker-compose.yml` — полный запуск;
-- `docker-compose.local.yml` — PostgreSQL, Redis и Ollama для разработки
-  приложений напрямую на машине.
+  `features`, `entities`, `shared`; публичный дашборд без авторизации.
+- `backend/` — FastAPI; маршруты `/portfolio/{catalog,evaluate,recommend,compare,explain}`
+  и `/portfolio/compare/analyze`. Числа вычисляет Python, LLM только объясняет готовые факты.
+- `docker-compose.yml` — frontend и backend; необязательные профили `container-llm` и `tunnel`.
+- `docker-compose.local.yml` — отдельная Ollama для запуска приложений напрямую на машине.
 
-Полный запуск:
-
-```bash
-docker compose up --build
-```
-
-Команда поднимает frontend, backend, Taskiq worker, PostgreSQL, Redis и Ollama.
-PostgreSQL, Redis и worker сохранены как инфраструктура исходного каркаса, но портфельные
-расчёты и объяснение от них не зависят.
-При первом запуске контейнер `ollama-pull` загрузит модель `qwen3:4b-instruct` (около
-2,5 ГБ), поэтому первый старт будет дольше последующих. Модель сохраняется в
-volume `ollama-data`.
-
-Выбрать другую модель можно без правки compose:
-
-```bash
-COSMOS_OLLAMA_MODEL=qwen3:8b docker compose up --build
-```
-
-Для запуска backend и frontend на машине достаточно поднять Ollama:
-
-```bash
-docker compose -f docker-compose.local.yml up -d ollama
-```
-
-Модель по умолчанию **не качается** — загрузить её можно командой
-`docker compose -f docker-compose.local.yml --profile llm up ollama-pull`.
-
-### Быстрый путь: backend без PostgreSQL и Redis
-
-Если модель уже загружена, достаточно:
-
-```bash
-docker compose up -d ollama
-docker compose up -d --no-deps --build app
-curl -s http://localhost:8000/health   # {"status":"ok"}
-```
-
-Для расчётных ручек таблицы не создаются. PostgreSQL подключается лениво только при вызове
-старых административных auth-маршрутов. Redis и Taskiq worker для Case 02 не используются.
-Swagger — http://localhost:8000/docs.
-
-### Переменные окружения
+Настройки можно скопировать из примера:
 
 ```bash
 cp .env.example .env
 ```
 
-`.env` в репозиторий не коммитится. Публичный туннель `tuna` вынесен в профиль и по
-умолчанию не стартует — иначе `docker compose up` падал у всех, у кого не заданы
-`TUNA_DOMAIN` / `TUNA_TOKEN`. Запуск туннеля:
+`COSMOS_WEB_HOST_PORT` и `COSMOS_API_HOST_PORT` меняют внешние порты.
+`COSMOS_OLLAMA_ENABLED` включает обращения к LLM; `COSMOS_OLLAMA_BASE_URL` задаёт её адрес
+**из контейнера backend**; `COSMOS_OLLAMA_MODEL` — модель. Браузер вызывает только FastAPI.
+Для ручного запуска модели в контейнере задайте `COSMOS_OLLAMA_ENABLED=true`,
+`COSMOS_OLLAMA_BASE_URL=http://ollama:11434` и выполните:
+
+```bash
+docker compose --profile container-llm up -d --build
+```
+
+Чтобы отключить LLM независимо от содержимого `.env`, используйте скрипт `run_local.py --ollama off`.
+Полная остановка, включая профили Ollama и туннеля: `docker compose --profile '*' down`.
+Используйте те же `--project-name` / `--env-file`, если задавали их при запуске.
+**Без `-v`** кеш модели сохраняется.
+Ollama в основном Compose доступна на `127.0.0.1:11435`, чтобы не занимать стандартный
+порт установленной Ollama. Между контейнерами используется `ollama:11434`.
+
+Туннель для демонстрации необязателен и не участвует в проверке локального запуска:
 
 ```bash
 docker compose --profile tunnel up -d tuna
 ```
 
-## Сервер + Ollama на Mac через ngrok
+Его `TUNA_DOMAIN` и `TUNA_TOKEN` задаются в личном `.env`; секреты в репозиторий не входят.
 
-На Mac заранее загрузите модель и поднимите защищённый туннель:
+### Проверки разработчика
 
-```bash
-ollama pull qwen3:4b-instruct
-ngrok http 11434 \
-  --host-header="localhost:11434" \
-  --basic-auth="cosmos:change-this-password"
-```
-
-Не публикуйте Ollama без авторизации. Оставьте Mac подключённым к питанию и
-отключите сон на время демонстрации:
+Python 3.12 и зависимости из `backend/requirements-dev.txt`, Node.js 22 и `npm ci` в `frontend/`:
 
 ```bash
-caffeinate -dimsu
+backend/.venv/bin/python -m pytest tests/ backend/tests/ -q
+backend/.venv/bin/python -m engine selfcheck
+npm --prefix frontend run lint
+npm --prefix frontend run build
 ```
 
-На сервере создайте закрытый env-файл из примера, укажите публичные адреса
-frontend, backend и ngrok, затем запустите compose без локальной Ollama:
-
-```bash
-cp .env.server.example .env.server
-docker compose --env-file .env.server -f docker-compose.server.yml up --build -d
-```
-
-`docker-compose.server.yml` не публикует порты PostgreSQL и Redis. Frontend
-обращается только к серверному FastAPI, а FastAPI вызывает Ollama через ngrok.
-Файл `.env.server` с паролями не коммитьте.
+Версии основных Python-зависимостей зафиксированы в `backend/requirements.txt`,
+фронтенда — в `frontend/package-lock.json`. Автономный комплект
+[team-submission/](team-submission/) запускается вообще без Docker и Ollama по своему README.
 
 ## Кейсы НН
 

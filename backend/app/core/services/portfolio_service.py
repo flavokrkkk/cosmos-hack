@@ -68,8 +68,9 @@ class PortfolioService:
     def evaluate(self, request: EvaluateRequest) -> Calculation:
         verify_dataset(request.dataset_hash)
         selection = sorted(request.selection, key=lambda item: (item.lot_id, item.mode_id))
+        inputs = request.inputs.model_dump() if request.inputs else None
         try:
-            detail, metrics = canonical.evaluate([(item.lot_id, item.mode_id) for item in selection])
+            detail, metrics = canonical.evaluate([(item.lot_id, item.mode_id) for item in selection], inputs)
         except ValueError as error:
             raise InvalidPortfolio(str(error)) from error
         checks = {}
@@ -84,11 +85,12 @@ class PortfolioService:
         return Calculation(
             dataset_hash=request.dataset_hash,
             input_hash=input_hash({"dataset": request.dataset_hash, "engine": ENGINE_VERSION,
+                                   "inputs": inputs,
                                    "selection": [item.model_dump() for item in selection]}),
             engine_version=ENGINE_VERSION, selection=selection,
             status="complete" if len(selection) == 4 else "incomplete",
             detail=detail.to_dict("records"), metrics=PortfolioMetrics(**metrics) if selection else None,
-            financial=financial_summary(selection, metrics),
+            financial=financial_summary(selection, metrics, request.inputs),
             checks=checks,
             feasible_by_scenario={scenario: bool(selection) and all(row.passed for row in checks[scenario])
                                   for scenario in canonical.scenarios()},
@@ -98,10 +100,17 @@ class PortfolioService:
         variants = [self.evaluate(variant) for variant in request.variants]
         if any(variant.status != "complete" for variant in variants):
             raise InvalidPortfolio("Для сравнения нужны полные портфели из четырёх лотов")
-        baseline = variants[0].metrics.model_dump()
-        fields = ("c0_mrub", "opex_mrub_per_year", "vpub_mrub_per_year", "cash_mrub_per_year", "kcash", "t_rep")
+        fields = (
+            "c0_mrub", "opex_mrub_per_year", "vpub_mrub_per_year", "cash_mrub_per_year",
+            "kcash", "t_rep", "readiness_1_5", "resilience_1_5", "scale_1_5",
+        )
+        values = [
+            {**{key: getattr(variant.metrics, key) for key in fields},
+             "annual_surplus_mrub": variant.financial.annual_surplus_mrub}
+            for variant in variants
+        ]
+        baseline = values[0]
         return ComparisonResult(
             variants=variants,
-            deltas=[{key: variant.metrics.model_dump()[key] - baseline[key] for key in fields}
-                    for variant in variants],
+            deltas=[{key: value - baseline[key] for key, value in row.items()} for row in values],
         )

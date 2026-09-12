@@ -51,7 +51,7 @@ export function SavedVariantsDialog({ open, onOpenChange, datasetHash }: Props) 
                     {item.comment ? <p className="mt-1 text-[12.5px] text-muted">{item.comment}</p> : null}
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {incompatible ? (
-                        <Tag tone="warn">другая версия данных — будет пересчитан</Tag>
+                        <Tag tone="warn">Устаревшая версия данных</Tag>
                       ) : (
                         SCENARIOS.map((scenario) => (
                           <Tag key={scenario} tone={item.feasible[scenario] ? 'pass' : 'fail'}>
@@ -65,6 +65,7 @@ export function SavedVariantsDialog({ open, onOpenChange, datasetHash }: Props) 
                     <Button
                       size="sm"
                       variant="secondary"
+                      disabled={incompatible}
                       onClick={() => {
                         openSaved(item.id)
                         onOpenChange(false)

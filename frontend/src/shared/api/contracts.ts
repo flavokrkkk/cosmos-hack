@@ -88,6 +88,12 @@ export type AccessMode = {
   public_core: boolean
 }
 
+/** Полный снимок входов сценария пользователя. Официальные файлы на диске не меняются. */
+export type CalculationInputs = {
+  lots: Lot[]
+  modes: AccessMode[]
+}
+
 export type ConstraintDefinition = {
   code: string
   title: string
@@ -187,11 +193,9 @@ export type Calculation = {
 // ────────────────────────────── рекомендация ────────────────────────────────
 
 /**
- * Вариант из ответа подбора. `recommended` — портфель команды из
- * `config/decision.json`, если он лежит на фронте области поиска (title
- * «Портфель команды»); `alternatives` — опорные точки фронта: крайние значения
- * по каждому показателю среди недоминируемых. Алгоритм победителя не коронует
- * (правка бэкенда 12.09): выбор одной точки фронта — решение команды.
+ * Вариант из ответа подбора. `recommended` — результат hybrid_maximin_v1
+ * для текущих условий; `alternatives` — опорные точки фронта: крайние
+ * значения по каждому показателю среди недоминируемых.
  */
 export type RecommendationVariant = {
   title: string
@@ -205,8 +209,8 @@ export type RecommendationResult = {
   request: RecommendRequest
   /**
    * `no_feasible` — допустимых нет, `recommended` и `alternatives` пусты.
-   * При `ok` `recommended` тоже может быть `null`: портфель команды не лежит
-   * на фронте этой области поиска (например, при других четырёх лотах).
+   * Тип допускает `recommended: null`; интерфейс тогда показывает первую
+   * опорную точку под её собственным названием.
    */
   status: 'ok' | 'no_feasible'
   considered_count: number
@@ -230,12 +234,14 @@ export type ComparisonResult = {
 
 export type EvaluateRequest = {
   dataset_hash: string
+  inputs?: CalculationInputs | null
   /** До четырёх пар; бэкенд отклоняет дубликаты лотов (422). */
   selection: SelectionItem[]
 }
 
 export type RecommendRequest = {
   dataset_hash: string
+  inputs?: CalculationInputs | null
   /** Искать только среди проходящих STRESS без пересмотра состава. */
   require_stress: boolean
   method_id: RankingMethod
@@ -273,6 +279,7 @@ export type CompareRequest = {
 
 export type PortfolioExplanationRequest = {
   dataset_hash: string
+  inputs?: CalculationInputs | null
   /** Ровно четыре пары: пояснение даётся только полному портфелю. */
   selection: SelectionItem[]
   scenario: Scenario
@@ -303,7 +310,7 @@ export type PortfolioExplanationResult = {
   facts: ExplanationFact[]
   explanation: PortfolioExplanation
   model: string | null
-  /** `template` — модель недоступна, текст собран сервером по шаблону. */
+  /** `template` — модель выключена или недоступна, текст собран сервером по фактам расчёта. */
   generated_by: 'ollama' | 'template'
   warning?: string | null
 }

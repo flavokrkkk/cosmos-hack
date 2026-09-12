@@ -12,6 +12,9 @@ docs
 **/*.ipynb
 **/*.pdf
 **/*.pkl
+**/*.gguf
+**/*.safetensors
+**/.ollama
 **/*jury*
 case/reference
 .codex

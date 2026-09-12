@@ -22,6 +22,7 @@ def payload():
 
 
 class FakeOllama:
+    enabled = True
     model = "test"
 
     def __init__(self, failure=None):
@@ -78,6 +79,48 @@ def test_analysis_uses_recalculation_cache_and_order():
         assert base.input_hash != cached.input_hash
         assert len(ollama.calls) == 3
     asyncio.run(run())
+
+
+def test_disabled_comparison_skips_busy_model_and_separates_cached_output():
+    async def run():
+        request = ComparisonAnalysisRequest(**payload())
+        service, enabled = ComparisonAnalysisService(), FakeOllama()
+        generated = await service.analyze(request, enabled)
+        disabled = OllamaService(None, enabled.model)
+        async with service._lock:
+            plain = await asyncio.wait_for(service.analyze(request, disabled), timeout=2)
+        assert plain.comparison == generated.comparison
+        assert plain.generated_by == "template"
+        assert plain.model is None
+        assert len(enabled.calls) == 1
+        assert (await service.analyze(request, enabled)).generated_by == "ollama"
+        assert len(enabled.calls) == 1
+
+    asyncio.run(run())
+
+
+def test_comparison_facts_explain_surplus_and_quality_indices_with_their_units():
+    catalog = PortfolioService().catalog()
+    selections = [
+        [("FIRE", "A"), ("AGRI", "C"), ("TRANS", "C"), ("ENV", "A")],
+        [("FIRE", "A"), ("INFRA", "B"), ("TRANS", "A"), ("ENV", "A")],
+    ]
+    comparison = PortfolioService().compare(CompareRequest(variants=[
+        {"dataset_hash": catalog.dataset_hash, "selection": [
+            {"lot_id": lot, "mode_id": mode} for lot, mode in selection
+        ]} for selection in selections
+    ]))
+    facts = {fact.id: fact for fact in comparison_facts(comparison, "BASE")}
+    surplus = facts["v1_annual_surplus_mrub"]
+    assert "млн ₽/год" in surplus.text
+    assert surplus.kind == "limitation"
+    for field in ("readiness_1_5", "resilience_1_5", "scale_1_5"):
+        assert "балла" in facts[f"v1_{field}"].text
+        assert facts[f"v1_{field}"].kind == "limitation"
+    assert "тиражируемость" in facts["v1_scale_1_5"].text
+    assert "индекс t_rep" in facts["v1_t_rep"].text
+    assert "тиражируемость" not in facts["v1_t_rep"].text
+    assert "не является чистой прибылью" in facts["scope"].text
 
 
 @pytest.mark.parametrize("failure", ["offline", "wrong_section", "unknown"])

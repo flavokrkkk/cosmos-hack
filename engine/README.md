@@ -17,7 +17,7 @@
 python -m pip install -r requirements.txt
 python -m engine recommend         # гибрид: Q, Δ, шкалы и точки смены
 python -m engine evaluate          # рекомендуемый портфель, BASE и STRESS
-python -m pytest tests/ -q         # 23 проверки формул, границ и фронта
+python -m pytest tests/ -q         # формулы, границы, выбор, документы и комплект
 python -m engine selfcheck        # воспроизводимость и контроль пространства
 ```
 
@@ -32,13 +32,20 @@ python -m engine selfcheck        # воспроизводимость и кон
 | `sensitivity` | запас по входным данным: насколько можно ошибиться, пока портфель допустим |
 | `export` | контрольные результаты в `results/` |
 
-Портфель меняется **без правки кода** — флагом или конфигом:
+Портфель и режимы меняются **без правки кода** — флагом или конфигом:
 
 ```bash
 python -m engine evaluate --portfolio FIRE:A,AGRI:A,TRANS:B,ENV:A --scenario STRESS
 python -m engine pareto --scenario STRESS --top 20
 python -m engine sensitivity --scenario STRESS
 ```
+
+`evaluate` без `--portfolio` вычисляет актуальную рекомендацию по параметрам
+`config/decision.json`; с `--portfolio` проверяет ровно переданный состав и режимы,
+не подбирая им замену. Без `--scenario` выводятся проверки BASE и STRESS для одного
+портфеля. `compare` показывает рекомендацию и массив `alternatives` из конфигурации:
+состав, денежные потоки, все шесть критериев и статусы обоих сценариев. Смена файла
+конфигурации: `python -m engine --config path.json compare`.
 
 Постоянные параметры алгоритма (Δ, требования, альтернативы, управленческие поля, допущения) —
 в [`config/decision.json`](../config/decision.json).
@@ -103,21 +110,10 @@ rows = diagnose(metrics, "STRESS")          # у каждой строки: code
 
 `ConstraintRow.as_dict()` уже готов к отдаче в JSON.
 
-Исторический проект ручек ниже **не реализован под этими адресами**. Сейчас доступны
+Сейчас доступны
 `GET /portfolio/catalog`, `POST /portfolio/evaluate`, `POST /portfolio/recommend`,
-`POST /portfolio/compare`. CLI `evaluate` читает пример из config или `--portfolio`;
-автоматического победителя выбирает API recommend.
-
-Прежний проект (для истории):
-
-| Метод | Путь | Назначение |
-|---|---|---|
-| `GET` | `/api/v1/portfolio/lots` | лоты и режимы доступа (исходные данные видны эксперту) |
-| `POST` | `/api/v1/portfolio/evaluate` | `{selection, scenario}` → метрики + диагностика ограничений |
-| `GET` | `/api/v1/portfolio/feasible` | допустимое множество по сценарию |
-| `GET` | `/api/v1/portfolio/pareto` | недоминируемые конфигурации |
-| `POST` | `/api/v1/portfolio/compare` | сравнение нескольких вариантов по единым показателям |
-| `GET` | `/api/v1/portfolio/space-summary` | сводка перебора и связывающие ограничения |
+`POST /portfolio/compare`. CLI и API используют одну реализацию подбора и расчёта:
+для автоматического выбора есть `python -m engine recommend` и API `recommend`.
 
 Расчёт лёгкий и синхронный: полный перебор занимает секунды и кешируется в памяти
 (`enumerate_space` под `lru_cache`). Очередь, воркер и отдельный сервис не нужны.
@@ -138,7 +134,8 @@ rows = diagnose(metrics, "STRESS")          # у каждой строки: code
 `python -m engine export` пишет в [`results/`](../results):
 `portfolio_detail.csv`, `portfolio_metrics.json`, `team_decision_config.json`,
 `constraints_BASE.csv`, `constraints_STRESS.csv`, `sensitivity_BASE.csv`, `sensitivity_STRESS.csv`,
-`portfolio_space.csv` (полный перебор).
+`hybrid_analysis.json`. Сохранённый `portfolio_space.csv` — отдельный снимок полного перебора;
+команда `export` его не перезаписывает.
 
 Эти файлы — источник чисел для записки и презентации. Требование рубрики: цифры в записке,
 на слайдах и в выводе инструмента **обязаны совпадать**.

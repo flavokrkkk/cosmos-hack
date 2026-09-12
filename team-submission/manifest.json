@@ -16,11 +16,11 @@
     },
     "src/engine/canonical.py": {
       "source": "backend/app/core/services/portfolio_engine/canonical.py",
-      "source_sha256": "8d5545ce957164f736816d19c60259e0c684ca8ded8b22781b7929e167af6e66"
+      "source_sha256": "3294e85b4d499b9bfa0a6d295f7bf311eaa77ef13b2bd3d06296d533fb4739d3"
     },
     "src/engine/cli.py": {
       "source": "backend/app/core/services/portfolio_engine/cli.py",
-      "source_sha256": "9e0aa1562a6d985846a17a4761fb99de22165beef805dd8da5365421aa721bf4"
+      "source_sha256": "7e6cad91f952d6a7892c99e8c9a2429075cca0ef30df4f0d5d71d4612c644b51"
     },
     "src/engine/constraints.py": {
       "source": "backend/app/core/services/portfolio_engine/constraints.py",
@@ -32,7 +32,7 @@
     },
     "src/engine/hybrid.py": {
       "source": "backend/app/core/services/portfolio_engine/hybrid.py",
-      "source_sha256": "8799638446f116d9ab4edf3f726b4b5b35906d1a242a1a48029b3d6c8ac23a5c"
+      "source_sha256": "c2c5e7dc01ddd18b865c1049f6a612f2ec4fec283f6cd7c796f042edc1ee73de"
     },
     "src/engine/selfcheck.py": {
       "source": "backend/app/core/services/portfolio_engine/selfcheck.py",
@@ -44,7 +44,7 @@
     },
     "src/engine/space.py": {
       "source": "backend/app/core/services/portfolio_engine/space.py",
-      "source_sha256": "a679ad962402a6c5160b321ee6ec5f4f74a43d114e0f64d7ec23a3e554cf8989"
+      "source_sha256": "c448155533aa7464238512d33ca3e05d2216b924cc1bc75bcaaa557106cf74a1"
     },
     "data/official/case_core.py": {
       "source": "case/source/case_core.py",
@@ -68,7 +68,7 @@
     },
     "config/decision.json": {
       "source": "config/decision.json",
-      "source_sha256": "23534f6eafa17b4fe8ada734a30d310d2a03af763000c5539d2d71119e050c0e"
+      "source_sha256": "c90ef022b6fe198f5a75b593b69892cefc1065b448d3765a671a1eda5f969215"
     },
     "results/README.md": {
       "source": "results/README.md",
@@ -116,7 +116,7 @@
     },
     "tests/test_engine.py": {
       "source": "tests/test_engine.py",
-      "source_sha256": "189af0eac60d1c0292182f33301aa19a07f8a2d98be745b3faf43b294cf2dc0f"
+      "source_sha256": "3e26ff051b1f87dd8fe85720a91cb0fbf50d60250bfabc5c5320faefd60f7109"
     },
     "tests/test_hybrid.py": {
       "source": "tests/test_hybrid.py",
@@ -124,19 +124,23 @@
     },
     "tests/test_cli_config.py": {
       "source": "tests/test_cli_config.py",
-      "source_sha256": "397d3e6b9d827cd1eb977aa559974cc6b65fab250b2ec52c3c7e5be0d5fcd548"
+      "source_sha256": "8fee96d8098f0f1f7657aa3f605846a5ce211dfdc3c616f7e8f53f7015d927d2"
     },
     "README.md": {
       "source": "scripts/submission_readme.md",
-      "source_sha256": "10529f6d2c39ab2e0e8b40e32d65120911f7711e30b387eb54604b83824323ae"
+      "source_sha256": "04564e534cf4aab677a33aabd45e440cb7ba00913a3928d8311f5aa7cdd3cb3c"
     },
     "docs/algorithm.md": {
       "source": "docs/22-hybrid-selection.md",
       "source_sha256": "1d4aab0bb79f70848adad6417149f24f5a1593ca97f5fc5a342086bf38b58f86"
     },
+    "docs/23-results-glossary.md": {
+      "source": "docs/23-results-glossary.md",
+      "source_sha256": "b6f86aaaec681c4673ed09f2e531578b889785c5a78c64782a6dba9f14d16f21"
+    },
     "docs/management-note.md": {
       "source": "docs/23-management-note.md",
-      "source_sha256": "042be9ec159627432b1245bae2c994b843d944ed27b2509724e2cc42be6e18fb"
+      "source_sha256": "fe893ef05457eeadf695cd1f0d7dc22acae73a098114e559ef744fa373bffdde"
     },
     "docs/stress-summary.md": {
       "source": "docs/24-stress-summary.md",
@@ -156,17 +160,17 @@
     },
     "docs/management-note.pdf": {
       "source": "docs/management-note.pdf",
-      "source_sha256": "f623ba18d86d54a0eea1061f9fab01a321b25f9629ed810e8a77d2f76736ccb0"
+      "source_sha256": "61c62c0e9b0908a3f479823440ac7887a3bfad11c5b714fea04772c41b409bc7"
     },
     "docs/stress-summary.pdf": {
       "source": "docs/stress-summary.pdf",
-      "source_sha256": "5e38114d717bc512e49bf3d274791fe03008d42d709dec20d51abac872ab82b6"
+      "source_sha256": "aaf36ef88d5d0102cf85585b888d0465498ed1419857270e427cccc07e0332e2"
     }
   },
   "files": {
     ".gitignore": "b0b18f5bf7184f205a45032e7a3034fffc852f9c6ad28ae26bb839e2893b5ddd",
-    "README.md": "10529f6d2c39ab2e0e8b40e32d65120911f7711e30b387eb54604b83824323ae",
-    "config/decision.json": "23534f6eafa17b4fe8ada734a30d310d2a03af763000c5539d2d71119e050c0e",
+    "README.md": "04564e534cf4aab677a33aabd45e440cb7ba00913a3928d8311f5aa7cdd3cb3c",
+    "config/decision.json": "c90ef022b6fe198f5a75b593b69892cefc1065b448d3765a671a1eda5f969215",
     "data/official/README.md": "21776c3e41cb0f1b11f5107e0facc26bc592fe6ba184fcc70ee67ad26b15db07",
     "data/official/case_core.py": "0a6da8b99dbb2e6ff03cb94012f539d8cd0b9c7dd05525bda5b202ebb461e20c",
     "data/official/config/case_config.json": "aae20d265b69fa8ec309ce8dc435fb1ae43ed34510c2746baa5024b472426463",
@@ -175,19 +179,19 @@
     "docs/23-results-glossary.md": "74518e9b03c340aafa61053c8c1a228ec84a8f7c4ee1429fb5f91e3f6a4e0df7",
     "docs/README.md": "ad8f1028ba708e6dd7cf1b008fc0c85cfeb7a7407ea0c129bfbfba979e621def",
     "docs/algorithm.md": "ab2829c3fe928d80e471f4c6a8c80003e7a5f0a6643a1dba2fb20a96b628880d",
-    "docs/management-note.md": "38dd41aa58040b11efb6463d089d98145d18fb0298e5e1399b7b86a2ccf1b614",
-    "docs/management-note.pdf": "835120b216ba932fea265b404d8e42dbb68ef652ed0a7fe7c498f6ec69920b9b",
+    "docs/management-note.md": "a4faf5c0bd24227f7872295c857159bd3b03427af96053cf50d63a04ed171127",
+    "docs/management-note.pdf": "61c62c0e9b0908a3f479823440ac7887a3bfad11c5b714fea04772c41b409bc7",
     "docs/research/README.md": "4af19e1f55d613d325307f4361411d319694b18448ad58f000ee3dd429b97fc8",
     "docs/research/access-mode-d.md": "26cd707c3b3a99907605bb878e6f7bda8b32ad6d5be8c950cbddd2951e3ac034",
     "docs/research/case-literature.md": "f34d5eb041b0a7d061d9aacf34c08082bda0e493b458e33a0e2067392ce5040f",
     "docs/research/portfolio-audit-results.json": "95c871e9f0c44abadc839432b6ac844e54b9ce1d37677511312888483dea7ba4",
     "docs/stress-summary.md": "ced37648c56f9c5dc5cfa3261e9a9bc5d687b1414fa9522a7744881845de3986",
-    "docs/stress-summary.pdf": "5e38114d717bc512e49bf3d274791fe03008d42d709dec20d51abac872ab82b6",
+    "docs/stress-summary.pdf": "aaf36ef88d5d0102cf85585b888d0465498ed1419857270e427cccc07e0332e2",
     "requirements.txt": "6d83ac9c93ec11b7a55f000ec44f32b189bdc20affaf0b9f0744bf890b5be9dc",
     "results/README.md": "2ffe2c711300ac58c8a95cf9d8c3785951244bd8c3e6f68de088790a86681d26",
     "results/constraints_BASE.csv": "81bf6323de4bcb38c015ddc1ac897ebb4ff39bd40002e6acebb771aaaab5785c",
     "results/constraints_STRESS.csv": "9e0011c089a29fb541d120a1155740224df1ff73a584e19904c24cd47a56253d",
-    "results/document_facts.json": "71135c3abbaab03c4156e8eacedc2070ec5decd0437255f66e545f4079633304",
+    "results/document_facts.json": "4523048d1d7c22748795a1909ffd3dc615c713101c0f855d6e9acc0865ce9cc2",
     "results/hybrid_analysis.json": "ed31b59e26a7ba5e7e2230c8db00b971a60175d4b657b3b83818f56e8ccf4588",
     "results/portfolio_detail.csv": "8996e21299667b4fa4916995864bed234b392852ec04537ca84b8220eb8744c0",
     "results/portfolio_metrics.json": "3085e31c3845cd7275ea6adf3c59fe2656a621402e10c9c3e89b091dff86d4c2",
@@ -198,17 +202,17 @@
     "run.py": "17c3d1967620bfe00e7b674d846738f43b61363aaae5b5c1a3800cb8e802a8cc",
     "src/engine/__init__.py": "1eac05947b16964c04391edd6fda45a30f5628c2d271f04a0c917a8286739020",
     "src/engine/__main__.py": "e0930aeba5a3e2e2d94ca6c5fac4f72c0c4eb2be9bba283becf98e909091471c",
-    "src/engine/canonical.py": "8d5545ce957164f736816d19c60259e0c684ca8ded8b22781b7929e167af6e66",
-    "src/engine/cli.py": "9e0aa1562a6d985846a17a4761fb99de22165beef805dd8da5365421aa721bf4",
+    "src/engine/canonical.py": "3294e85b4d499b9bfa0a6d295f7bf311eaa77ef13b2bd3d06296d533fb4739d3",
+    "src/engine/cli.py": "7e6cad91f952d6a7892c99e8c9a2429075cca0ef30df4f0d5d71d4612c644b51",
     "src/engine/constraints.py": "0b1d32733f1a71df6daba2ad8d34cfac59e2417be522795e1aae0bcc989082ec",
     "src/engine/decision.py": "e1905d484f0e9d343ed29e07513299068baa32f157c4e940efc9fd64726dd66f",
-    "src/engine/hybrid.py": "8799638446f116d9ab4edf3f726b4b5b35906d1a242a1a48029b3d6c8ac23a5c",
+    "src/engine/hybrid.py": "c2c5e7dc01ddd18b865c1049f6a612f2ec4fec283f6cd7c796f042edc1ee73de",
     "src/engine/selfcheck.py": "61aeb78e1c2641cbb1b8caac84f436f1b3f9ccf6f8b97f2a89310228630b08d0",
     "src/engine/sensitivity.py": "e08543f294ec6d7cc58a756e6a5ab2d27ceaef32b9c21c6cddbd7078ec836849",
-    "src/engine/space.py": "a679ad962402a6c5160b321ee6ec5f4f74a43d114e0f64d7ec23a3e554cf8989",
+    "src/engine/space.py": "c448155533aa7464238512d33ca3e05d2216b924cc1bc75bcaaa557106cf74a1",
     "tests/conftest.py": "a7310cb1e9bfc92d590ee5bace4c5f88ee5b2c8d8f059815b6cf82d1b0f347b5",
-    "tests/test_cli_config.py": "397d3e6b9d827cd1eb977aa559974cc6b65fab250b2ec52c3c7e5be0d5fcd548",
-    "tests/test_engine.py": "8bfcd50431320a735e3120bdc4fdacc20afa34b52c8137ee22c27583c9125172",
+    "tests/test_cli_config.py": "8fee96d8098f0f1f7657aa3f605846a5ce211dfdc3c616f7e8f53f7015d927d2",
+    "tests/test_engine.py": "3e26ff051b1f87dd8fe85720a91cb0fbf50d60250bfabc5c5320faefd60f7109",
     "tests/test_hybrid.py": "4b944ac57b7fc6d489cfaab5de99f49f96e8fa970b88ba1067da2f0392e413b2"
   }
 }

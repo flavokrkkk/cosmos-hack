@@ -1,9 +1,10 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
-import type { Scenario } from '@shared/api/contracts'
+import type { CalculationInputs, Scenario, SelectionItem } from '@shared/api/contracts'
 
 import { MAX_CANDIDATE_LOTS } from '../lib/selection'
+import { cloneCalculationInputs } from './calculationInputs'
 
 export type WorkspaceMode = 'auto' | 'manual'
 
@@ -16,6 +17,7 @@ export type ActiveVariant =
   | { kind: 'default' }
   | { kind: 'alternative'; index: number }
   | { kind: 'saved'; id: string }
+  | { kind: 'custom'; selection: SelectionItem[] }
 
 export type ManualOrigin = 'empty' | 'manual' | 'copy'
 
@@ -27,6 +29,8 @@ type WorkspaceState = {
   scenario: Scenario
   /** Условие ПОИСКА для следующего подбора: искать только среди проходящих STRESS. */
   requireStress: boolean
+  /** null — официальные входы; объект — явный сценарий пользователя для текущей сессии. */
+  calculationInputs: CalculationInputs | null
   /** Условия последнего запущенного автоподбора; `null` — подбор ещё не запускали. */
   autoSearch: { requireStress: boolean; startedAt: number } | null
   /** Открытый вариант отдельно для каждого режима страницы: у них разные списки альтернатив. */
@@ -41,12 +45,15 @@ type WorkspaceActions = {
   setMode: (mode: WorkspaceMode) => void
   setScenario: (scenario: Scenario) => void
   setRequireStress: (value: boolean) => void
+  applyCalculationInputs: (inputs: CalculationInputs | null) => void
   /** Запуск автоподбора с текущим условием поиска. */
   launchAutoSearch: () => void
   /** Открыть вариант в текущем режиме страницы (рекомендация, альтернатива). */
   openVariant: (variant: ActiveVariant) => void
   /** Открыть сохранённый вариант: всегда в автоподборе, где есть блок просмотра. */
   openSavedVariant: (id: string) => void
+  /** Точный состав с заданными пользователем режимами; проверяем даже нарушения. */
+  openCustomVariant: (selection: readonly SelectionItem[]) => void
   toggleManualLot: (lotId: string) => void
   removeManualLot: (lotId: string) => void
   clearManual: () => void
@@ -59,6 +66,7 @@ const INITIAL: WorkspaceState = {
   mode: 'auto',
   scenario: 'STRESS',
   requireStress: true,
+  calculationInputs: null,
   autoSearch: null,
   activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
   manualLotIds: [],
@@ -78,6 +86,9 @@ function migrateWorkspace(persisted: unknown): WorkspaceState {
     mode: state.mode === 'manual' ? 'manual' : 'auto',
     scenario: state.scenario === 'BASE' ? 'BASE' : 'STRESS',
     requireStress: typeof state.requireStress === 'boolean' ? state.requireStress : INITIAL.requireStress,
+    calculationInputs: state.calculationInputs && typeof state.calculationInputs === 'object'
+      ? cloneCalculationInputs(state.calculationInputs as CalculationInputs)
+      : null,
     autoSearch: state.autoSearch && typeof state.autoSearch.requireStress === 'boolean'
       && typeof state.autoSearch.startedAt === 'number' && Number.isFinite(state.autoSearch.startedAt)
       ? { requireStress: state.autoSearch.requireStress, startedAt: state.autoSearch.startedAt }
@@ -86,6 +97,11 @@ function migrateWorkspace(persisted: unknown): WorkspaceState {
     activeVariant: {
       auto: savedAuto?.kind === 'saved' && typeof savedAuto.id === 'string'
         ? { kind: 'saved', id: savedAuto.id }
+        : savedAuto?.kind === 'custom' && Array.isArray(savedAuto.selection)
+          && savedAuto.selection.length === 4
+          && new Set(savedAuto.selection.map((item) => item.lot_id)).size === 4
+          && savedAuto.selection.every((item) => typeof item.lot_id === 'string' && typeof item.mode_id === 'string')
+          ? { kind: 'custom', selection: savedAuto.selection.map((item) => ({ ...item })) }
         : { kind: 'default' },
       manual: { kind: 'default' },
     },
@@ -123,6 +139,13 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
           activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
         })),
 
+      applyCalculationInputs: (calculationInputs) =>
+        set((state) => ({
+          calculationInputs: calculationInputs ? cloneCalculationInputs(calculationInputs) : null,
+          autoSearch: state.autoSearch ? { requireStress: state.requireStress, startedAt: Date.now() } : null,
+          activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
+        })),
+
       launchAutoSearch: () =>
         set((state) => ({
           autoSearch: { requireStress: state.requireStress, startedAt: Date.now() },
@@ -136,6 +159,15 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
         set((state) => ({
           mode: 'auto',
           activeVariant: { ...state.activeVariant, auto: { kind: 'saved', id } },
+        })),
+
+      openCustomVariant: (selection) =>
+        set((state) => ({
+          mode: 'auto',
+          activeVariant: {
+            ...state.activeVariant,
+            auto: { kind: 'custom', selection: selection.map((item) => ({ ...item })) },
+          },
         })),
 
       toggleManualLot: (lotId) =>
@@ -185,7 +217,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
     }),
     {
       name: 'cosmos-workspace',
-      version: 3,
+      version: 5,
       storage: createJSONStorage(() => sessionStorage),
       migrate: migrateWorkspace,
       partialize: (state) => ({
@@ -193,6 +225,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
         mode: state.mode,
         scenario: state.scenario,
         requireStress: state.requireStress,
+        calculationInputs: state.calculationInputs,
         autoSearch: state.autoSearch,
         activeVariant: state.activeVariant,
         manualLotIds: state.manualLotIds,

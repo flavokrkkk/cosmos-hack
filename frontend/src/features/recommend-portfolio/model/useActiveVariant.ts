@@ -1,7 +1,7 @@
 import { useEvaluate, useSavedVariants, useWorkspace, type SavedVariant } from '@entities/portfolio'
 import type { Calculation, RecommendationResult, RecommendationVariant } from '@shared/api/contracts'
 
-export type ActiveVariantKind = 'team' | 'reference' | 'saved'
+export type ActiveVariantKind = 'team' | 'reference' | 'saved' | 'custom'
 
 export type ActiveVariantView = {
   /** `team` — портфель команды из ответа подбора, `reference` — опорная точка фронта. */
@@ -33,23 +33,43 @@ export function useActiveVariant(
 ): ActiveVariantView {
   const mode = useWorkspace((state) => state.mode)
   const active = useWorkspace((state) => state.activeVariant[mode])
+  const calculationInputs = useWorkspace((state) => state.calculationInputs)
   const savedItems = useSavedVariants((state) => state.items)
 
   const savedVariant =
     active.kind === 'saved' ? savedItems.find((item) => item.id === active.id) : undefined
-  const evaluation = useEvaluate(datasetHash, savedVariant?.selection ?? [], Boolean(savedVariant))
+  const compatibleSaved = Boolean(savedVariant && savedVariant.datasetHash === datasetHash)
+  const evaluation = useEvaluate(
+    datasetHash,
+    active.kind === 'custom' ? active.selection : savedVariant?.selection ?? [],
+    active.kind === 'custom' || compatibleSaved,
+    calculationInputs,
+  )
+
+  if (active.kind === 'custom') {
+    return {
+      kind: 'custom',
+      title: 'Ваш вариант',
+      reason: '',
+      calculation: evaluation.data,
+      isDefault: false,
+      isLoading: evaluation.isPending,
+      isError: evaluation.isError,
+      retry: () => void evaluation.refetch(),
+    }
+  }
 
   if (active.kind === 'saved' && savedVariant) {
     return {
       kind: 'saved',
       title: savedVariant.name,
       reason: savedVariant.comment,
-      calculation: evaluation.data,
+      calculation: compatibleSaved ? evaluation.data : undefined,
       savedVariant,
       isDefault: false,
-      isLoading: evaluation.isPending,
-      isError: evaluation.isError,
-      retry: () => void evaluation.refetch(),
+      isLoading: compatibleSaved && evaluation.isPending,
+      isError: !compatibleSaved || evaluation.isError,
+      retry: () => { if (compatibleSaved) void evaluation.refetch() },
     }
   }
 

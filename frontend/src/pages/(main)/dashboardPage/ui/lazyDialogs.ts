@@ -6,6 +6,11 @@ import { lazy } from 'react'
  */
 const loadCompareDialog = () => import('@features/compare-portfolios/ui/compareDialog')
 const loadSaveVariantDialog = () => import('@features/save-variant/ui/saveVariantDialog')
+const loadEditPortfolioDialog = () => import('@features/edit-portfolio/ui/editPortfolioDialog')
+
+export const LazyEditPortfolioDialog = lazy(() =>
+  loadEditPortfolioDialog().then((module) => ({ default: module.EditPortfolioDialog })),
+)
 
 export const LazyCompareDialog = lazy(() =>
   loadCompareDialog().then((module) => ({ default: module.CompareDialog })),
@@ -19,6 +24,7 @@ export const LazySaveVariantDialog = lazy(() =>
 export function preloadActionDialogs() {
   void loadCompareDialog()
   void loadSaveVariantDialog()
+  void loadEditPortfolioDialog()
 }
 
 export const LazySavedVariantsDialog = lazy(() =>

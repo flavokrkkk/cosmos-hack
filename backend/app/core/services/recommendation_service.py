@@ -39,6 +39,7 @@ def _recommend_ranked(serialized_request: str) -> RecommendationResult:
     def variant(selection_id: str, title: str, reason: str) -> RecommendationVariant:
         return RecommendationVariant(title=title, reason=reason, calculation=service.evaluate(EvaluateRequest(
             dataset_hash=request.dataset_hash,
+            inputs=request.inputs,
             selection=[SelectionItem(lot_id=lot, mode_id=mode) for lot, mode in space.parse_selection(selection_id)],
         )))
 
@@ -56,7 +57,8 @@ def _recommend_ranked(serialized_request: str) -> RecommendationResult:
 class RecommendationService:
     def recommend(self, request: RecommendRequest) -> RecommendationResult:
         verify_dataset(request.dataset_hash)
-        known_lots = {lot.lot_id for lot in PortfolioService().catalog().lots}
+        known_lots = ({lot.lot_id for lot in request.inputs.lots} if request.inputs else
+                      {lot.lot_id for lot in PortfolioService().catalog().lots})
         unknown = (set(request.lot_ids or []) | set(request.required_public_lot_ids)) - known_lots
         if unknown:
             raise InvalidPortfolio(f"Неизвестные лоты: {', '.join(sorted(unknown))}")

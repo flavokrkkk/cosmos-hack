@@ -1,5 +1,5 @@
 import { selectionKey, type SavedVariant } from '@entities/portfolio'
-import type { RecommendationResult, Scenario, SelectionItem } from '@shared/api/contracts'
+import type { Calculation, RecommendationResult, Scenario, SelectionItem } from '@shared/api/contracts'
 
 /** Бэкенд принимает от 2 до 4 вариантов (`CompareRequest.variants`). */
 export const MIN_VARIANTS = 2
@@ -32,6 +32,7 @@ type Input = {
   auto: RecommendationResult | undefined
   manual: RecommendationResult | undefined
   saved: SavedVariant[]
+  custom?: Calculation
 }
 
 /**
@@ -42,7 +43,7 @@ type Input = {
  * выбранных лотов, сохранённые — из списка пользователя. Специально ослабленных вариантов
  * «для красивого сравнения» здесь нет: список не сочиняется, а собирается.
  */
-export function buildCandidates({ datasetHash, auto, manual, saved }: Input): Candidate[] {
+export function buildCandidates({ datasetHash, auto, manual, saved, custom }: Input): Candidate[] {
   const candidates: Candidate[] = []
   const seen = new Set<string>()
 
@@ -51,6 +52,16 @@ export function buildCandidates({ datasetHash, auto, manual, saved }: Input): Ca
     if (seen.has(id)) return
     seen.add(id)
     candidates.push({ ...candidate, id, sourceLabel: SOURCE_LABEL[candidate.source] })
+  }
+
+  if (custom && custom.dataset_hash === datasetHash) {
+    push({
+      title: 'Ваш вариант',
+      source: 'manual',
+      reason: '',
+      selection: custom.selection,
+      feasible: custom.feasible_by_scenario,
+    })
   }
 
   if (auto?.recommended) {

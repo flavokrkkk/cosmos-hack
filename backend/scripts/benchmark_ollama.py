@@ -31,6 +31,7 @@ MODEL = os.environ.get("COSMOS_OLLAMA_MODEL", "qwen3:4b-instruct")
 
 
 class CaptureFacts:
+    enabled = True
     model = MODEL
 
     async def select_evidence(self, portfolios):

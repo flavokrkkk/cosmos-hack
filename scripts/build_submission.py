@@ -52,6 +52,7 @@ def main():
         copy(f'tests/{name}', f'tests/{name}')
     copy('scripts/submission_readme.md', 'README.md')
     copy('docs/22-hybrid-selection.md', 'docs/algorithm.md')
+    copy('docs/23-results-glossary.md', 'docs/23-results-glossary.md')
     # Актуальные материалы защиты; исторические записки 10/11 в комплект не попадают.
     copy('docs/23-management-note.md', 'docs/management-note.md')
     copy('docs/24-stress-summary.md', 'docs/stress-summary.md')

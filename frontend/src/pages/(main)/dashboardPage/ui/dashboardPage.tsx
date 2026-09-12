@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useState } from 'react'
 
 import { useCatalog } from '@entities/case'
-import { useWorkspace } from '@entities/portfolio'
+import { effectiveCatalog, useWorkspace } from '@entities/portfolio'
 import { Button, Panel } from '@shared/ui'
 import { ModeSwitch, PageFooter } from '@widgets'
 
@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const mode = useWorkspace((state) => state.mode)
   const bindDataset = useWorkspace((state) => state.bindDataset)
   const boundHash = useWorkspace((state) => state.datasetHash)
+  const calculationInputs = useWorkspace((state) => state.calculationInputs)
   const [savedOpen, setSavedOpen] = useState(false)
   const [savedMounted, setSavedMounted] = useState(false)
 
@@ -48,6 +49,7 @@ export default function DashboardPage() {
   /* Пока состояние не привязано к текущей версии данных, экраны не рисуем:
      иначе запрос с чужим dataset_hash получит 409. */
   const bound = boundHash === catalog.data.dataset_hash
+  const currentCatalog = effectiveCatalog(catalog.data, calculationInputs)
 
   return (
     <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-12 px-6 pt-12 pb-10 sm:px-8 lg:px-12 xl:px-16">
@@ -59,7 +61,9 @@ export default function DashboardPage() {
       />
 
       {bound ? (
-        mode === 'auto' ? <AutoScreen catalog={catalog.data} /> : <ManualScreen catalog={catalog.data} />
+        mode === 'auto'
+          ? <AutoScreen catalog={currentCatalog} officialCatalog={catalog.data} />
+          : <ManualScreen catalog={currentCatalog} officialCatalog={catalog.data} />
       ) : null}
 
       <PageFooter catalog={catalog.data} />

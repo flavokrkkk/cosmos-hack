@@ -1,4 +1,4 @@
-import type { Calculation, ComparisonResult, PortfolioMetrics, Scenario } from '@shared/api/contracts'
+import type { Calculation, ComparisonResult, Scenario } from '@shared/api/contracts'
 
 import { formatNumber } from './format'
 
@@ -14,6 +14,10 @@ export type DeltaKey =
   | 'opex_mrub_per_year'
   | 'vpub_mrub_per_year'
   | 'cash_mrub_per_year'
+  | 'annual_surplus_mrub'
+  | 'readiness_1_5'
+  | 'resilience_1_5'
+  | 'scale_1_5'
   | 'kcash'
   | 't_rep'
 
@@ -32,14 +36,17 @@ type DeltaRow = {
 /**
  * Каждый показатель сравнивается ОТДЕЛЬНО.
  *
- * Суммарного «балла варианта» здесь нет и быть не может: это потребовало бы
- * весов, нормализации и обоснования их происхождения. Команда весов не вводит —
- * метод выбора Парето-лексикографический. Тем более нельзя складывать
+ * Здесь показаны исходные значения и дельты, а не новый рейтинг поверх
+ * hybrid_maximin_v1. Нельзя складывать
  * `vpub_mrub_per_year` с `cash_mrub_per_year`: разные контуры, двойной счёт.
  */
 export const DELTA_ROWS: readonly DeltaRow[] = [
   { key: 'vpub_mrub_per_year', title: 'Общественная ценность', unit: 'млн ₽/год', better: 'more' },
+  { key: 'annual_surplus_mrub', title: 'Годовой остаток S', unit: 'млн ₽/год', better: 'more' },
   { key: 'c0_mrub', title: 'Стартовые затраты', unit: 'млн ₽', better: 'less' },
+  { key: 'readiness_1_5', title: 'Готовность', unit: 'баллы 1–5', better: 'more' },
+  { key: 'resilience_1_5', title: 'Устойчивость', unit: 'баллы 1–5', better: 'more' },
+  { key: 'scale_1_5', title: 'Тиражируемость', unit: 'баллы 1–5', better: 'more' },
   { key: 'opex_mrub_per_year', title: 'Годовые расходы', unit: 'млн ₽/год', better: 'less' },
   { key: 'cash_mrub_per_year', title: 'Денежные поступления', unit: 'млн ₽/год', better: 'more' },
   { key: 'kcash', title: 'Покрытие расходов', unit: '', better: 'more' },
@@ -111,12 +118,14 @@ export function scenarioDependentCodes(calculation: Calculation): Set<string> {
   return codes
 }
 
-/** Показатель варианта по ключу дельты. `null` — портфель неполный. */
-export function metricValue(
-  metrics: PortfolioMetrics | null,
+/** Оба источника уже вычислены сервером; S не пересчитывается в браузере. */
+export function comparisonValue(
+  calculation: Calculation,
   key: DeltaKey,
 ): number | null {
-  return metrics ? metrics[key] : null
+  return key === 'annual_surplus_mrub'
+    ? calculation.financial?.annual_surplus_mrub ?? null
+    : calculation.metrics?.[key] ?? null
 }
 
 /** Дельты варианта по индексу; пустой объект, если бэкенд их не прислал. */

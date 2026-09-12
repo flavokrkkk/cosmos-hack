@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
-from app.core.dto.portfolio import EvaluateRequest, RecommendRequest
+from app.core.dto.portfolio import CalculationInputs, EvaluateRequest, RecommendRequest
 from app.core.services.portfolio_engine import canonical, constraints, space
 from app.core.services.portfolio_service import PortfolioService
 from app.core.services.recommendation_service import RecommendationService
@@ -33,6 +33,7 @@ def catalog(service):
 @pytest.fixture
 def client():
     class OfflineOllama:
+        enabled = True
         model = "test-offline"
 
         async def select_evidence(self, portfolios):
@@ -76,6 +77,41 @@ def test_calculation_matches_core_and_stable_selection(service, catalog):
     assert result.metrics.model_dump() == expected
     assert result.feasible_by_scenario == {"BASE": True, "STRESS": True}
     assert result.model_dump_json() == reversed_result.model_dump_json()
+
+
+def test_editable_lot_and_mode_inputs_recalculate_without_changing_official_files(service, catalog):
+    official = service.evaluate(EvaluateRequest(dataset_hash=catalog.dataset_hash, selection=SELECTION))
+    inputs = CalculationInputs(lots=catalog.lots, modes=catalog.modes)
+    fire = next(lot for lot in inputs.lots if lot.lot_id == "FIRE")
+    mode_a = next(mode for mode in inputs.modes if mode.mode_id == "A")
+    fire.c0_mrub += 100
+    mode_a.k_vpub = .9
+
+    changed = service.evaluate(EvaluateRequest(
+        dataset_hash=catalog.dataset_hash, selection=SELECTION, inputs=inputs,
+    ))
+
+    assert changed.metrics.c0_mrub == pytest.approx(official.metrics.c0_mrub + 105)
+    fire_vpub = next(row.vpub_mrub_per_year for row in official.detail if row.lot_id == "FIRE")
+    changed_fire_vpub = next(row.vpub_mrub_per_year for row in changed.detail if row.lot_id == "FIRE")
+    assert changed_fire_vpub == pytest.approx(fire_vpub * .9)
+    assert changed.input_hash != official.input_hash
+    assert service.catalog().lots[[lot.lot_id for lot in service.catalog().lots].index("FIRE")].c0_mrub == 320
+
+
+def test_recommendation_uses_edited_inputs_and_is_reproducible(catalog):
+    inputs = CalculationInputs(lots=catalog.lots, modes=catalog.modes)
+    next(lot for lot in inputs.lots if lot.lot_id == "FIRE").c0_mrub = 1000
+    request = RecommendRequest(dataset_hash=catalog.dataset_hash, inputs=inputs)
+    first = RecommendationService().recommend(request)
+    second = RecommendationService().recommend(request)
+
+    assert first == second
+    assert first.request.inputs is not None
+    assert first.base_count < 1031
+    assert first.input_hash != RecommendationService().recommend(
+        RecommendRequest(dataset_hash=catalog.dataset_hash),
+    ).input_hash
 
 
 def test_empty_and_partial_are_finite(service, catalog):
@@ -172,6 +208,30 @@ def test_api_catalog_evaluate_compare(client):
     result = client.post("/portfolio/compare", json={"variants": [request, request]})
     assert result.status_code == 200
     assert all(value == 0 for value in result.json()["deltas"][1].values())
+
+
+def test_api_comparison_includes_all_six_selection_criteria_and_reverses_deltas(client, catalog):
+    first = {"dataset_hash": catalog.dataset_hash, "selection": SELECTION}
+    second = {"dataset_hash": catalog.dataset_hash, "selection": [
+        {"lot_id": "FIRE", "mode_id": "A"}, {"lot_id": "ENV", "mode_id": "A"},
+        {"lot_id": "TRANS", "mode_id": "A"}, {"lot_id": "INFRA", "mode_id": "B"},
+    ]}
+    originals = [client.post("/portfolio/evaluate", json=request).json() for request in (first, second)]
+    response = client.post("/portfolio/compare", json={"variants": [first, second]})
+    assert response.status_code == 200
+    comparison = response.json()
+    assert comparison["variants"] == originals
+    delta = comparison["deltas"][1]
+    criteria = ("c0_mrub", "vpub_mrub_per_year", "readiness_1_5", "resilience_1_5", "scale_1_5")
+    for field in criteria:
+        assert delta[field] == pytest.approx(originals[1]["metrics"][field] - originals[0]["metrics"][field])
+    assert delta["annual_surplus_mrub"] == pytest.approx(
+        originals[1]["financial"]["annual_surplus_mrub"] - originals[0]["financial"]["annual_surplus_mrub"],
+    )
+    assert all(delta[field] != 0 for field in (*criteria, "annual_surplus_mrub"))
+    assert "annual_surplus_mrub" not in originals[0]["metrics"]
+    reversed_result = client.post("/portfolio/compare", json={"variants": [second, first]}).json()
+    assert reversed_result["deltas"][1] == pytest.approx({key: -value for key, value in delta.items()})
 
 
 @pytest.mark.parametrize("selection", [

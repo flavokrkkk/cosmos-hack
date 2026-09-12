@@ -19,6 +19,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Sequence, Tuple
 
+import pandas as pd
+
 REPO_ROOT = next(parent for parent in Path(__file__).resolve().parents
                  if (parent / "config" / "decision.json").is_file())
 _DEFAULT_CASE_ROOT = REPO_ROOT / "data" / "official" if (REPO_ROOT / "data" / "official").is_dir() else REPO_ROOT / "case" / "source"
@@ -66,7 +68,30 @@ def _load_case() -> Tuple[Any, Any, Dict[str, Any]]:
     return case_core.load_case(str(CASE_ROOT))
 
 
-def load_case() -> Tuple[Any, Any, Dict[str, Any]]:
+def load_case(inputs: Dict[str, Any] | None = None) -> Tuple[Any, Any, Dict[str, Any]]:
+    if inputs is not None:
+        lots = pd.DataFrame([
+            {
+                "lot_id": row["lot_id"],
+                "territorial_archetype": row["territorial_archetype"],
+                "service": row["service"],
+                "capability_groups": ";".join(row["capability_groups"]),
+                "c0_mrub": row["c0_mrub"],
+                "opex_mrub_per_year": row["opex_mrub_per_year"],
+                "anchor_cash_mrub_per_year": row["anchor_cash_mrub_per_year"],
+                "commercial_cash_mrub_per_year": row["commercial_cash_mrub_per_year"],
+                "vpub_mrub_per_year": row["vpub_mrub_per_year"],
+                "t_rep": row["t_rep"],
+                "readiness_1_5": row["readiness_1_5"],
+                "resilience_1_5": row["resilience_1_5"],
+                "scale_1_5": row["scale_1_5"],
+                "federal": row["federal"],
+            }
+            for row in inputs["lots"]
+        ])
+        modes = pd.DataFrame(inputs["modes"])
+        _, _, config = _load_case()
+        return lots, modes, deepcopy(config)
     lots, modes, config = _load_case()
     return lots.copy(deep=True), modes.copy(deep=True), deepcopy(config)
 
@@ -75,11 +100,11 @@ def source_version() -> str:
     return _SOURCE_VERSION
 
 
-def evaluate(selection: Selection) -> Tuple[Any, Dict[str, Any]]:
+def evaluate(selection: Selection, inputs: Dict[str, Any] | None = None) -> Tuple[Any, Dict[str, Any]]:
     """Канонический расчёт портфеля: возвращает построчную детализацию и показатели."""
     if len(selection) > 4 or len({lot for lot, _ in selection}) != len(selection):
         raise ValueError("Нужно не более четырёх уникальных лотов")
-    lots, modes, config = load_case()
+    lots, modes, config = load_case(inputs)
     return case_core.evaluate_portfolio(sorted(selection), lots, modes, config)
 
 
@@ -90,13 +115,13 @@ def canonical_checks(metrics: Dict[str, Any], scenario: str = "BASE") -> Dict[st
     return {row.constraint: bool(row.ok) for row in frame.itertuples()}
 
 
-def lot_ids() -> List[str]:
-    lots, _, _ = load_case()
+def lot_ids(inputs: Dict[str, Any] | None = None) -> List[str]:
+    lots, _, _ = load_case(inputs)
     return list(lots.lot_id)
 
 
-def mode_ids() -> List[str]:
-    _, modes, _ = load_case()
+def mode_ids(inputs: Dict[str, Any] | None = None) -> List[str]:
+    _, modes, _ = load_case(inputs)
     return list(modes.mode_id)
 
 

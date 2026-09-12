@@ -24,6 +24,7 @@ def variants(result):
 
 
 class FakeBatch:
+    enabled = True
     model = "test-batch"
 
     def __init__(self, failure=None):
@@ -82,6 +83,29 @@ class FakeBatch:
         elif self.failure == "numbers":
             items[0]["summary"] = "Выигрыш 42"
         return BatchExplanationDraft(items=list(reversed(items))), OllamaChatResult(model=self.model, content="{}")
+
+
+def test_disabled_templates_skip_busy_model_and_cannot_reuse_enabled_cache():
+    async def run():
+        service, enabled = RecommendationSummaryService(), FakeBatch()
+        generated = await service.recommend(request(), enabled)
+        disabled = OllamaService(None, enabled.model)
+        await service._slot.acquire()
+        try:
+            plain = await asyncio.wait_for(service.recommend(request(), disabled), timeout=2)
+        finally:
+            service._slot.release()
+        assert len(enabled.calls) == 1
+        for before, after in zip(variants(generated), variants(plain)):
+            assert before.calculation == after.calculation
+            assert before.explanation.generated_by == "ollama"
+            assert after.explanation.generated_by == "template"
+            assert after.explanation.model is None
+        restored = await service.recommend(request(), enabled)
+        assert all(v.explanation.generated_by == "ollama" for v in variants(restored))
+        assert len(enabled.calls) == 1
+
+    asyncio.run(run())
 
 
 def test_one_batch_bound_by_id_and_cached_without_mutating_engine():

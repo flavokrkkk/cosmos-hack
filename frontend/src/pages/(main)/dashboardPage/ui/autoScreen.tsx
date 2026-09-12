@@ -4,7 +4,7 @@ import { Suspense, useMemo, useState } from 'react'
 import { LotCard, RecommendedLotCard, useLotDetails } from '@entities/case'
 import { formatMoney, selectionKey, useSavedVariants, useWorkspace } from '@entities/portfolio'
 import {
-  SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
+  CalculationInputsControl, SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
   useManualRecommendation, usePrefetchRecommendation,
 } from '@features'
 import { normalizeApiError } from '@shared/api'
@@ -14,10 +14,11 @@ import {
   Alternatives, ExplanationBlock, LotDetailsHost, PortfolioReview, type AlternativeTarget,
 } from '@widgets'
 
-import { LazyCompareDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
+import { LazyCompareDialog, LazyEditPortfolioDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
 
 type Props = {
   catalog: CaseCatalog
+  officialCatalog: CaseCatalog
 }
 
 const TILTS = [-2, -0.6, 0.6, 2]
@@ -35,7 +36,7 @@ function firstSentence(text: string): string {
  * оставляет фронт. Карточки, проверка и объяснение показывают один открытый вариант.
  * Получение результата само по себе не означает, что команда приняла его решением.
  */
-export function AutoScreen({ catalog }: Props) {
+export function AutoScreen({ catalog, officialCatalog }: Props) {
   usePrefetchRecommendation(catalog.dataset_hash)
   const auto = useAutoRecommendation(catalog.dataset_hash)
   const { query, explanations, launched, searchRequireStress, launch } = auto
@@ -46,20 +47,28 @@ export function AutoScreen({ catalog }: Props) {
   const openVariant = useWorkspace((state) => state.openVariant)
   const startManualFrom = useWorkspace((state) => state.startManualFrom)
   const setRequireStress = useWorkspace((state) => state.setRequireStress)
+  const calculationInputs = useWorkspace((state) => state.calculationInputs)
   const savedItems = useSavedVariants((state) => state.items)
   const openDetails = useLotDetails((state) => state.open)
 
   const [saveOpen, setSaveOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   /* Диалог монтируется при первом открытии и дальше остаётся: так работает анимация закрытия. */
   const [saveMounted, setSaveMounted] = useState(false)
   const [compareMounted, setCompareMounted] = useState(false)
+  const [editMounted, setEditMounted] = useState(false)
+  const openEditor = () => {
+    setEditMounted(true)
+    setEditOpen(true)
+  }
 
   const lotById = useMemo(() => new Map(catalog.lots.map((lot) => [lot.lot_id, lot])), [catalog.lots])
 
   const candidates = useMemo(
-    () => buildCandidates({ datasetHash: catalog.dataset_hash, auto: result, manual: manual.query.data, saved: savedItems }),
-    [catalog.dataset_hash, result, manual.query.data, savedItems],
+    () => buildCandidates({ datasetHash: catalog.dataset_hash, auto: result, manual: manual.query.data, saved: savedItems,
+      custom: active.kind === 'custom' ? active.calculation : undefined }),
+    [catalog.dataset_hash, result, manual.query.data, savedItems, active.kind, active.calculation],
   )
   /* Что отмечено при открытии сравнения: открытый вариант и портфель команды. */
   const compareInitial = useMemo(() => {
@@ -70,7 +79,9 @@ export function AutoScreen({ catalog }: Props) {
     return [...new Set(ids.filter((id): id is string => Boolean(id)))]
   }, [active.calculation, result])
 
-  const showPortfolio = (result?.status === 'ok' && Boolean(active.calculation)) || active.kind === 'saved'
+  const isDirectVariant = active.kind === 'saved' || active.kind === 'custom'
+  const showPortfolio = (launched && result?.status === 'ok' && Boolean(active.calculation)) || isDirectVariant
+  const isUpdating = isDirectVariant ? active.isLoading : query.isFetching
   const activeTarget: AlternativeTarget | null =
     active.kind === 'team' ? 'team' : active.kind === 'reference' ? (active.alternativeIndex ?? null) : null
 
@@ -81,16 +92,22 @@ export function AutoScreen({ catalog }: Props) {
           as="h1"
           title="Подбор портфеля"
         />
-        <StressSwitch />
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <StressSwitch />
+          <CalculationInputsControl officialCatalog={officialCatalog} />
+        </div>
+        {!showPortfolio ? (
+          <Button variant="secondary" onClick={openEditor}>Задать лоты и режимы</Button>
+        ) : null}
       </div>
 
-      {!launched ? (
+      {!launched && !isDirectVariant ? (
         <LaunchBlock catalog={catalog} onLaunch={launch} isRunning={query.isFetching} onDetails={openDetails} />
       ) : null}
 
-      {launched && query.isPending ? <LoadingBlock /> : null}
+      {launched && query.isPending && !isDirectVariant ? <LoadingBlock /> : null}
 
-      {launched && query.isError && !query.isPending ? (
+      {launched && query.isError && !query.isPending && !isDirectVariant ? (
         <Panel className="mx-auto w-full max-w-[720px] text-center">
           <h2 className="text-[20px] font-bold">Подбор не выполнен</h2>
           <p className="mt-2 text-[14px] text-fail">{query.error.message}</p>
@@ -98,7 +115,8 @@ export function AutoScreen({ catalog }: Props) {
         </Panel>
       ) : null}
 
-      {result?.status === 'no_feasible' ? (
+      {launched && result?.status === 'no_feasible' && !isDirectVariant ? (
+        <>
         <NoFeasibleBlock
           result={result}
           isRerunning={query.isFetching}
@@ -108,10 +126,11 @@ export function AutoScreen({ catalog }: Props) {
             window.scrollTo({ top: 0, behavior: 'smooth' })
           }}
         />
+        </>
       ) : null}
 
       {showPortfolio && active.calculation ? (
-        <section id="active-portfolio" className="rise-in flex scroll-mt-6 flex-col items-center gap-8" aria-busy={query.isFetching}>
+        <section id="active-portfolio" className="rise-in flex scroll-mt-6 flex-col items-center gap-8" aria-busy={isUpdating}>
           <div className="flex flex-col items-center gap-3 text-center">
             <h2 className="text-[24px] leading-tight font-bold tracking-[-0.015em]">
               {active.title}
@@ -122,14 +141,14 @@ export function AutoScreen({ catalog }: Props) {
               </p>
             ) : null}
             <div className="flex flex-wrap items-center justify-center gap-2">
-              {active.kind !== 'saved' ? (
+              {!isDirectVariant ? (
                 <Tag tone="muted" size="md">условие поиска: {searchRequireStress ? 'проходят STRESS' : 'проходят BASE'}</Tag>
               ) : null}
-              {query.isFetching ? <Tag tone="brand" size="md">идёт новый подбор…</Tag> : null}
+              {isUpdating ? <Tag tone="brand" size="md">обновляем расчёт…</Tag> : null}
             </div>
           </div>
 
-          <ul className={`grid w-full max-w-[1180px] gap-4 sm:grid-cols-2 lg:grid-cols-4 ${query.isFetching ? 'is-stale' : ''}`}>
+          <ul className={`grid w-full max-w-[1180px] gap-4 sm:grid-cols-2 lg:grid-cols-4 ${isUpdating ? 'is-stale' : ''}`}>
             {active.calculation.detail.map((detail, index) => {
               const lot = lotById.get(detail.lot_id)
               if (!lot) return null
@@ -139,7 +158,7 @@ export function AutoScreen({ catalog }: Props) {
                     lot={lot}
                     detail={detail}
                     modeId={detail.mode_id}
-                    modeLabel="Подобранный режим"
+                    modeLabel={active.kind === 'custom' ? 'Выбранный режим' : 'Подобранный режим'}
                     onDetails={openDetails}
                     formatMoney={formatMoney}
                     tilt={TILTS[index] ?? 0}
@@ -149,7 +168,7 @@ export function AutoScreen({ catalog }: Props) {
             })}
           </ul>
 
-          {result ? <SearchStats result={result} /> : null}
+          {result && !isDirectVariant ? <SearchStats result={result} /> : null}
 
           <Button onClick={launch} loading={query.isFetching}>
             <ArrowCounterClockwise className="size-4" weight="bold" aria-hidden />
@@ -170,10 +189,13 @@ export function AutoScreen({ catalog }: Props) {
             variantTitle={active.title}
             isDefault={active.isDefault}
             reason={active.reason}
-            isLoading={query.isFetching || active.isLoading}
+            isLoading={isUpdating}
             isError={active.isError}
             onRetry={active.retry}
-            onBackToDefault={result?.status === 'ok' ? () => openVariant({ kind: 'default' }) : undefined}
+            onBackToDefault={result?.status === 'ok' ? () => {
+              if (launched) openVariant({ kind: 'default' })
+              else launch()
+            } : undefined}
             onSave={() => {
               setSaveMounted(true)
               setSaveOpen(true)
@@ -183,23 +205,21 @@ export function AutoScreen({ catalog }: Props) {
               setCompareOpen(true)
             }}
             onActionsIntent={preloadActionDialogs}
-            onEditManually={() => {
-              if (!active.calculation) return
-              startManualFrom(active.calculation.selection.map((item) => item.lot_id))
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }}
+            onEditManually={openEditor}
           />
 
+          {!isDirectVariant ? (
           <ExplanationBlock
             result={auto.explanationFor(active.calculation?.input_hash)}
             isLoading={explanations.isFetching}
             errorMessage={explanations.isError ? normalizeApiError(explanations.error).message : undefined}
             onRetry={() => void explanations.refetch()}
           />
+          ) : null}
         </>
       ) : null}
 
-      {result?.status === 'ok' ? (
+      {launched && result?.status === 'ok' ? (
         <Alternatives
           className="rise-in"
           title="Альтернативы и сравнение"
@@ -218,7 +238,7 @@ export function AutoScreen({ catalog }: Props) {
             open={saveOpen}
             onOpenChange={setSaveOpen}
             calculation={active.calculation}
-            source={active.kind}
+            source={active.kind === 'custom' ? 'manual' : active.kind}
             defaultName={active.title}
             engineVersion={catalog.engine_version}
           />
@@ -229,8 +249,17 @@ export function AutoScreen({ catalog }: Props) {
             open={compareOpen}
             onOpenChange={setCompareOpen}
             datasetHash={catalog.dataset_hash}
+            inputs={calculationInputs}
             candidates={candidates}
             initialIds={compareInitial}
+          />
+        ) : null}
+        {editMounted ? (
+          <LazyEditPortfolioDialog
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            catalog={catalog}
+            selection={showPortfolio ? active.calculation?.selection ?? [] : []}
           />
         ) : null}
       </Suspense>
@@ -305,7 +334,7 @@ function NoFeasibleBlock({
     <Panel className="mx-auto w-full max-w-[720px] text-center">
       <h2 className="text-[22px] font-bold tracking-[-0.01em]">Допустимого портфеля нет</h2>
       <p className="mt-2 text-[14px] text-ink-500">
-        Среди проходящих {result.request.require_stress ? 'STRESS' : 'BASE'} допустимых конфигураций не найдено.
+        Нет варианта, который проходит {result.request.require_stress ? 'STRESS' : 'BASE'} и все заданные параметры поиска.
       </p>
       <SearchStats result={result} className="mt-4" />
       <div className="mt-5 flex flex-wrap justify-center gap-3">

@@ -1,7 +1,7 @@
-import type { Calculation, CaseCatalog, ComparisonResult, RecommendationResult, Scenario } from '@shared/api/contracts'
+import type { Calculation, CalculationInputs, CaseCatalog, ComparisonResult, RecommendationResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 
-import { DELTA_ROWS } from './compare'
+import { DELTA_ROWS, comparisonValue } from './compare'
 
 /**
  * Выгрузка расчёта в том же формате, что даёт `python -m engine export`.
@@ -94,6 +94,7 @@ export function decisionJson(
   catalog: CaseCatalog,
   comparison?: ComparisonResult,
   recommendation?: RecommendationResult,
+  inputs?: CalculationInputs | null,
 ): ExportFile {
   return {
     name: 'calculation_snapshot.json',
@@ -104,6 +105,7 @@ export function decisionJson(
       dataset_hash: calculation.dataset_hash,
       engine_version: calculation.engine_version,
       input_hash: calculation.input_hash,
+      inputs: inputs ?? null,
       search_context: recommendation && [recommendation.recommended, ...recommendation.alternatives]
         .some((variant) => variant?.calculation.input_hash === calculation.input_hash)
         ? { request: recommendation.request, method: recommendation.method, analysis: recommendation.analysis,
@@ -128,7 +130,6 @@ export function comparisonCsv(result: ComparisonResult): ExportFile {
     ...DELTA_ROWS.map((row) => `delta_${row.key}`),
   ]
   const rows = result.variants.map((variant, index) => {
-    const metrics = variant.metrics
     const delta = result.deltas[index] ?? {}
     const row: Record<string, unknown> = {
       variant_index: index,
@@ -143,7 +144,7 @@ export function comparisonCsv(result: ComparisonResult): ExportFile {
         .join(' ')
     }
     for (const { key } of DELTA_ROWS) {
-      row[key] = metrics ? metrics[key] : ''
+      row[key] = comparisonValue(variant, key) ?? ''
       row[`delta_${key}`] = delta[key] ?? ''
     }
     return row
@@ -157,9 +158,10 @@ export function snapshotFiles(
   catalog: CaseCatalog,
   comparison?: ComparisonResult,
   recommendation?: RecommendationResult,
+  inputs?: CalculationInputs | null,
 ): ExportFile[] {
   const files = [
-    decisionJson(calculation, catalog, comparison, recommendation),
+    decisionJson(calculation, catalog, comparison, recommendation, inputs),
     metricsJson(calculation),
     detailCsv(calculation),
     ...SCENARIOS.map((scenario) => constraintsCsv(calculation, scenario)),

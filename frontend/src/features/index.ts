@@ -5,6 +5,7 @@ export type { Candidate, CandidateSource } from './compare-portfolios'
 export { useManualSelection, useUniformModeDiagnostics } from './edit-portfolio'
 export type { UniformModeDiagnostic } from './edit-portfolio'
 export { ExportButton } from './export-calculation'
+export { CalculationInputsControl } from './edit-calculation-inputs'
 export {
   SearchStats, StressSwitch, defaultVariant, explanationFor, useActiveVariant, useAutoRecommendation,
   useManualRecommendation, usePrefetchRecommendation,

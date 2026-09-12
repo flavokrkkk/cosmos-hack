@@ -7,7 +7,7 @@ import {
   scenarioDependentCodes, selectionKey, useEvaluate, useSavedVariants, useWorkspace,
 } from '@entities/portfolio'
 import {
-  ExportButton, SearchStats, StressSwitch, buildCandidates, useActiveVariant,
+  CalculationInputsControl, ExportButton, SearchStats, StressSwitch, buildCandidates, useActiveVariant,
   useAutoRecommendation, useManualRecommendation, useManualSelection, useUniformModeDiagnostics,
   type UniformModeDiagnostic,
 } from '@features'
@@ -20,10 +20,11 @@ import {
   Alternatives, ExplanationBlock, LotDetailsHost, type AlternativeTarget,
 } from '@widgets'
 
-import { LazyCompareDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
+import { LazyCompareDialog, LazyEditPortfolioDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
 
 type Props = {
   catalog: CaseCatalog
+  officialCatalog: CaseCatalog
 }
 
 const SCENARIO_OPTIONS = SCENARIOS.map((scenario) => ({ value: scenario, label: scenario }))
@@ -35,7 +36,7 @@ const SCENARIO_OPTIONS = SCENARIOS.map((scenario) => ({ value: scenario, label: 
  * четвёрку с режимами A/B/C. Добавление или удаление кандидата обновляет
  * подбор. BASE/STRESS меняет только пороги проверки открытого портфеля.
  */
-export function ManualScreen({ catalog }: Props) {
+export function ManualScreen({ catalog, officialCatalog }: Props) {
   const selection = useManualSelection()
   const manualRecommendation = useManualRecommendation(catalog.dataset_hash)
   const { query, explanations } = manualRecommendation
@@ -52,9 +53,11 @@ export function ManualScreen({ catalog }: Props) {
 
   const [saveOpen, setSaveOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
   /* Диалог монтируется при первом открытии и дальше остаётся: так работает анимация закрытия. */
   const [saveMounted, setSaveMounted] = useState(false)
   const [compareMounted, setCompareMounted] = useState(false)
+  const [editMounted, setEditMounted] = useState(false)
 
   const lotById = useMemo(() => new Map(catalog.lots.map((lot) => [lot.lot_id, lot])), [catalog.lots])
 
@@ -69,12 +72,16 @@ export function ManualScreen({ catalog }: Props) {
     () => selection.lotIds.map((lotId) => ({ lot_id: lotId, mode_id: placeholderMode })),
     [selection.lotIds, placeholderMode],
   )
-  const partial = useEvaluate(catalog.dataset_hash, partialSelection, selection.count > 0 && !selection.isComplete)
+  const calculationInputs = useWorkspace((state) => state.calculationInputs)
+  const partial = useEvaluate(
+    catalog.dataset_hash, partialSelection, selection.count > 0 && !selection.isComplete, calculationInputs,
+  )
 
   /* Диагностика одинаковых режимов относится только к одному составу из четырёх лотов. */
   const noFeasible = selection.isComplete && query.data?.status === 'no_feasible'
   const uniform = useUniformModeDiagnostics(
     catalog.dataset_hash, selection.lotIds, catalog.modes, noFeasible && selection.count === PORTFOLIO_SIZE,
+    calculationInputs,
   )
 
   const candidates = useMemo(
@@ -90,7 +97,8 @@ export function ManualScreen({ catalog }: Props) {
   }, [active.calculation, auto.query.data])
 
   const complete = selection.isComplete
-  const showResult = complete && result?.status === 'ok' && active.calculation
+  const missingPublic = manualRecommendation.missingPublicLotIds
+  const showResult = complete && missingPublic.length === 0 && result?.status === 'ok' && active.calculation
   const activeTarget: AlternativeTarget | null =
     active.kind === 'team' ? 'team' : active.kind === 'reference' ? (active.alternativeIndex ?? null) : null
 
@@ -172,7 +180,19 @@ export function ManualScreen({ catalog }: Props) {
               )}
             </Panel>
 
-            {complete && query.isPending ? (
+            <CalculationInputsControl officialCatalog={officialCatalog} />
+            {complete && missingPublic.length > 0 ? <Panel>
+              <p role="alert" className="text-[14px] text-fail">Добавьте обязательные лоты {missingPublic.join(', ')} в кандидаты или измените параметры поиска.</p>
+            </Panel> : null}
+
+            <Button variant="secondary" onClick={() => {
+              setEditMounted(true)
+              setEditOpen(true)
+            }}>
+              Задать лоты и режимы
+            </Button>
+
+            {complete && missingPublic.length === 0 && query.isPending ? (
               <>
                 <Panel aria-busy role="status">
                   <PanelHeader className="mb-3">
@@ -192,7 +212,7 @@ export function ManualScreen({ catalog }: Props) {
               </>
             ) : null}
 
-            {complete && query.isError && !query.isPending ? (
+            {complete && missingPublic.length === 0 && query.isError && !query.isPending ? (
               <Panel>
                 <PanelTitle className="text-[20px]">Подбор портфеля не выполнен</PanelTitle>
                 <p className="mt-2 text-[13.5px] text-fail">{query.error.message}</p>
@@ -200,7 +220,8 @@ export function ManualScreen({ catalog }: Props) {
               </Panel>
             ) : null}
 
-            {complete && result?.status === 'no_feasible' ? (
+            {complete && missingPublic.length === 0 && result?.status === 'no_feasible' ? (
+              <>
               <NoFeasibleBlock
                 result={result}
                 diagnostics={uniform.diagnostics}
@@ -208,6 +229,7 @@ export function ManualScreen({ catalog }: Props) {
                 scenario={scenario}
                 onSearchInBase={() => setRequireStress(false)}
               />
+              </>
             ) : null}
 
             {showResult && active.calculation?.metrics ? (
@@ -326,8 +348,17 @@ export function ManualScreen({ catalog }: Props) {
             open={compareOpen}
             onOpenChange={setCompareOpen}
             datasetHash={catalog.dataset_hash}
+            inputs={calculationInputs}
             candidates={candidates}
             initialIds={compareInitial}
+          />
+        ) : null}
+        {editMounted ? (
+          <LazyEditPortfolioDialog
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            catalog={catalog}
+            selection={active.calculation?.selection ?? partialSelection.slice(0, PORTFOLIO_SIZE)}
           />
         ) : null}
       </Suspense>
@@ -372,8 +403,9 @@ function NoFeasibleBlock({
       <Panel>
         <PanelTitle className="text-[20px]">Допустимого портфеля нет</PanelTitle>
         <p className="mt-2 text-[13.5px] leading-snug text-ink-500">
-          Алгоритм проверил все четвёрки среди выбранных лотов и их режимы A/B/C — ни один вариант не проходит
-          {result.request.require_stress ? ' STRESS' : ' BASE'}. Добавьте кандидатов или измените их состав.
+          Среди выбранных лотов не найден вариант, который проходит
+          {result.request.require_stress ? ' STRESS' : ' BASE'} и все заданные параметры поиска.
+          Измените параметры или состав кандидатов.
         </p>
         <SearchStats result={result} className="mt-3 justify-start" />
         {canSearchInBase ? (
@@ -399,7 +431,8 @@ function NoFeasibleBlock({
           </p>
         ) : (
           <p className="mb-3 text-[13px] leading-snug text-muted">
-            При одинаковом режиме у всех лотов часть условий проходит, но сочетания, где проходят все девять, нет.
+            У проверенных одинаковых режимов нет общего нарушения условий кейса.
+            Проверьте также дополнительные параметры поиска.
           </p>
         )}
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">

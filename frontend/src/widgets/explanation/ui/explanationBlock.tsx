@@ -77,9 +77,9 @@ function StatusLabel({ isLoading, result }: { isLoading?: boolean; result: Recom
       </span>
     )
   }
-  if (result) return <Tag tone="warn" size="md">Объяснение по шаблону</Tag>
+  if (result) return <Tag tone="muted" size="md">Объяснение по расчётам</Tag>
   if (isLoading) return <Tag tone="brand" size="md">Готовим объяснение…</Tag>
-  return <span className="text-[14px] font-medium text-brand">Объяснение AI</span>
+  return <span className="text-[14px] font-medium text-brand">Объяснение расчёта</span>
 }
 
 function ExplanationText({
@@ -103,11 +103,11 @@ function ExplanationText({
         <p className="text-[11.5px] text-muted">
           Сценарий {result.scenario}
         </p>
-        {/* Шаблон — не приговор: когда модель поднимется, можно запросить текст заново. */}
+        {/* Повторный запрос использует доступный на сервере способ объяснения. */}
         {result.generated_by === 'template' && onRetry ? (
           <Button size="sm" variant="secondary" onClick={onRetry} loading={isLoading}>
             <Sparkle className="size-3.5" weight="fill" aria-hidden />
-            Повторить с AI
+            Обновить объяснение
           </Button>
         ) : null}
       </div>

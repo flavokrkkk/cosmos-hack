@@ -48,11 +48,16 @@ def test_bundled_defence_documents_describe_the_computed_portfolio():
 
 def test_bundled_relative_links_resolve():
     # Каноничные материалы организаторов в data/official не правим, их ссылки не наши.
-    for path in (BUNDLE/'docs').rglob('*.md'):
+    for path in [BUNDLE/'README.md', *(BUNDLE/'docs').rglob('*.md')]:
         for target in re.findall(r'\]\(([^)]+)\)', path.read_text()):
             local = target.split('#', 1)[0]
             if local and not local.startswith(('http://', 'https://', 'mailto:')):
                 assert (path.parent/local).exists(), f'{path.name} → {target}'
+
+
+def test_glossary_is_a_declared_source_not_a_leftover_from_an_old_build():
+    manifest = json.loads((BUNDLE/'manifest.json').read_text())
+    assert manifest['source_copies']['docs/23-results-glossary.md']['source'] == 'docs/23-results-glossary.md'
 
 
 def test_bundle_is_not_stale_against_its_sources():

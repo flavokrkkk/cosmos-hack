@@ -1,7 +1,7 @@
 import { useQueries } from '@tanstack/react-query'
 
 import { PORTFOLIO_SIZE, evaluateQueryOptions } from '@entities/portfolio'
-import type { AccessMode, Calculation, Scenario } from '@shared/api/contracts'
+import type { AccessMode, Calculation, CalculationInputs, Scenario } from '@shared/api/contracts'
 
 export type UniformModeDiagnostic = {
   mode: AccessMode
@@ -20,12 +20,12 @@ export function useUniformModeDiagnostics(
   lotIds: readonly string[],
   modes: readonly AccessMode[],
   enabled: boolean,
+  inputs: CalculationInputs | null = null,
 ) {
   const results = useQueries({
-    queries: modes.map((mode) => ({
-      ...evaluateQueryOptions(datasetHash, lotIds.map((lotId) => ({ lot_id: lotId, mode_id: mode.mode_id }))),
-      enabled: enabled && Boolean(datasetHash) && lotIds.length === PORTFOLIO_SIZE,
-    })),
+    queries: enabled && Boolean(datasetHash) && lotIds.length === PORTFOLIO_SIZE ? modes.map((mode) => ({
+      ...evaluateQueryOptions(datasetHash, lotIds.map((lotId) => ({ lot_id: lotId, mode_id: mode.mode_id })), inputs),
+    })) : [],
   })
 
   const diagnostics: UniformModeDiagnostic[] = modes.map((mode, index) => ({

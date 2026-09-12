@@ -22,7 +22,7 @@ import json
 from pathlib import Path
 from typing import List, Sequence, Tuple
 
-from .canonical import REPO_ROOT, evaluate, scenarios
+from .canonical import REPO_ROOT, evaluate, scenarios, source_version
 from .constraints import diagnose, failed
 from .decision import Variant, load_decision, read_decision_config
 from .sensitivity import (binding_first, c0_breaking_point, input_headroom,
@@ -66,6 +66,7 @@ def _print_metrics(metrics) -> None:
         ["OPEX", f"{metrics['opex_mrub_per_year']:.2f}", "млн ₽/год"],
         ["Общественная ценность vpub", f"{metrics['vpub_mrub_per_year']:.2f}", "млн ₽/год"],
         ["Денежные поступления cash", f"{metrics['cash_mrub_per_year']:.2f}", "млн ₽/год"],
+        ["Годовой остаток S = CASH − OPEX", f"{metrics['cash_mrub_per_year'] - metrics['opex_mrub_per_year']:.2f}", "млн ₽/год"],
         ["kcash = cash / opex", f"{metrics['kcash']:.4f}", "доля"],
         ["t_rep (среднее)", f"{metrics['t_rep']:.4f}", "—"],
         ["readiness (среднее)", f"{metrics['readiness_1_5']:.3f}", "1-5"],
@@ -79,6 +80,7 @@ def _print_metrics(metrics) -> None:
     print()
     print("  Напоминание: vpub и cash — разные контуры, складывать их нельзя;")
     print("  kcash — это только отношение cash/opex, а не прибыль, NPV или ROI.")
+    print("  S не учитывает возврат C0, налоги и стоимость капитала; отрицательный S сам по себе не нарушает кейс.")
 
 
 def _print_constraints(metrics, scenario: str) -> bool:
@@ -105,20 +107,24 @@ def _print_constraints(metrics, scenario: str) -> bool:
 
 
 def _selection_from_args(args, decision) -> Tuple[List[Tuple[str, str]], str]:
-    if args.portfolio:
-        return parse_selection(args.portfolio), "аргумент --portfolio"
-    return decision.recommended.selection, f"config: {decision.recommended.name}"
+    if args.portfolio is not None:
+        selection = parse_selection(args.portfolio)
+        if not selection:
+            raise ValueError("Портфель не может быть пустым: укажите ЛОТ:РЕЖИМ через запятую")
+        return selection, "аргумент --portfolio"
+    return decision.recommended.selection, f"подбор по config: {decision.recommended.name}"
 
 
 # --------------------------------------------------------------------------- #
 # Команды
 # --------------------------------------------------------------------------- #
 def cmd_evaluate(args) -> int:
-    decision = None if args.portfolio else load_decision(args.config)
+    decision = None if args.portfolio is not None else load_decision(args.config)
     selection, origin = _selection_from_args(args, decision)
     detail, metrics = evaluate(selection)
 
     print(f"Портфель: {format_selection(selection)}   ({origin})")
+    print(f"SHA-256 входов кейса: {source_version()}")
     print()
     print(detail[["lot_id", "mode_id", "c0_mrub", "opex_mrub_per_year",
                   "vpub_mrub_per_year", "cash_mrub_per_year", "public_core"]].to_string(index=False))
@@ -139,30 +145,45 @@ def cmd_evaluate(args) -> int:
 def cmd_compare(args) -> int:
     decision = load_decision(args.config)
     variants: List[Variant] = decision.variants
-    rows = []
-    for variant in variants:
+    identities, financial, quality = [], [], []
+    for number, variant in enumerate(variants, start=1):
         _, metrics = evaluate(variant.selection)
         statuses = {}
         for scenario in scenarios():
             statuses[scenario] = "PASS" if all(r.passed for r in diagnose(metrics, scenario)) else "FAIL"
-        rows.append([
-            variant.name,
-            format_selection(variant.selection),
-            f"{metrics['c0_mrub']:.1f}",
-            f"{metrics['opex_mrub_per_year']:.1f}",
-            f"{metrics['vpub_mrub_per_year']:.1f}",
-            f"{metrics['kcash']:.3f}",
-            f"{metrics['t_rep']:.3f}",
-            metrics["public_core_lots"],
+        identities.append([number, variant.name, format_selection(variant.selection)])
+        financial.append([
+            number,
+            f"{metrics['c0_mrub']:.2f}",
+            f"{metrics['opex_mrub_per_year']:.2f}",
+            f"{metrics['cash_mrub_per_year']:.2f}",
+            f"{metrics['cash_mrub_per_year'] - metrics['opex_mrub_per_year']:.2f}",
+            f"{metrics['vpub_mrub_per_year']:.2f}",
             statuses.get("BASE", "—"),
             statuses.get("STRESS", "—"),
         ])
-    print(_table(
-        ["Вариант", "Состав", "c0", "opex", "vpub", "kcash", "t_rep", "PC", "BASE", "STRESS"],
-        rows,
-    ))
+        quality.append([
+            number,
+            f"{metrics['readiness_1_5']:.4f}",
+            f"{metrics['resilience_1_5']:.4f}",
+            f"{metrics['scale_1_5']:.4f}",
+            f"{metrics['kcash']:.3f}",
+            f"{metrics['t_rep']:.4f}",
+            metrics["public_core_lots"],
+            metrics["territorial_archetypes"],
+            metrics["capability_groups"],
+        ])
+    print(f"SHA-256 входов кейса: {source_version()}")
+    print("Параметры подбора рекомендации:", json.dumps(decision.algorithm_parameters, ensure_ascii=False))
+    print(_table(["№", "Вариант", "Состав и режимы"], identities))
     print()
-    print("  PC — число лотов в режиме с public_core (порог 2).")
+    print("C0 — млн ₽; OPEX, CASH, S = CASH − OPEX и VPUB — млн ₽/год.")
+    print(_table(["№", "C0", "OPEX", "CASH", "S", "VPUB", "BASE", "STRESS"], financial))
+    print()
+    print(_table(["№", "readiness_1_5", "resilience_1_5", "scale_1_5", "KCASH", "t_rep", "PC", "Территории", "Группы"], quality))
+    print("  Индексы — средние баллы 1–5; PC — число лотов с public_core.")
+    print("  BASE и STRESS проверяют один состав; меняется только официальный лимит C0.")
+    print("  VPUB не складывается с CASH; KCASH и S не являются прибылью или окупаемостью.")
     return 0
 
 
@@ -270,7 +291,7 @@ def cmd_export(args) -> int:
 
 
 def cmd_sensitivity(args) -> int:
-    decision = None if args.portfolio else load_decision(args.config)
+    decision = None if args.portfolio is not None else load_decision(args.config)
     selection, origin = _selection_from_args(args, decision)
     scenario = args.scenario
 
@@ -366,6 +387,6 @@ def main(argv: Sequence[str] = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except (ValueError, KeyError, TypeError) as error:
+    except (ValueError, KeyError, TypeError, OSError) as error:
         print(f"Ошибка входов: {error}")
         return 2

@@ -23,6 +23,8 @@ SELECTION = [
 
 
 class FakeOllama:
+    enabled = True
+
     async def explain_portfolio(self, facts):
         assert all(set(fact) == {"id", "text", "source"} for fact in facts)
         return (
@@ -37,11 +39,15 @@ class FakeOllama:
 
 
 class UnavailableOllama:
+    enabled = True
+
     async def explain_portfolio(self, facts):
         raise OllamaUnavailableError("offline")
 
 
 class InvalidOllama:
+    enabled = True
+
     def __init__(self, *, text="Выдуманное значение 42", fact_ids=None):
         self.text = text
         self.fact_ids = fact_ids or ["portfolio_status"]

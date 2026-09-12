@@ -16,7 +16,10 @@ from app.core.dto.ollama import (
     EvidenceBatch,
     EvidenceSelection,
 )
-from app.infrastructure.errors.ollama_errors import OllamaResponseError
+from app.infrastructure.errors.ollama_errors import OllamaDisabledError, OllamaResponseError
+
+
+OLLAMA_DISABLED_MESSAGE = "Ollama отключена; пояснение составлено по расчётным данным."
 
 
 class OllamaService:
@@ -24,7 +27,7 @@ class OllamaService:
 
     def __init__(
         self,
-        client: OllamaClient,
+        client: OllamaClient | None,
         default_model: str,
         parallel_requests: int = 1,
     ) -> None:
@@ -36,7 +39,13 @@ class OllamaService:
     def model(self) -> str:
         return self._default_model
 
+    @property
+    def enabled(self) -> bool:
+        return self._client is not None
+
     async def select_evidence(self, portfolios: list[dict]) -> tuple[EvidenceBatch, OllamaChatResult]:
+        if not self.enabled:
+            raise OllamaDisabledError(OLLAMA_DISABLED_MESSAGE)
         group_count = min(self._parallel_requests, len(portfolios))
         groups = [portfolios[index::group_count] for index in range(group_count)]
         responses = await asyncio.gather(*(self._select_evidence_batch(group) for group in groups))
@@ -132,7 +141,7 @@ class OllamaService:
             "comparison_c0_mrub": "стартовые затраты выгодно отличаются от показанных альтернатив",
             "comparison_vpub_mrub_per_year": "общественная ценность выше, чем у показанных альтернатив",
             "comparison_kcash": "покрытие расходов выше, чем у показанных альтернатив",
-            "comparison_t_rep": "тиражируемость выше, чем у показанных альтернатив",
+            "comparison_t_rep": "индекс t_rep выше, чем у показанных альтернатив",
         }.get(strength_id, "у варианта есть подтверждённое расчётом преимущество")
 
         limitation_id = selection.limitation_ids[0] if selection.limitation_ids else ""
@@ -167,7 +176,8 @@ class OllamaService:
                 "Не повторяй числовые значения: они уже показаны рядом в интерфейсе. Не добавляй "
                 "плательщиков, договоры, причины, прогнозы, риски и выводы, которых нет в facts. "
                 "Не называй общественную ценность выручкой, покрытие расходов прибылью, а "
-                "тиражируемость устойчивостью. Не объявляй вариант лучшим вообще: он рекомендован "
+                "тиражируемость устойчивостью. Не приписывай индексу t_rep смысл: кейс его не определяет. "
+                "Не объявляй вариант лучшим вообще: он рекомендован "
                 "только в рамках заданных ограничений и правила ранжирования.\n\n"
                 "Корректный пример стиля: «Портфель проходит обязательные ограничения выбранного "
                 "сценария. Его главное преимущество — совокупные поступления покрывают ежегодные "
@@ -208,6 +218,8 @@ class OllamaService:
         num_ctx: int | None = None,
         timeout_seconds: float | None = None,
     ) -> OllamaChatResult:
+        if self._client is None:
+            raise OllamaDisabledError(OLLAMA_DISABLED_MESSAGE)
         return await self._client.chat(
             model=model or self._default_model,
             messages=messages,
@@ -276,6 +288,8 @@ class OllamaService:
             raise OllamaResponseError("Ollama returned an invalid explanation") from error
 
     async def explain_portfolios(self, portfolios: list[dict]) -> tuple[BatchExplanationDraft, OllamaChatResult]:
+        if not self.enabled:
+            raise OllamaDisabledError(OLLAMA_DISABLED_MESSAGE)
         compact = [
             {"key": portfolio["key"], "facts": {
                 fact["id"]: fact["text"] for fact in portfolio["facts"]

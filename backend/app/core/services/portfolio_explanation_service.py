@@ -11,9 +11,9 @@ from app.core.dto.portfolio import (
     PortfolioExplanationResult,
     Scenario,
 )
-from app.core.services.ollama_service import OllamaService
+from app.core.services.ollama_service import OLLAMA_DISABLED_MESSAGE, OllamaService
 from app.core.services.portfolio_service import PortfolioService
-from app.infrastructure.errors.ollama_errors import OllamaError, OllamaResponseError
+from app.infrastructure.errors.ollama_errors import OllamaDisabledError, OllamaError, OllamaResponseError
 from app.infrastructure.logging.logger import get_logger
 
 
@@ -27,18 +27,24 @@ class PortfolioExplanationService:
         ollama: OllamaService,
     ) -> PortfolioExplanationResult:
         calculation = PortfolioService().evaluate(
-            EvaluateRequest(dataset_hash=request.dataset_hash, selection=request.selection),
+            EvaluateRequest(dataset_hash=request.dataset_hash, inputs=request.inputs, selection=request.selection),
         )
         facts = _build_facts(calculation, request.scenario)
         generated_by = "ollama"
         warning = None
         model = None
         try:
+            if not ollama.enabled:
+                raise OllamaDisabledError(OLLAMA_DISABLED_MESSAGE)
             draft, response = await ollama.explain_portfolio(
                 [fact.model_dump(exclude={"kind"}) for fact in facts],
             )
             explanation = _validate_explanation(draft, facts)
             model = response.model
+        except OllamaDisabledError:
+            generated_by = "template"
+            warning = OLLAMA_DISABLED_MESSAGE
+            explanation = _template_explanation(calculation, request.scenario, facts)
         except OllamaError as error:
             logger.warning(
                 "portfolio_explanation_fallback",

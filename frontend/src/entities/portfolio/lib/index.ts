@@ -1,5 +1,5 @@
 export {
-  DELTA_ROWS, DELTA_VERDICT_LABEL, deltaVerdict, formatDelta, scenarioDependentCodes, scenarioVerdict,
+  DELTA_ROWS, DELTA_VERDICT_LABEL, comparisonValue, deltaVerdict, formatDelta, scenarioDependentCodes, scenarioVerdict,
 } from './compare'
 export type { DeltaKey, DeltaVerdict, ScenarioVerdict } from './compare'
 export {

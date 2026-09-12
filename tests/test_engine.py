@@ -129,6 +129,55 @@ def test_c0_above_limit_fails_with_actual_value():
     assert broken[0].slack == pytest.approx(-1)
 
 
+@pytest.mark.parametrize("scenario", ["BASE", "STRESS"])
+@pytest.mark.parametrize("code,metric,threshold,outside", [
+    ("exact_lot_count", "selected_lots", 4, 3),
+    ("exact_lot_count", "selected_lots", 4, 5),
+    ("territorial_archetypes", "territorial_archetypes", 3, 2),
+    ("capability_groups", "capability_groups", 2, 1),
+    ("public_core_lots", "public_core_lots", 2, 1),
+    ("c0_limit", "c0_mrub", None, None),
+    ("opex_limit", "opex_mrub_per_year", 360, 360.000001),
+    ("vpub_floor", "vpub_mrub_per_year", 1000, 999.999999),
+    ("kcash_floor", "kcash", 0.6, 0.599999),
+    ("t_rep_floor", "t_rep", 0.63, 0.629999),
+])
+def test_every_official_boundary_and_value_just_outside(scenario, code, metric, threshold, outside):
+    """Все девять условий: равенство проходит, шаг за допуск 1e-9 показывает факт и FAIL.
+
+    Синтетические метрики нужны только для изоляции каждой границы; исходные CSV
+    не меняются, а диагноз дополнительно сверяется с case_core организаторов.
+    """
+    c0_limit = 1300 if scenario == "BASE" else 1180
+    metrics = {
+        "selected_lots": 4, "territorial_archetypes": 3, "capability_groups": 2,
+        "public_core_lots": 2, "c0_mrub": c0_limit, "opex_mrub_per_year": 360,
+        "vpub_mrub_per_year": 1000, "kcash": 0.6, "t_rep": 0.63,
+    }
+    if metric == "c0_mrub":
+        threshold, outside = c0_limit, c0_limit + 0.000001
+    metrics[metric] = threshold
+    assert constraints.all_passed(constraints.diagnose(metrics, scenario))
+    metrics[metric] = outside
+    broken = constraints.failed(constraints.diagnose(metrics, scenario))
+    assert len(broken) == 1
+    row = broken[0]
+    assert (row.code, row.threshold, row.actual) == (code, threshold, outside)
+    assert row.slack is None if row.operator == "==" else row.slack < 0
+
+
+def test_subsidised_portfolio_remains_officially_feasible():
+    """Отрицательный S не является десятым скрытым ограничением кейса."""
+    selection = [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "A"), ("ENV", "A")]
+    _, metrics = canonical.evaluate(selection)
+    assert metrics["cash_mrub_per_year"] - metrics["opex_mrub_per_year"] == pytest.approx(-31.5)
+    assert 0.6 <= metrics["kcash"] < 1
+    for scenario in ("BASE", "STRESS"):
+        assert constraints.all_passed(constraints.diagnose(metrics, scenario))
+        allowed = space.feasible(scenario)
+        assert ((allowed.lots == "FIRE+AGRI+TRANS+ENV") & (allowed.modes == "AAAA")).any()
+
+
 def test_single_lot_fails_exact_count():
     """Дымовая проверка из инструкции кейса: один лот не образует портфель."""
     _, metrics = canonical.evaluate([("FIRE", "A")])

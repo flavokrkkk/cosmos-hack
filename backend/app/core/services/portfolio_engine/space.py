@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import itertools
+import json
 from functools import lru_cache
 from typing import Dict, Iterable, List, Sequence, Tuple
 
@@ -25,9 +26,9 @@ MINIMIZE = ("c0", "opex")
 PORTFOLIO_SIZE = 4
 
 
-def metrics_row(selection: Selection) -> Dict[str, object]:
+def metrics_row(selection: Selection, inputs: dict | None = None) -> Dict[str, object]:
     """Плоская строка показателей одной конфигурации плюс статусы по сценариям."""
-    _, metrics = evaluate(selection)
+    _, metrics = evaluate(selection, inputs)
     row: Dict[str, object] = {
         "lots": "+".join(lot for lot, _ in selection),
         "modes": "".join(mode for _, mode in selection),
@@ -53,13 +54,14 @@ def metrics_row(selection: Selection) -> Dict[str, object]:
     return row
 
 
-@lru_cache(maxsize=1)
-def _enumerate_space() -> pd.DataFrame:
+@lru_cache(maxsize=32)
+def _enumerate_space(serialized_inputs: str | None = None) -> pd.DataFrame:
     """Перебирает все сочетания четырёх лотов и все назначения канонических режимов.
 
     C(8,4) = 70 наборов × 3^4 = 81 назначение = 5670 конфигураций.
     """
-    lots, modes, config = load_case()
+    inputs = json.loads(serialized_inputs) if serialized_inputs else None
+    lots, modes, config = load_case(inputs)
     pairs = {(lot.lot_id, mode.mode_id): case_core.apply_mode(lot, mode)
              for lot in lots.itertuples() for mode in modes.itertuples()}
     sums = {"c0": "c0_mrub", "opex": "opex_mrub_per_year",
@@ -102,13 +104,14 @@ def _enumerate_space() -> pd.DataFrame:
     return frame
 
 
-def enumerate_space() -> pd.DataFrame:
-    return _enumerate_space().copy(deep=True)
+def enumerate_space(inputs: dict | None = None) -> pd.DataFrame:
+    serialized = json.dumps(inputs, ensure_ascii=False, sort_keys=True, separators=(",", ":")) if inputs else None
+    return _enumerate_space(serialized).copy(deep=True)
 
 
-def feasible(scenario: str = "BASE", space: pd.DataFrame = None) -> pd.DataFrame:
+def feasible(scenario: str = "BASE", space: pd.DataFrame = None, inputs: dict | None = None) -> pd.DataFrame:
     """Конфигурации, проходящие все ограничения указанного сценария."""
-    frame = enumerate_space() if space is None else space
+    frame = enumerate_space(inputs) if space is None else space
     column = f"{scenario}_ok"
     if column not in frame.columns:
         raise ValueError(f"Неизвестный сценарий: {scenario}")

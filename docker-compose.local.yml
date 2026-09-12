@@ -1,11 +1,11 @@
 # Локальная Ollama; загрузка модели включается профилем llm.
 services:
   ollama:
-    image: ollama/ollama:latest
+    image: ${COSMOS_OLLAMA_IMAGE:-ollama/ollama:0.32.15}
     environment:
       OLLAMA_HOST: 0.0.0.0:11434
     ports:
-      - "${COSMOS_OLLAMA_HOST_PORT:-11434}:11434"
+      - "127.0.0.1:${COSMOS_OLLAMA_HOST_PORT:-11434}:11434"
     volumes:
       - ollama-data:/root/.ollama
     healthcheck:
@@ -18,7 +18,7 @@ services:
 
   ollama-pull:
     profiles: ["llm"]
-    image: ollama/ollama:latest
+    image: ${COSMOS_OLLAMA_IMAGE:-ollama/ollama:0.32.15}
     environment:
       OLLAMA_HOST: http://ollama:11434
       OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b-instruct}

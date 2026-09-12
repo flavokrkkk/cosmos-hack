@@ -16,9 +16,61 @@ class SelectionItem(PortfolioSchema):
     mode_id: str = Field(min_length=1, max_length=8)
 
 
+class Lot(PortfolioSchema):
+    lot_id: str = Field(min_length=1, max_length=32)
+    title: str = Field(min_length=1, max_length=120)
+    service: str = Field(min_length=1, max_length=160)
+    territorial_archetype: str = Field(min_length=1, max_length=64)
+    territory_title: str = Field(min_length=1, max_length=120)
+    capability_groups: list[Annotated[str, Field(min_length=1, max_length=32)]] = Field(min_length=1)
+    federal: bool
+    c0_mrub: float = Field(ge=0)
+    opex_mrub_per_year: float = Field(ge=0)
+    anchor_cash_mrub_per_year: float = Field(ge=0)
+    commercial_cash_mrub_per_year: float = Field(ge=0)
+    vpub_mrub_per_year: float = Field(ge=0)
+    t_rep: float = Field(ge=0, le=1)
+    readiness_1_5: float = Field(ge=1, le=5)
+    resilience_1_5: float = Field(ge=1, le=5)
+    scale_1_5: float = Field(ge=1, le=5)
+
+
+class AccessMode(PortfolioSchema):
+    mode_id: str = Field(min_length=1, max_length=8)
+    k_c0: float = Field(ge=0)
+    k_opex: float = Field(ge=0)
+    k_vpub: float = Field(ge=0)
+    k_anchor: float = Field(ge=0)
+    k_commercial: float = Field(ge=0)
+    public_core: bool
+
+
+class CalculationInputs(PortfolioSchema):
+    """Полный редактируемый снимок входов; официальные файлы при этом не меняются."""
+
+    lots: list[Lot] = Field(min_length=8, max_length=8)
+    modes: list[AccessMode] = Field(min_length=3, max_length=3)
+
+    @model_validator(mode="after")
+    def official_entities_only(self) -> Self:
+        lot_ids = [lot.lot_id for lot in self.lots]
+        mode_ids = [mode.mode_id for mode in self.modes]
+        expected_lots = {"FIRE", "FLOOD", "AGRI", "INFRA", "ARCTIC", "TRANS", "ENV", "SSA"}
+        if len(set(lot_ids)) != len(lot_ids) or set(lot_ids) != expected_lots:
+            raise ValueError("Нужны все восемь уникальных лотов официального кейса")
+        if len(set(mode_ids)) != len(mode_ids) or set(mode_ids) != {"A", "B", "C"}:
+            raise ValueError("Нужны три уникальных режима A, B и C")
+        for lot in self.lots:
+            lot.capability_groups = sorted(set(lot.capability_groups))
+        self.lots = sorted(self.lots, key=lambda lot: lot.lot_id)
+        self.modes = sorted(self.modes, key=lambda mode: mode.mode_id)
+        return self
+
+
 class EvaluateRequest(PortfolioSchema):
     dataset_hash: DatasetHash
     selection: list[SelectionItem] = Field(max_length=4)
+    inputs: CalculationInputs | None = None
 
     @model_validator(mode="after")
     def unique_lots(self) -> Self:
@@ -29,6 +81,7 @@ class EvaluateRequest(PortfolioSchema):
 
 class RecommendRequest(PortfolioSchema):
     dataset_hash: DatasetHash
+    inputs: CalculationInputs | None = None
     require_stress: bool = Field(default=True, strict=True)
     method_id: Literal["hybrid_maximin_v1"] = "hybrid_maximin_v1"
     cash_loss_limit_mrub: float | None = Field(default=None, ge=0, strict=True, description="Δ, млн ₽/год. null — минимальная потеря S для достижения глобального максимума Q.")
@@ -68,35 +121,6 @@ class RecommendRequest(PortfolioSchema):
 
 class CompareRequest(PortfolioSchema):
     variants: list[EvaluateRequest] = Field(min_length=2, max_length=4)
-
-
-class Lot(PortfolioSchema):
-    lot_id: str
-    title: str
-    service: str
-    territorial_archetype: str
-    territory_title: str
-    capability_groups: list[str]
-    federal: bool
-    c0_mrub: float
-    opex_mrub_per_year: float
-    anchor_cash_mrub_per_year: float
-    commercial_cash_mrub_per_year: float
-    vpub_mrub_per_year: float
-    t_rep: float
-    readiness_1_5: float
-    resilience_1_5: float
-    scale_1_5: float
-
-
-class AccessMode(PortfolioSchema):
-    mode_id: str
-    k_c0: float
-    k_opex: float
-    k_vpub: float
-    k_anchor: float
-    k_commercial: float
-    public_core: bool
 
 
 class ConstraintDefinition(PortfolioSchema):
@@ -301,6 +325,7 @@ class ComparisonResult(PortfolioSchema):
 
 class PortfolioExplanationRequest(PortfolioSchema):
     dataset_hash: DatasetHash
+    inputs: CalculationInputs | None = None
     selection: list[SelectionItem] = Field(min_length=4, max_length=4)
     scenario: Scenario = "STRESS"
 

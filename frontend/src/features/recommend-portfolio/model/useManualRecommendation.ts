@@ -15,9 +15,13 @@ import { explanationFor } from './explanations'
 export function useManualRecommendation(datasetHash: string | undefined) {
   const manualLotIds = useWorkspace((state) => state.manualLotIds)
   const requireStress = useWorkspace((state) => state.requireStress)
+  const calculationInputs = useWorkspace((state) => state.calculationInputs)
+  const missingPublicLotIds: string[] = []
   const isComplete = manualLotIds.length >= PORTFOLIO_SIZE && manualLotIds.length <= MAX_CANDIDATE_LOTS
 
-  const params: RecommendParams = { datasetHash, requireStress, lotIds: manualLotIds, enabled: isComplete }
+  const params: RecommendParams = {
+    datasetHash, requireStress, calculationInputs, lotIds: manualLotIds, enabled: isComplete,
+  }
   const query = useRecommendation(params)
   const explanations = useRecommendationExplanations({ ...params, enabled: isComplete && query.isSuccess })
 
@@ -28,5 +32,6 @@ export function useManualRecommendation(datasetHash: string | undefined) {
     isComplete,
     lotIds: manualLotIds,
     requireStress,
+    missingPublicLotIds,
   }
 }

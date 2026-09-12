@@ -48,6 +48,7 @@ def exact(value) -> Fraction:
 
 @dataclass(frozen=True)
 class Parameters:
+    inputs: dict | None = None
     cash_loss_limit_mrub: float | None = None
     require_stress: bool = True
     budget_cap_mrub: float | None = None
@@ -68,7 +69,7 @@ class Parameters:
         for value, positive in ((self.budget_cap_mrub, True), (self.vpub_floor_mrub_per_year, False)):
             if value is not None and (isinstance(value, bool) or not math.isfinite(value) or value < 0 or (positive and value == 0)):
                 raise ValueError("Некорректный дополнительный порог")
-        known = set(canonical.lot_ids())
+        known = set(canonical.lot_ids(self.inputs))
         for ids in (self.lot_ids, self.required_public_lot_ids):
             if ids is not None and (len(set(ids)) != len(ids) or not set(ids) <= known):
                 raise ValueError("Повторяющиеся или неизвестные лоты")
@@ -78,10 +79,10 @@ class Parameters:
             raise ValueError("Обязательное ядро должно входить в область поиска и содержать не более 4 лотов")
 
 
-def candidate_frame() -> pd.DataFrame:
-    frame = space.enumerate_space()
+def candidate_frame(inputs: dict | None = None) -> pd.DataFrame:
+    frame = space.enumerate_space(inputs)
     frame["stable_id"] = [space.format_selection(sorted(zip(row.lots.split("+"), row.modes))) for row in frame.itertuples()]
-    _, modes, _ = canonical.load_case()
+    _, modes, _ = canonical.load_case(inputs)
     public_modes = set(modes.loc[modes.public_core, "mode_id"])
     frame["public_lot_ids"] = [frozenset(lot for lot, mode in zip(row.lots.split("+"), row.modes) if mode in public_modes) for row in frame.itertuples()]
     frame["surplus"] = frame.cash - frame.opex
@@ -188,7 +189,7 @@ def sensitivity_scenarios(limits: dict, parameters: Parameters) -> list[tuple[st
         cases.append((f"budget_{pct}", f"Лимит запуска ниже на {pct}%", dict(limits, budget_cap_mrub=limits["budget_cap_mrub"] * (1-pct/100))))
     for pct in (10, 20):
         cases.append((f"vpub_{pct}", f"Минимум общественной ценности выше на {pct}%", dict(limits, vpub_floor_mrub_per_year=limits["vpub_floor_mrub_per_year"] * (1+pct/100))))
-    for lot in parameters.lot_ids or canonical.lot_ids():
+    for lot in parameters.lot_ids or canonical.lot_ids(parameters.inputs):
         if lot not in parameters.required_public_lot_ids and len(parameters.required_public_lot_ids) < 4:
             cases.append((f"public_{lot}", f"Сохранить {lot} в общественном ядре", dict(limits, required_public_lot_ids=sorted((*parameters.required_public_lot_ids, lot)))))
     for name, title, cash, opex in (("cash_drop", "Поступления ниже на 10%", .9, 1),
@@ -214,7 +215,7 @@ def analyze_sensitivity(official: pd.DataFrame, limits: dict, parameters: Parame
 
 
 def analyze(parameters: Parameters, *, include_sensitivity: bool = True) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
-    all_rows = candidate_frame()
+    all_rows = candidate_frame(parameters.inputs) if parameters.inputs is not None else candidate_frame()
     reference = all_rows[all_rows.BASE_ok & (all_rows.STRESS_ok if parameters.require_stress else True)]
     bounds = {key: (float(reference[key].min()), float(reference[key].max())) for key, _, _ in CRITERIA} if not reference.empty else {}
     frame = all_rows

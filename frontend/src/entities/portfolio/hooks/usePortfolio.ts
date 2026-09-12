@@ -1,15 +1,16 @@
 import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 
 import type {
-  CompareRequest, ComparisonAnalysisRequest, EvaluateRequest, RecommendRequest, SelectionItem,
+  CalculationInputs, CompareRequest, ComparisonAnalysisRequest, EvaluateRequest, RecommendRequest, SelectionItem,
 } from '@shared/api/contracts'
 
 import { portfolioService } from '../api'
 import { MAX_CANDIDATE_LOTS, PORTFOLIO_SIZE, selectionKey, sortedLotIds } from '../lib/selection'
+import { calculationInputsKey } from '../model/calculationInputs'
 
 export const portfolioKeys = {
-  evaluate: (datasetHash: string, selection: readonly SelectionItem[]) =>
-    ['portfolio', 'evaluate', datasetHash, selectionKey(selection)] as const,
+  evaluate: (datasetHash: string, selection: readonly SelectionItem[], inputs: CalculationInputs | null) =>
+    ['portfolio', 'evaluate', datasetHash, calculationInputsKey(inputs), selectionKey(selection)] as const,
   recommend: (
     datasetHash: string, requireStress: boolean, lotIds: readonly string[] | null, withExplanations: boolean,
   ) =>
@@ -21,12 +22,15 @@ export const portfolioKeys = {
  * поздний ответ по старому выбору не может перезаписать свежий результат.
  * Расчёт детерминирован, поэтому никогда не протухает: те же входы — те же числа.
  */
-export function evaluateQueryOptions(datasetHash: string | undefined, selection: readonly SelectionItem[]) {
+export function evaluateQueryOptions(
+  datasetHash: string | undefined, selection: readonly SelectionItem[], inputs: CalculationInputs | null = null,
+) {
   return queryOptions({
-    queryKey: portfolioKeys.evaluate(datasetHash ?? '', selection),
+    queryKey: portfolioKeys.evaluate(datasetHash ?? '', selection, inputs),
     queryFn: () =>
       portfolioService.evaluate({
         dataset_hash: datasetHash as string,
+        inputs,
         selection: [...selection],
       } satisfies EvaluateRequest),
     staleTime: Infinity,
@@ -34,9 +38,12 @@ export function evaluateQueryOptions(datasetHash: string | undefined, selection:
   })
 }
 
-export function useEvaluate(datasetHash: string | undefined, selection: readonly SelectionItem[], enabled = true) {
+export function useEvaluate(
+  datasetHash: string | undefined, selection: readonly SelectionItem[], enabled = true,
+  inputs: CalculationInputs | null = null,
+) {
   return useQuery({
-    ...evaluateQueryOptions(datasetHash, selection),
+    ...evaluateQueryOptions(datasetHash, selection, inputs),
     enabled: enabled && Boolean(datasetHash) && selection.length > 0,
   })
 }
@@ -47,18 +54,20 @@ export type RecommendParams = {
   /** Четыре–восемь лотов-кандидатов; `null` — полный автоподбор. */
   lotIds: readonly string[] | null
   enabled: boolean
+  calculationInputs?: CalculationInputs | null
 }
 
 function recommendRequest(params: RecommendParams, withExplanations: boolean): RecommendRequest {
   return {
     dataset_hash: params.datasetHash as string,
+    inputs: params.calculationInputs ?? null,
     require_stress: params.requireStress,
     method_id: 'hybrid_maximin_v1',
     cash_loss_limit_mrub: null,
-    quality_epsilon: 0,
     budget_cap_mrub: null,
     vpub_floor_mrub_per_year: null,
     required_public_lot_ids: [],
+    quality_epsilon: 0,
     lot_ids: params.lotIds ? sortedLotIds(params.lotIds) : null,
     with_explanations: withExplanations,
   }

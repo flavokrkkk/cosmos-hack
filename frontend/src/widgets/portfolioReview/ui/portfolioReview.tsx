@@ -18,7 +18,7 @@ type Props = {
   recommendation?: RecommendationResult
   calculation: Calculation | undefined
   /** Что именно открыто: портфель команды, опорная точка фронта или сохранённый вариант. */
-  variantKind: 'team' | 'reference' | 'saved'
+  variantKind: 'team' | 'reference' | 'saved' | 'custom'
   variantTitle: string
   /** Открыт вариант по умолчанию — тот же, что показан карточками сверху. */
   isDefault: boolean
@@ -162,11 +162,11 @@ export function PortfolioReview({
         </Panel>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" onMouseEnter={onActionsIntent} onFocus={onActionsIntent}>
-          <Button onClick={onSave} disabled={!complete}>Сохранить вариант</Button>
-          <Button variant="secondary" onClick={onCompare} disabled={!complete}>Сравнить</Button>
+          <Button onClick={onSave} disabled={!complete || isLoading}>Сохранить вариант</Button>
+          <Button variant="secondary" onClick={onCompare} disabled={!complete || isLoading}>Сравнить</Button>
           {onEditManually ? (
-            <Button variant="secondary" onClick={onEditManually} disabled={!complete} className="col-span-2 sm:col-span-1">
-              Изменить вручную
+            <Button variant="secondary" onClick={onEditManually} disabled={!complete || isLoading} className="col-span-2 sm:col-span-1">
+              Изменить лоты и режимы
             </Button>
           ) : null}
         </div>

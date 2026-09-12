@@ -61,3 +61,63 @@ def test_default_config_and_overrides_forwarded_to_one_search(
     assert seen[0].require_stress is expected_stress
     assert json.loads(capsys.readouterr().out) == result
     assert json.loads(path.read_text(encoding="utf-8")) == data
+
+
+@pytest.mark.parametrize("portfolio,expected_status", [
+    ("FIRE:A,AGRI:C,TRANS:C,ENV:A", 0),
+    ("FIRE:A,FLOOD:A,AGRI:C,TRANS:C", 1),
+])
+def test_evaluate_explicit_portfolio_compares_scenarios_without_search(
+    monkeypatch, capsys, portfolio, expected_status,
+):
+    def forbidden_search(*args, **kwargs):
+        pytest.fail("Явный портфель не требует подбора другого состава")
+
+    monkeypatch.setattr(cli, "load_decision", forbidden_search)
+    assert main(["evaluate", "--portfolio", portfolio]) == expected_status
+    output = capsys.readouterr().out
+    assert portfolio in output
+    assert "SHA-256 входов кейса:" in output
+    assert "S = CASH − OPEX" in output
+    assert "сценарий BASE" in output and "сценарий STRESS" in output
+    base, stress = output.split("=== Ограничения, сценарий STRESS ===")
+    assert "FAIL" not in base
+    if expected_status:
+        assert "c0_limit" in stress and "FAIL" in stress
+        assert "фактически 1192.8000" in stress
+    else:
+        assert "FAIL" not in stress
+
+
+def test_empty_explicit_portfolio_is_not_silently_replaced(monkeypatch, capsys):
+    def forbidden_search(*args, **kwargs):
+        pytest.fail("Пустой --portfolio нельзя незаметно заменить рекомендацией")
+
+    monkeypatch.setattr(cli, "load_decision", forbidden_search)
+    assert main(["evaluate", "--portfolio", ""]) == 2
+    assert "Портфель не может быть пустым" in capsys.readouterr().out
+
+
+def test_missing_config_is_an_input_error(tmp_path, capsys):
+    assert main(["--config", str(tmp_path / "missing.json"), "recommend"]) == 2
+    assert "Не найден конфиг решения" in capsys.readouterr().out
+
+
+def test_compare_keeps_all_six_criteria_and_cash_flows_visible(monkeypatch, capsys):
+    from types import SimpleNamespace
+
+    variants = [
+        decision.Variant("ACCA", [("FIRE", "A"), ("AGRI", "C"), ("TRANS", "C"), ("ENV", "A")]),
+        decision.Variant("ABBA", [("FIRE", "A"), ("AGRI", "B"), ("TRANS", "B"), ("ENV", "A")]),
+    ]
+    config = SimpleNamespace(variants=variants, algorithm_parameters={"require_stress": True})
+    monkeypatch.setattr(cli, "load_decision", lambda _path: config)
+    assert main(["compare"]) == 0
+    output = capsys.readouterr().out
+    for header in ("C0", "OPEX", "CASH", "S", "VPUB", "readiness_1_5", "resilience_1_5", "scale_1_5"):
+        assert header in output
+    assert '"require_stress": true' in output
+    for variant in variants:
+        assert cli.format_selection(variant.selection) in output
+    assert "92.25" in output and "57.50" in output
+    assert "BASE" in output and "STRESS" in output

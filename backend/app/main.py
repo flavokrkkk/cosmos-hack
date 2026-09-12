@@ -23,16 +23,18 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("application_startup", app_name=settings.app.name, debug=settings.app.debug)
 
-    ollama_client = OllamaClient(
-        settings.ollama.base_url,
-        settings.ollama.timeout_seconds,
-        settings.ollama.username,
-        (
-            settings.ollama.password.get_secret_value()
-            if settings.ollama.password
-            else None
-        ),
-    )
+    ollama_client = None
+    if settings.ollama.enabled:
+        ollama_client = OllamaClient(
+            settings.ollama.base_url,
+            settings.ollama.timeout_seconds,
+            settings.ollama.username,
+            (
+                settings.ollama.password.get_secret_value()
+                if settings.ollama.password
+                else None
+            ),
+        )
     app.state.ollama_service = OllamaService(
         ollama_client,
         settings.ollama.model,
@@ -41,10 +43,8 @@ async def lifespan(app: FastAPI):
     app.state.recommendation_summary_service = RecommendationSummaryService()
     app.state.comparison_analysis_service = ComparisonAnalysisService()
     logger.info(
-        "ollama_client_configured",
-        base_url=settings.ollama.base_url,
-        model=settings.ollama.model,
-        parallel_requests=settings.ollama.parallel_requests,
+        "explanation_service_configured",
+        ollama_enabled=app.state.ollama_service.enabled,
     )
 
     try:
@@ -53,7 +53,8 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         await app.state.recommendation_summary_service.close()
-        await ollama_client.close()
+        if ollama_client is not None:
+            await ollama_client.close()
         logger.info("application_shutdown")
 
 
@@ -76,5 +77,5 @@ app.include_router(api_v1_routers)
 
 
 @app.get("/health", tags=["system"])
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
+async def health() -> dict[str, object]:
+    return {"status": "ok", "capabilities": {"ollama_enabled": settings.ollama.enabled}}

@@ -3,6 +3,10 @@
 private_features.csv
 submission*.csv
 *.pkl
+# Веса загружаются Ollama в volume, не входят в исходный код.
+*.gguf
+*.safetensors
+.ollama/
 __pycache__/
 .venv/
 *.pyc

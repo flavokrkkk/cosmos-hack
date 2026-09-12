@@ -8,10 +8,10 @@ from app.core.dto.portfolio import (
     CompareRequest, ComparisonAnalysisRequest, ComparisonAnalysisResult, ComparisonResult,
     ExplanationFact, Scenario,
 )
-from app.core.services.ollama_service import OllamaService
+from app.core.services.ollama_service import OLLAMA_DISABLED_MESSAGE, OllamaService
 from app.core.services.explanation_evidence import render_evidence, number
 from app.core.services.portfolio_service import PortfolioService, input_hash
-from app.infrastructure.errors.ollama_errors import OllamaError, OllamaResponseError
+from app.infrastructure.errors.ollama_errors import OllamaDisabledError, OllamaError, OllamaResponseError
 from app.infrastructure.logging.logger import get_logger
 
 
@@ -20,16 +20,26 @@ VARIANT_LABELS = ("Первый вариант", "Второй вариант", 
 METRICS = (
     ("c0_mrub", "Стартовые затраты"),
     ("opex_mrub_per_year", "Ежегодные расходы"),
+    ("cash_mrub_per_year", "Денежные поступления"),
+    ("annual_surplus_mrub", "Годовой остаток S (CASH − OPEX)"),
     ("vpub_mrub_per_year", "Общественная ценность"),
+    ("readiness_1_5", "Готовность"),
+    ("resilience_1_5", "Устойчивость"),
+    ("scale_1_5", "Тиражируемость"),
     ("kcash", "Покрытие расходов"),
-    ("t_rep", "Тиражируемость"),
+    ("t_rep", "Индекс t_rep"),
 )
+YEARLY_MONEY = {
+    "opex_mrub_per_year", "cash_mrub_per_year", "annual_surplus_mrub", "vpub_mrub_per_year",
+}
+INDICES = {"readiness_1_5", "resilience_1_5", "scale_1_5"}
 
 
 def comparison_facts(comparison: ComparisonResult, scenario: Scenario) -> list[ExplanationFact]:
     facts = [ExplanationFact(id="scope", source="system", kind="limitation", text=(
         "Первый вариант — база сравнения, не победитель. У показателей нет общего балла. "
-        "Расчёт не определяет плательщиков, договоры и исполнителей."
+        "Расчёт не определяет плательщиков, договоры и исполнителей. "
+        "Остаток S не учитывает возврат вложений C0, налоги и стоимость капитала и не является чистой прибылью."
     ))]
     for index, variant in enumerate(comparison.variants):
         label = VARIANT_LABELS[index]
@@ -47,10 +57,11 @@ def comparison_facts(comparison: ComparisonResult, scenario: Scenario) -> list[E
             relation = "выше" if delta > 0 else "ниже" if delta < 0 else "такой же"
             better = delta < 0 if metric in {"c0_mrub", "opex_mrub_per_year"} else delta > 0
             kind = "context" if delta == 0 else "strength" if better else "limitation"
-            unit = " млн ₽" if metric == "c0_mrub" else " млн ₽/год" if metric in {"opex_mrub_per_year", "vpub_mrub_per_year"} else ""
-            actual = getattr(variant.metrics, metric)
-            baseline = getattr(comparison.variants[0].metrics, metric)
-            precision = 2 if unit else 4
+            unit = " млн ₽" if metric == "c0_mrub" else " млн ₽/год" if metric in YEARLY_MONEY else " балла" if metric in INDICES else ""
+            actual = getattr(variant.financial if metric == "annual_surplus_mrub" else variant.metrics, metric)
+            first = comparison.variants[comparison.baseline_index]
+            baseline = getattr(first.financial if metric == "annual_surplus_mrub" else first.metrics, metric)
+            precision = 2 if metric == "c0_mrub" or metric in YEARLY_MONEY else 4
             facts.append(ExplanationFact(id=f"v{index}_{metric}", source="calculation", kind=kind, text=(
                 f"{label}: {title.lower()} — {number(actual, precision)}{unit} против {number(baseline, precision)}{unit} у первого. "
                 + ("Значения совпадают." if delta == 0 else f"Показатель {relation} на {number(abs(delta), precision)}{unit}.")
@@ -66,9 +77,11 @@ class ComparisonAnalysisService:
     async def analyze(self, request: ComparisonAnalysisRequest, ollama: OllamaService) -> ComparisonAnalysisResult:
         comparison = await run_in_threadpool(PortfolioService().compare, CompareRequest(variants=request.variants))
         calculation_hash = input_hash({"comparison": comparison.model_dump(), "scenario": request.scenario})
-        key = input_hash({"input": calculation_hash, "model": ollama.model, "prompt": "comparison-narrative-v5"})
+        key = input_hash({"input": calculation_hash, "model": ollama.model, "enabled": ollama.enabled, "prompt": "comparison-narrative-v6"})
         facts = comparison_facts(comparison, request.scenario)
         try:
+            if not ollama.enabled:
+                raise OllamaDisabledError(OLLAMA_DISABLED_MESSAGE)
             async with asyncio.timeout(65):
                 async with self._lock:
                     cached = self._cache.get(key)
@@ -87,6 +100,8 @@ class ComparisonAnalysisService:
                     )
                     self._remember(key, result, 86400)
                     return result.model_copy(deep=True)
+        except OllamaDisabledError:
+            warning = OLLAMA_DISABLED_MESSAGE
         except (OllamaError, TimeoutError) as error:
             logger.warning("comparison_analysis_fallback", reason=str(error) or type(error).__name__)
             warning = "Анализ Ollama недоступен; показаны факты сравнения без генерации AI."

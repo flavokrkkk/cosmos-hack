@@ -1,11 +1,13 @@
-from app.core.dto.portfolio import FinancialSummary, SelectionItem
+from app.core.dto.portfolio import CalculationInputs, FinancialSummary, SelectionItem
 from app.core.services.portfolio_engine import canonical
 
 
-def financial_summary(selection: list[SelectionItem], metrics: dict) -> FinancialSummary | None:
+def financial_summary(
+    selection: list[SelectionItem], metrics: dict, inputs: CalculationInputs | None = None,
+) -> FinancialSummary | None:
     if not selection:
         return None
-    lots, modes, config = canonical.load_case()
+    lots, modes, config = canonical.load_case(inputs.model_dump() if inputs else None)
     lots, modes = lots.set_index("lot_id"), modes.set_index("mode_id")
     surplus = metrics["cash_mrub_per_year"] - metrics["opex_mrub_per_year"]
     return FinancialSummary(
