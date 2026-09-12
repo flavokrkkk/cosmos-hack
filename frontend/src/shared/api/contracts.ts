@@ -112,6 +112,14 @@ export type MethodDefinition = {
 }
 
 export type CaseCatalog = {
+  team_decision: {
+    team_name: string
+    strategy_thesis: string
+    management: Record<string, string>
+    assumptions: Record<string, string>[]
+    algorithm_parameters: Record<string, unknown>
+    source: string
+  }
   case_id: string
   case_version: string
   /** Версия исходных данных. Показывать эксперту: README §14, сценарий 1. */
@@ -171,6 +179,7 @@ export type LotDetail = {
 }
 
 export type Calculation = {
+  inputs: CalculationInputs | null
   dataset_hash: string
   input_hash: string
   engine_version: string

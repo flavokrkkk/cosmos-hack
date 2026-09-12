@@ -1,6 +1,6 @@
 import { DownloadSimple } from '@phosphor-icons/react'
 
-import { snapshotFiles, useComparison, useWorkspace } from '@entities/portfolio'
+import { snapshotFiles, useComparison } from '@entities/portfolio'
 import type { Calculation, CaseCatalog, RecommendationResult } from '@shared/api/contracts'
 import { downloadFile } from '@shared/lib'
 import { notifyInfo } from '@shared/lib/notify'
@@ -21,9 +21,8 @@ type Props = {
  */
 export function ExportButton({ calculation, catalog, recommendation, className }: Props) {
   const comparison = useComparison((state) => state.result)
-  const inputs = useWorkspace((state) => state.calculationInputs)
   const ready = calculation?.status === 'complete' && calculation.metrics !== null
-  const files = ready ? snapshotFiles(calculation, catalog, comparison ?? undefined, recommendation, inputs) : []
+  const files = ready ? snapshotFiles(calculation, catalog, comparison ?? undefined, recommendation) : []
 
   function download() {
     for (const file of files) downloadFile(file.name, file.content, file.mime)

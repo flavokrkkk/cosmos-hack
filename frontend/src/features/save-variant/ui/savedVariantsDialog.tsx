@@ -38,7 +38,7 @@ export function SavedVariantsDialog({ open, onOpenChange, datasetHash }: Props) 
         ) : (
           <ul className="flex flex-col gap-3">
             {items.map((item) => {
-              const incompatible = item.datasetHash !== datasetHash
+              const incompatible = item.datasetHash !== datasetHash || item.missingInputs
               return (
                 <li key={item.id} className="flex items-start gap-4 rounded-card bg-panel px-4 py-3.5">
                   <div className="min-w-0 flex-1">
@@ -51,7 +51,7 @@ export function SavedVariantsDialog({ open, onOpenChange, datasetHash }: Props) 
                     {item.comment ? <p className="mt-1 text-[12.5px] text-muted">{item.comment}</p> : null}
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {incompatible ? (
-                        <Tag tone="warn">Устаревшая версия данных</Tag>
+                        <Tag tone="warn">{item.missingInputs ? 'Нет снимка исходных данных — сохраните вариант заново' : 'Устаревшая версия данных'}</Tag>
                       ) : (
                         SCENARIOS.map((scenario) => (
                           <Tag key={scenario} tone={item.feasible[scenario] ? 'pass' : 'fail'}>
@@ -67,7 +67,7 @@ export function SavedVariantsDialog({ open, onOpenChange, datasetHash }: Props) 
                       variant="secondary"
                       disabled={incompatible}
                       onClick={() => {
-                        openSaved(item.id)
+                        openSaved(item.id, item.inputs)
                         onOpenChange(false)
                       }}
                     >

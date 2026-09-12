@@ -1,5 +1,5 @@
-import { selectionKey, type SavedVariant } from '@entities/portfolio'
-import type { Calculation, RecommendationResult, Scenario, SelectionItem } from '@shared/api/contracts'
+import { type SavedVariant } from '@entities/portfolio'
+import type { CalculationInputs, Calculation, RecommendationResult, Scenario, SelectionItem } from '@shared/api/contracts'
 
 /** Бэкенд принимает от 2 до 4 вариантов (`CompareRequest.variants`). */
 export const MIN_VARIANTS = 2
@@ -8,8 +8,9 @@ export const MAX_VARIANTS = 4
 export type CandidateSource = 'team' | 'reference' | 'manual' | 'saved'
 
 export type Candidate = {
-  /** Устойчивый ключ: состав портфеля, а не позиция в списке. */
+  /** Хеш расчёта: состав, входы и версия движка, а не позиция в списке. */
   id: string
+  inputs: CalculationInputs | null
   title: string
   source: CandidateSource
   sourceLabel: string
@@ -47,8 +48,8 @@ export function buildCandidates({ datasetHash, auto, manual, saved, custom }: In
   const candidates: Candidate[] = []
   const seen = new Set<string>()
 
-  const push = (candidate: Omit<Candidate, 'id' | 'sourceLabel'>) => {
-    const id = selectionKey(candidate.selection)
+  const push = (candidate: Omit<Candidate, 'sourceLabel'>) => {
+    const id = candidate.id
     if (seen.has(id)) return
     seen.add(id)
     candidates.push({ ...candidate, id, sourceLabel: SOURCE_LABEL[candidate.source] })
@@ -56,6 +57,7 @@ export function buildCandidates({ datasetHash, auto, manual, saved, custom }: In
 
   if (custom && custom.dataset_hash === datasetHash) {
     push({
+      id: custom.input_hash, inputs: custom.inputs,
       title: 'Ваш вариант',
       source: 'manual',
       reason: '',
@@ -66,6 +68,7 @@ export function buildCandidates({ datasetHash, auto, manual, saved, custom }: In
 
   if (auto?.recommended) {
     push({
+      id: auto.recommended.calculation.input_hash, inputs: auto.recommended.calculation.inputs,
       title: 'Рекомендованный портфель',
       source: 'team',
       reason: auto.recommended.reason,
@@ -75,6 +78,7 @@ export function buildCandidates({ datasetHash, auto, manual, saved, custom }: In
   }
   for (const variant of auto?.alternatives ?? []) {
     push({
+      id: variant.calculation.input_hash, inputs: variant.calculation.inputs,
       title: variant.title,
       source: 'reference',
       reason: variant.reason,
@@ -85,6 +89,7 @@ export function buildCandidates({ datasetHash, auto, manual, saved, custom }: In
   /* Ручная проверка: рекомендованная четвёрка и опорные точки внутри набора кандидатов. */
   if (manual?.recommended) {
     push({
+      id: manual.recommended.calculation.input_hash, inputs: manual.recommended.calculation.inputs,
       title: 'Рекомендация из выбранных лотов',
       source: 'manual',
       reason: 'Алгоритм выбрал четыре лота и их режимы из вашего набора кандидатов.',
@@ -94,6 +99,7 @@ export function buildCandidates({ datasetHash, auto, manual, saved, custom }: In
   }
   for (const variant of manual?.alternatives ?? []) {
     push({
+      id: variant.calculation.input_hash, inputs: variant.calculation.inputs,
       title: `Ручная: ${variant.title}`,
       source: 'manual',
       reason: variant.reason,
@@ -103,12 +109,13 @@ export function buildCandidates({ datasetHash, auto, manual, saved, custom }: In
   }
   for (const item of saved) {
     push({
+      id: item.inputHash, inputs: item.inputs,
       title: item.name,
       source: 'saved',
       reason: item.comment,
       selection: item.selection,
       feasible: item.feasible,
-      incompatible: item.datasetHash !== datasetHash,
+      incompatible: item.datasetHash !== datasetHash || item.missingInputs,
     })
   }
 

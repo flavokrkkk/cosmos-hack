@@ -20,6 +20,7 @@ vpub ↓ в m раз →  m ≥ vpub_min / vpub
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from typing import Any, Dict, List
 
 from .canonical import evaluate, load_case
@@ -40,19 +41,19 @@ class Headroom:
         return {
             "input": self.input_name,
             "direction": self.direction,
-            "limit_factor": round(self.limit_factor, 6),
-            "change_pct": round(self.change_pct, 2),
+            "limit_factor": round(self.limit_factor, 6) if math.isfinite(self.limit_factor) else None,
+            "change_pct": round(self.change_pct, 2) if math.isfinite(self.change_pct) else None,
             "binding_constraint": self.binding,
         }
 
 
-def input_headroom(selection, scenario: str = "BASE") -> List[Headroom]:
+def input_headroom(selection, scenario: str = "BASE", inputs: dict | None = None) -> List[Headroom]:
     """Предельные изменения входов, при которых портфель ещё допустим."""
-    _, _, config = load_case()
+    _, _, config = load_case(inputs)
     common = config["constraints_common"]
     c0_limit = config["scenarios"][scenario]["c0_max_mrub"]
 
-    _, metrics = evaluate(selection)
+    _, metrics = evaluate(selection, inputs)
     c0 = float(metrics["c0_mrub"])
     opex = float(metrics["opex_mrub_per_year"])
     vpub = float(metrics["vpub_mrub_per_year"])
@@ -88,7 +89,7 @@ def input_headroom(selection, scenario: str = "BASE") -> List[Headroom]:
     return rows
 
 
-def surplus_headroom(selection) -> List[Headroom]:
+def surplus_headroom(selection, inputs: dict | None = None) -> List[Headroom]:
     """Запас до нулевого остатка: это порог команды, а не ограничение кейса.
 
     Бездефицитность эксплуатации (`cash >= opex`) официальными ограничениями не требуется —
@@ -97,7 +98,7 @@ def surplus_headroom(selection) -> List[Headroom]:
     потери этого свойства считается и выгружается отдельно, с явной пометкой происхождения
     порога. Иначе числа записки нечем проверить.
     """
-    _, metrics = evaluate(selection)
+    _, metrics = evaluate(selection, inputs)
     opex = float(metrics["opex_mrub_per_year"])
     cash = float(metrics["cash_mrub_per_year"])
     binding = "zero_surplus (порог команды — не ограничение кейса)"
@@ -112,14 +113,14 @@ def surplus_headroom(selection) -> List[Headroom]:
     ]
 
 
-def c0_breaking_point(selection) -> Dict[str, Any]:
+def c0_breaking_point(selection, inputs: dict | None = None) -> Dict[str, Any]:
     """При каком лимите стартовых затрат портфель перестаёт проходить.
 
     Лимит сценария — внешний параметр, а `c0` портфеля фиксирован. Значит портфель
     допустим ровно до лимита, равного его собственному `c0`.
     """
-    _, _, config = load_case()
-    _, metrics = evaluate(selection)
+    _, _, config = load_case(inputs)
+    _, metrics = evaluate(selection, inputs)
     c0 = float(metrics["c0_mrub"])
     stress_limit = config["scenarios"]["STRESS"]["c0_max_mrub"]
     base_limit = config["scenarios"]["BASE"]["c0_max_mrub"]
@@ -133,16 +134,16 @@ def c0_breaking_point(selection) -> Dict[str, Any]:
     }
 
 
-def binding_first(selection, scenario: str = "BASE") -> Headroom:
+def binding_first(selection, scenario: str = "BASE", inputs: dict | None = None) -> Headroom:
     """Самое узкое место: вход, у которого запас минимален."""
-    rows = input_headroom(selection, scenario)
+    rows = input_headroom(selection, scenario, inputs)
     return min(rows, key=lambda row: row.change_pct)
 
 
-def verify_headroom(selection, scenario: str = "BASE") -> bool:
+def verify_headroom(selection, scenario: str = "BASE", inputs: dict | None = None) -> bool:
     """Численная проверка аналитики: на границе проходит, чуть за ней — нет."""
-    _, metrics = evaluate(selection)
-    for row in input_headroom(selection, scenario):
+    _, metrics = evaluate(selection, inputs)
+    for row in input_headroom(selection, scenario, inputs):
         key = {
             "c0 (стартовые затраты)": "c0_mrub",
             "opex (годовые расходы)": "opex_mrub_per_year",

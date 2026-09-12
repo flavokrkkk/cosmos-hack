@@ -4,7 +4,7 @@ import {
   DELTA_ROWS, DELTA_VERDICT_LABEL, comparisonValue, deltaVerdict, formatDelta, formatNumber, scenarioVerdict,
   selectionKey, selectionLabel, useCompare, useComparison, useComparisonAnalysis,
 } from '@entities/portfolio'
-import type { CalculationInputs, ComparisonResult, Scenario } from '@shared/api/contracts'
+import type { Calculation, ComparisonResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Button, Dialog, DialogContent, Tag, Segmented, Tooltip } from '@shared/ui'
@@ -15,7 +15,6 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   datasetHash: string
-  inputs: CalculationInputs | null
   candidates: Candidate[]
   /** Что отметить при открытии: обычно открытый вариант и рекомендация. */
   initialIds: string[]
@@ -29,7 +28,7 @@ type Props = {
  * только пороги. Дельты подписаны по каждому показателю отдельно — «выигрыш»
  * или «плата»; общего балла нет, он потребовал бы весов.
  */
-export function CompareDialog({ open, onOpenChange, datasetHash, inputs, candidates, initialIds }: Props) {
+export function CompareDialog({ open, onOpenChange, datasetHash, candidates, initialIds }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -38,13 +37,13 @@ export function CompareDialog({ open, onOpenChange, datasetHash, inputs, candida
         description={`Выберите от ${MIN_VARIANTS} до ${MAX_VARIANTS} вариантов. Показатели остальных сравниваются с первым выбранным.`}
       >
         {/* Содержимое монтируется при каждом открытии — состояние отметок стартует заново. */}
-        <CompareBody datasetHash={datasetHash} inputs={inputs} candidates={candidates} initialIds={initialIds} />
+        <CompareBody datasetHash={datasetHash} candidates={candidates} initialIds={initialIds} />
       </DialogContent>
     </Dialog>
   )
 }
 
-function CompareBody({ datasetHash, inputs, candidates, initialIds }: Omit<Props, 'open' | 'onOpenChange'>) {
+function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open' | 'onOpenChange'>) {
   const compare = useCompare()
   const remember = useComparison((state) => state.set)
   const [picked, setPicked] = useState<string[]>(() =>
@@ -59,9 +58,12 @@ function CompareBody({ datasetHash, inputs, candidates, initialIds }: Omit<Props
   const stored = useComparison((state) => state.result)
   /* После закрытия окна мутация теряется, но результат остаётся в сторе для экспорта и повторного показа. */
   const result = compare.data ?? stored ?? undefined
-  const resultKey = result ? result.variants.map((v) => selectionKey(v.selection)).join(' vs ') : ''
-  const pickedKey = picked.join(' vs ')
-  const isStale = Boolean(result) && (resultKey !== pickedKey || result!.variants.some((variant) => variant.dataset_hash !== datasetHash))
+  const isStale = Boolean(result) && (result!.variants.length !== selected.length || result!.variants.some((variant, index) => {
+    const candidate = selected[index]
+    return !candidate || variant.dataset_hash !== datasetHash
+      || selectionKey(variant.selection) !== selectionKey(candidate.selection)
+      || JSON.stringify(variant.inputs) !== JSON.stringify(candidate.inputs)
+  }))
 
   function toggle(id: string) {
     setPicked((current) => {
@@ -74,7 +76,7 @@ function CompareBody({ datasetHash, inputs, candidates, initialIds }: Omit<Props
   function run() {
     const titles = selected.map((c) => c.title)
     compare.mutate(
-      { variants: selected.map((c) => ({ dataset_hash: datasetHash, inputs, selection: c.selection })) },
+      { variants: selected.map((c) => ({ dataset_hash: datasetHash, inputs: c.inputs, selection: c.selection })) },
       { onSuccess: (data) => remember(data, titles) },
     )
   }
@@ -116,7 +118,7 @@ function CompareBody({ datasetHash, inputs, candidates, initialIds }: Omit<Props
                       {selectionLabel(candidate.selection)}
                     </span>
                     {candidate.incompatible ? (
-                      <span className="text-[11.5px] text-warn">сохранён под другой версией данных</span>
+                      <span className="text-[11.5px] text-warn">нет воспроизводимого снимка входов для этой версии данных</span>
                     ) : candidate.feasible ? (
                       <span className="flex gap-1.5">
                         {SCENARIOS.map((scenario) => (
@@ -169,7 +171,7 @@ function CompareBody({ datasetHash, inputs, candidates, initialIds }: Omit<Props
               }
             />
             {!isStale && !compare.isPending ? (
-              <ComparisonAnalysis key={JSON.stringify(result.variants.map((variant) => variant.input_hash))} result={result} inputs={inputs} />
+              <ComparisonAnalysis key={JSON.stringify(result.variants.map((variant) => variant.input_hash))} result={result} />
             ) : null}
           </div>
         )}
@@ -178,11 +180,11 @@ function CompareBody({ datasetHash, inputs, candidates, initialIds }: Omit<Props
   )
 }
 
-function ComparisonAnalysis({ result, inputs }: { result: ComparisonResult; inputs: CalculationInputs | null }) {
+function ComparisonAnalysis({ result }: { result: ComparisonResult }) {
   const [scenario, setScenario] = useState<Scenario>('STRESS')
   const [launchedKey, setLaunchedKey] = useState<string | null>(null)
   const request = {
-    variants: result.variants.map((variant) => ({ dataset_hash: variant.dataset_hash, inputs, selection: variant.selection })),
+    variants: result.variants.map((variant) => ({ dataset_hash: variant.dataset_hash, inputs: variant.inputs, selection: variant.selection })),
     scenario,
   }
   const requestKey = JSON.stringify(request)
@@ -256,6 +258,7 @@ function ComparisonTable({ result, titles }: { result: ComparisonResult; titles:
                   {selectionLabel(variant.selection)}
                 </span>
                 {index === baselineIndex ? <Tag tone="brand" className="mt-1">база сравнения</Tag> : null}
+                <VariantInputs calculation={variant} />
               </th>
             ))}
           </tr>
@@ -318,5 +321,31 @@ function ScenarioRow({ scenario, result }: { scenario: Scenario; result: Compari
         )
       })}
     </tr>
+  )
+}
+
+/** Входы рядом с результатом: можно отличить изменение состава от изменения сметы. */
+function VariantInputs({ calculation }: { calculation: Calculation }) {
+  if (!calculation.inputs) return <span className="mt-2 block text-xs font-normal">Официальные исходные данные</span>
+  const selectedLots = new Set(calculation.selection.map((item) => item.lot_id))
+  const selectedModes = new Set(calculation.selection.map((item) => item.mode_id))
+  const records = [
+    ...calculation.inputs.lots.filter((lot) => selectedLots.has(lot.lot_id)).map((lot) => ({ name: lot.lot_id, fields: lot })),
+    ...calculation.inputs.modes.filter((mode) => selectedModes.has(mode.mode_id)).map((mode) => ({ name: `Режим ${mode.mode_id}`, fields: mode })),
+  ]
+  return (
+    <details className="mt-2 text-xs font-normal">
+      <summary className="cursor-pointer">Исходные данные этого варианта</summary>
+      {records.map(({ name, fields }) => (
+        <div key={name} className="mt-3">
+          <strong>{name}</strong>
+          <dl className="mt-1 space-y-1">
+            {Object.entries(fields).filter(([key]) => !['title', 'territory_title', 'lot_id', 'mode_id'].includes(key)).map(([key, value]) => (
+              <div key={key}><dt className="inline break-all">{key}: </dt><dd className="inline">{Array.isArray(value) ? value.join(', ') : String(value)}</dd></div>
+            ))}
+          </dl>
+        </div>
+      ))}
+    </details>
   )
 }

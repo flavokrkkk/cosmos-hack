@@ -16,10 +16,8 @@ def short_winner(winner):
 def build_report(decision, metrics):
     analysis = decision.analysis
     # enumerate_space внутри candidate_frame возвращает кэш уже выполненного поиска.
-    frame = candidate_frame()
+    frame = candidate_frame(decision.inputs)
     stress = frame[frame.STRESS_ok]
-    reference = frame[frame.BASE_ok & (frame.STRESS_ok if decision.scenario == 'STRESS' else True)]
-    scored = score_frame(reference, analysis['bounds'])
     selected_lots = {lot for lot, _ in decision.recommended.selection}
     same_lots = stress.lots.map(lambda lots: set(lots.split('+')) == selected_lots)
     alternatives = []
@@ -46,11 +44,13 @@ def build_report(decision, metrics):
         stress_count=len(stress), stress_lot_sets=int(stress.lots.nunique()),
         min_stress_c0=float(stress.c0.min()) if not stress.empty else None,
         selected_lot_set_stress_count=int(same_lots.sum()),
-        max_q_count=int((scored.q_exact == scored.q_exact.max()).sum()),
+        max_q_count=analysis["max_q_count"],
+        feasible_count=analysis["feasible_count"],
+        scope="total/base/stress: вся область на входах расчёта; feasible/max_q: после условий поиска",
         never_binding_constraints=[key[4:] for key in frame if key.startswith('chk_') and bool(frame[key].all())])
     report['alternatives'] = alternatives
     report['headroom'] = {scenario: [row.as_dict() for row in
-        input_headroom(decision.recommended.selection, scenario) + surplus_headroom(decision.recommended.selection)]
+        input_headroom(decision.recommended.selection, scenario, decision.inputs) + surplus_headroom(decision.recommended.selection, decision.inputs)]
         for scenario in scenarios()}
     report['switching_curve'] = [dict(delta_from_mrub=point['delta_from_mrub'],
         delta_to_exclusive_mrub=point['delta_to_exclusive_mrub'], winner=short_winner(point['winner']))

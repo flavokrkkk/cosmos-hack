@@ -2,7 +2,7 @@ import { ArrowCounterClockwise } from '@phosphor-icons/react'
 import { Suspense, useMemo, useState } from 'react'
 
 import { LotCard, RecommendedLotCard, useLotDetails } from '@entities/case'
-import { formatMoney, selectionKey, useSavedVariants, useWorkspace } from '@entities/portfolio'
+import { effectiveCatalog, formatMoney, useSavedVariants, useWorkspace } from '@entities/portfolio'
 import {
   CalculationInputsControl, SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
   useManualRecommendation, usePrefetchRecommendation,
@@ -47,7 +47,6 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
   const openVariant = useWorkspace((state) => state.openVariant)
   const startManualFrom = useWorkspace((state) => state.startManualFrom)
   const setRequireStress = useWorkspace((state) => state.setRequireStress)
-  const calculationInputs = useWorkspace((state) => state.calculationInputs)
   const savedItems = useSavedVariants((state) => state.items)
   const openDetails = useLotDetails((state) => state.open)
 
@@ -57,7 +56,9 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
   const [saveMounted, setSaveMounted] = useState(false)
   const [compareMounted, setCompareMounted] = useState(false)
 
-  const lotById = useMemo(() => new Map(catalog.lots.map((lot) => [lot.lot_id, lot])), [catalog.lots])
+  const activeCatalog = useMemo(() => active.calculation
+    ? effectiveCatalog(officialCatalog, active.calculation.inputs) : catalog, [officialCatalog, active.calculation, catalog])
+  const lotById = useMemo(() => new Map(activeCatalog.lots.map((lot) => [lot.lot_id, lot])), [activeCatalog.lots])
 
   const candidates = useMemo(
     () => buildCandidates({ datasetHash: catalog.dataset_hash, auto: result, manual: manual.query.data, saved: savedItems,
@@ -67,8 +68,8 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
   /* Что отмечено при открытии сравнения: открытый вариант и портфель команды. */
   const compareInitial = useMemo(() => {
     const ids = [
-      active.calculation ? selectionKey(active.calculation.selection) : null,
-      result?.recommended ? selectionKey(result.recommended.calculation.selection) : null,
+      active.calculation ? active.calculation.input_hash : null,
+      result?.recommended ? result.recommended.calculation.input_hash : null,
     ]
     return [...new Set(ids.filter((id): id is string => Boolean(id)))]
   }, [active.calculation, result])
@@ -171,7 +172,7 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
         <>
           <PortfolioReview
             recommendation={result}
-            catalog={catalog}
+            catalog={activeCatalog}
             officialCatalog={officialCatalog}
             calculation={active.calculation}
             variantKind={active.kind}
@@ -241,14 +242,13 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
             open={compareOpen}
             onOpenChange={setCompareOpen}
             datasetHash={catalog.dataset_hash}
-            inputs={calculationInputs}
             candidates={candidates}
             initialIds={compareInitial}
           />
         ) : null}
       </Suspense>
 
-      <LotDetailsHost catalog={catalog} calculation={active.calculation} />
+      <LotDetailsHost catalog={activeCatalog} calculation={active.calculation} />
     </div>
   )
 }

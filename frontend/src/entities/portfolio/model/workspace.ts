@@ -53,7 +53,7 @@ type WorkspaceActions = {
   /** Открыть вариант в текущем режиме страницы (рекомендация, альтернатива). */
   openVariant: (variant: ActiveVariant) => void
   /** Открыть сохранённый вариант: всегда в автоподборе, где есть блок просмотра. */
-  openSavedVariant: (id: string) => void
+  openSavedVariant: (id: string, inputs: CalculationInputs | null) => void
   /** Точный состав с заданными пользователем режимами; проверяем даже нарушения. */
   openCustomVariant: (selection: readonly SelectionItem[]) => void
   toggleManualLot: (lotId: string) => void
@@ -177,9 +177,10 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
       openVariant: (variant) =>
         set((state) => ({ activeVariant: { ...state.activeVariant, [state.mode]: variant } })),
 
-      openSavedVariant: (id) =>
+      openSavedVariant: (id, inputs) =>
         set((state) => ({
           mode: 'auto',
+          calculationInputs: inputs ? cloneCalculationInputs(inputs) : null,
           activeVariant: { ...state.activeVariant, auto: { kind: 'saved', id } },
         })),
 

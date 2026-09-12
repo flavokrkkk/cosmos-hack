@@ -120,10 +120,29 @@ def _selection_from_args(args, decision) -> Tuple[List[Tuple[str, str]], str]:
 # --------------------------------------------------------------------------- #
 # Команды
 # --------------------------------------------------------------------------- #
+def _inputs_from_args(args, decision=None):
+    if decision is not None:
+        return decision.inputs
+    return read_decision_config(args.config).get("algorithm_parameters", {}).get("inputs")
+
+
 def cmd_evaluate(args) -> int:
-    decision = None if args.portfolio is not None else load_decision(args.config)
-    selection, origin = _selection_from_args(args, decision)
-    detail, metrics = evaluate(selection)
+    if args.snapshot is not None:
+        snapshot = json.loads(args.snapshot.read_text(encoding="utf-8"))
+        expected = snapshot.get("dataset_hash") or snapshot.get("export_provenance", {}).get("sources", {}).get("case_sha256")
+        if expected and expected != source_version():
+            raise ValueError("Снимок относится к другой версии исходных данных кейса")
+        saved_selection = snapshot.get("selection") or snapshot.get("recommended", {}).get("selection")
+        if not saved_selection:
+            raise ValueError("В снимке отсутствует состав портфеля")
+        selection = [(item["lot_id"], item["mode_id"]) if isinstance(item, dict) else tuple(item) for item in saved_selection]
+        inputs = snapshot.get("inputs", snapshot.get("algorithm_parameters", {}).get("inputs"))
+        origin = f"снимок {args.snapshot.name}"
+    else:
+        decision = None if args.portfolio is not None else load_decision(args.config)
+        selection, origin = _selection_from_args(args, decision)
+        inputs = _inputs_from_args(args, decision)
+    detail, metrics = evaluate(selection, inputs)
 
     print(f"Портфель: {format_selection(selection)}   ({origin})")
     print(f"SHA-256 входов кейса: {source_version()}")
@@ -149,7 +168,7 @@ def cmd_compare(args) -> int:
     variants: List[Variant] = decision.variants
     identities, financial, quality = [], [], []
     for number, variant in enumerate(variants, start=1):
-        _, metrics = evaluate(variant.selection)
+        _, metrics = evaluate(variant.selection, decision.inputs)
         statuses = {}
         for scenario in scenarios():
             statuses[scenario] = "PASS" if all(r.passed for r in diagnose(metrics, scenario)) else "FAIL"
@@ -190,7 +209,7 @@ def cmd_compare(args) -> int:
 
 
 def cmd_space(args) -> int:
-    space = enumerate_space()
+    space = enumerate_space(_inputs_from_args(args))
     print(f"Всего конфигураций: {len(space)}  (C(8,4)=70 наборов × 3^4=81 назначение режимов)")
     print()
     rows = []
@@ -226,7 +245,7 @@ def cmd_space(args) -> int:
 
 def cmd_pareto(args) -> int:
     from .hybrid import MAXIMIZE, MINIMIZE
-    subset = feasible(args.scenario)
+    subset = feasible(args.scenario, enumerate_space(_inputs_from_args(args)))
     subset["surplus"] = subset.cash - subset.opex
     front = pareto_front(subset, maximize=MAXIMIZE, minimize=MINIMIZE)
     print(f"Сценарий {args.scenario}: допустимо {len(subset)}, недоминируемых {len(front)}")
@@ -259,26 +278,27 @@ def cmd_export(args) -> int:
     from .export_report import build_report
 
     decision = load_decision(args.config)
-    detail, metrics = evaluate(decision.recommended.selection)
+    detail, metrics = evaluate(decision.recommended.selection, decision.inputs)
     report = build_report(decision, metrics)
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    output = args.output
+    output.mkdir(parents=True, exist_ok=True)
     # Сохраняем слепок для безопасного сравнения документов после нового экспорта.
-    previous = RESULTS_DIR / CONFIG_NAME
+    previous = output / CONFIG_NAME
     document_values = json.loads(previous.read_text()).get("document_values", {}) if previous.exists() else {}
-    legacy_snapshot = RESULTS_DIR / "document_facts.json"
+    legacy_snapshot = output / "document_facts.json"
     if not document_values and legacy_snapshot.exists():
         document_values = json.loads(legacy_snapshot.read_text())
     configuration = dict(decision.as_export(), document_values=document_values)
-    detail.to_csv(RESULTS_DIR / "portfolio_detail.csv", index=False, encoding="utf-8")
+    detail.to_csv(output / "portfolio_detail.csv", index=False, encoding="utf-8")
     for name, value in (("portfolio_metrics.json", metrics), (CONFIG_NAME, configuration),
                         ("hybrid_analysis.json", report)):
-        (RESULTS_DIR / name).write_text(
+        (output / name).write_text(
             json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
-    write_export_provenance(RESULTS_DIR, args.config)
+    write_export_provenance(output, args.config)
     # Только известные артефакты прежнего формата, не произвольные файлы пользователя.
     for name in LEGACY_FILES:
-        (RESULTS_DIR / name).unlink(missing_ok=True)
-    print(f"Записано в {RESULTS_DIR}:")
+        (output / name).unlink(missing_ok=True)
+    print(f"Записано в {output}:")
     for name in EXPORT_FILES:
         print("  •", name)
     return 0
@@ -288,19 +308,20 @@ def cmd_sensitivity(args) -> int:
     decision = None if args.portfolio is not None else load_decision(args.config)
     selection, origin = _selection_from_args(args, decision)
     scenario = args.scenario
+    inputs = _inputs_from_args(args, decision)
 
     print(f"Портфель: {format_selection(selection)}   ({origin})")
     print(f"Сценарий: {scenario}")
     print()
     print("=== Насколько могут измениться входные данные, пока портфель допустим ===")
-    rows = input_headroom(selection, scenario)
+    rows = input_headroom(selection, scenario, inputs)
     print(_table(
         ["Вход", "Направление", "Предельный множитель", "Запас", "Упирается в"],
         [[r.input_name, r.direction, f"{r.limit_factor:.4f}",
           f"{r.change_pct:.1f}%", r.binding] for r in rows],
     ))
     print()
-    narrow = binding_first(selection, scenario)
+    narrow = binding_first(selection, scenario, inputs)
     print(f"  Самое узкое место: {narrow.input_name} — "
           f"{narrow.direction} на {narrow.change_pct:.1f}% упирается в {narrow.binding}.")
 
@@ -309,12 +330,12 @@ def cmd_sensitivity(args) -> int:
     print(_table(
         ["Вход", "Направление", "Предельный множитель", "Запас", "Упирается в"],
         [[r.input_name, r.direction, f"{r.limit_factor:.4f}",
-          f"{r.change_pct:.1f}%", r.binding] for r in surplus_headroom(selection)],
+          f"{r.change_pct:.1f}%", r.binding] for r in surplus_headroom(selection, inputs)],
     ))
 
     print()
     print("=== Граница по лимиту стартовых затрат ===")
-    point = c0_breaking_point(selection)
+    point = c0_breaking_point(selection, inputs)
     print(_table(
         ["Показатель", "Значение"],
         [
@@ -351,7 +372,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_check.set_defaults(func=lambda _args: print(json.dumps(run_selfcheck(), ensure_ascii=False)))
 
     p_eval = sub.add_parser("evaluate", help="расчёт портфеля и проверка ограничений")
-    p_eval.add_argument("--portfolio", help="например FIRE:A,AGRI:A,TRANS:B,ENV:A")
+    evaluate_source = p_eval.add_mutually_exclusive_group()
+    evaluate_source.add_argument("--snapshot", type=Path, help="team_decision_config.json из UI или CLI: повторить именно этот расчёт")
+    evaluate_source.add_argument("--portfolio", help="например FIRE:A,AGRI:A,TRANS:B,ENV:A")
     p_eval.add_argument("--scenario", choices=["BASE", "STRESS"], default=None,
                         help="по умолчанию считаются оба сценария")
     p_eval.set_defaults(func=cmd_evaluate)
@@ -373,6 +396,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_sens.set_defaults(func=cmd_sensitivity)
 
     p_exp = sub.add_parser("export", help="выгрузка контрольных результатов в results/")
+    p_exp.add_argument("--output", type=Path, default=RESULTS_DIR, help="каталог четырёх результатов; для эксперимента укажите отдельный путь")
     p_exp.set_defaults(func=cmd_export)
     return parser
 

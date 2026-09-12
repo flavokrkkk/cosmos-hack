@@ -1,5 +1,5 @@
 import type {
-  Calculation, CalculationInputs, CaseCatalog, ComparisonResult, MethodOutcome, RecommendationResult,
+  Calculation, CaseCatalog, ComparisonResult, MethodOutcome, RecommendationResult,
 } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 
@@ -45,17 +45,35 @@ export function decisionJson(
   calculation: Calculation,
   catalog: CaseCatalog,
   recommendation?: RecommendationResult,
-  inputs?: CalculationInputs | null,
 ): ExportFile {
   const related = relatedRecommendation(calculation, recommendation)
   const isRecommended = related?.recommended?.calculation.input_hash === calculation.input_hash
+  const context = catalog.team_decision
+  const request = related?.request
+  const teamParameters = {
+    inputs: null, require_stress: true, cash_loss_limit_mrub: null, quality_epsilon: 0,
+    budget_cap_mrub: null, vpub_floor_mrub_per_year: null, required_public_lot_ids: [],
+    lot_ids: null, allowed_modes_by_lot: {}, ...context.algorithm_parameters,
+  }
+  const matchesTeamSearch = isRecommended && request && Object.entries(teamParameters)
+    .every(([key, value]) => JSON.stringify(value ?? null) === JSON.stringify(request[key as keyof typeof request] ?? null))
+    && JSON.stringify(calculation.inputs) === JSON.stringify(context.algorithm_parameters.inputs ?? null)
   return jsonFile('team_decision_config.json', {
+    team_name: context.team_name,
+    strategy_thesis: context.strategy_thesis,
+    management: context.management,
+    assumptions: context.assumptions,
+    management_status: matchesTeamSearch ? 'team_solution' : 'reference_requires_review',
+    management_scope: matchesTeamSearch
+      ? 'Управленческое обоснование решения команды из config/decision.json.'
+      : 'Управленческие поля и допущения взяты из решения команды как справочный материал. Для этого состава и входов их применимость не подтверждена: пересмотрите плательщиков, финансирование и стресс-решение.',
+    management_source: context.source,
     case_id: catalog.case_id,
     case_version: catalog.case_version,
     dataset_hash: calculation.dataset_hash,
     engine_version: calculation.engine_version,
     input_hash: calculation.input_hash,
-    inputs: inputs ?? null,
+    inputs: calculation.inputs,
     selection: calculation.selection,
     decision_method: related?.method.id ?? 'manual_evaluation',
     is_recommended: isRecommended,
@@ -113,6 +131,7 @@ export function analysisJson(
     comparison: comparison ? {
       baseline_index: comparison.baseline_index,
       variants: comparison.variants.map((variant) => ({
+        inputs: variant.inputs, input_hash: variant.input_hash,
         selection: variant.selection, metrics: variant.metrics, feasible_by_scenario: variant.feasible_by_scenario,
       })),
       deltas: comparison.deltas,
@@ -126,12 +145,11 @@ export function snapshotFiles(
   catalog: CaseCatalog,
   comparison?: ComparisonResult,
   recommendation?: RecommendationResult,
-  inputs?: CalculationInputs | null,
 ): ExportFile[] {
   return [
     detailCsv(calculation),
     metricsJson(calculation),
-    decisionJson(calculation, catalog, recommendation, inputs),
+    decisionJson(calculation, catalog, recommendation),
     analysisJson(calculation, comparison, recommendation),
   ]
 }

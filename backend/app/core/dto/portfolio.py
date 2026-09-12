@@ -154,7 +154,17 @@ class MethodDefinition(PortfolioSchema):
     origin: Literal["допущение"] = "допущение"
 
 
+class TeamDecisionContext(PortfolioSchema):
+    team_name: str
+    strategy_thesis: str
+    management: dict[str, str]
+    assumptions: list[dict[str, str]]
+    algorithm_parameters: dict
+    source: str = "config/decision.json"
+
+
 class CaseCatalog(PortfolioSchema):
+    team_decision: TeamDecisionContext
     case_id: str
     case_version: str
     dataset_hash: DatasetHash
@@ -216,6 +226,7 @@ class FinancialSummary(PortfolioSchema):
 
 
 class Calculation(PortfolioSchema):
+    inputs: CalculationInputs | None = None
     dataset_hash: DatasetHash
     input_hash: str
     engine_version: str
@@ -263,6 +274,7 @@ class SensitivityOutcome(PortfolioSchema):
 
 
 class SensitivityCase(PortfolioSchema):
+    max_q_count: int = 0
     id: str
     title: str
     origin: Literal["допущение"] = "допущение"
@@ -287,6 +299,8 @@ class SwitchingPoint(PortfolioSchema):
 
 
 class DecisionAnalysis(PortfolioSchema):
+    feasible_count: int = 0
+    max_q_count: int = 0
     winner: MethodOutcome | None
     s_max_mrub: float | None
     cash_floor_mrub: float | None

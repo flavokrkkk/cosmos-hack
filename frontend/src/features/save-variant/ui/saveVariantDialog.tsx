@@ -55,6 +55,7 @@ export function SaveVariantDialog({
       datasetHash: calculation.dataset_hash,
       engineVersion,
       inputHash: calculation.input_hash,
+      inputs: calculation.inputs,
       selection: calculation.selection.map((item) => ({ ...item })),
       source,
       feasible: { ...calculation.feasible_by_scenario },

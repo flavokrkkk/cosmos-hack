@@ -5,15 +5,16 @@ from functools import lru_cache
 from app.core.dto.portfolio import (
     AccessMode, Calculation, CaseCatalog, CompareRequest, ComparisonResult,
     ConstraintCheck, ConstraintDefinition, EvaluateRequest, Lot, MethodDefinition,
-    PortfolioMetrics,
+    PortfolioMetrics, TeamDecisionContext,
 )
 from app.core.services.portfolio_engine import canonical, constraints
+from app.core.services.portfolio_engine.decision import read_decision_config
 from app.core.services.portfolio_finance_service import financial_summary
 from app.core.services.portfolio_ranking_service import CRITERIA, METHODS
 from app.infrastructure.errors.portfolio_errors import DatasetMismatch, InvalidPortfolio
 
 
-ENGINE_VERSION = "2.0.1"
+ENGINE_VERSION = "2.0.2"
 LOT_TITLES = {
     "FIRE": ("Мониторинг лесных пожаров", "Сибирь"),
     "FLOOD": ("Паводки и оползни", "Дальний Восток"),
@@ -51,12 +52,15 @@ def _catalog() -> CaseCatalog:
                    for row in constraints.constraint_definitions(scenario)]
         for scenario in canonical.scenarios()
     }
+    decision = read_decision_config()
     return CaseCatalog(
         case_id=config["case_id"], case_version=config["case_version"],
         dataset_hash=canonical.source_version(), engine_version=ENGINE_VERSION,
         lots=records, modes=[AccessMode(**row) for row in modes.to_dict("records")],
         constraints=definitions, methods=METHODS, ranking_criteria=CRITERIA,
         source_refs=[f"case/source/{name}" for name in canonical.SOURCE_FILES],
+        team_decision=TeamDecisionContext(**{key: decision[key] for key in
+            ("team_name", "strategy_thesis", "management", "assumptions", "algorithm_parameters")}),
     )
 
 
@@ -83,6 +87,7 @@ class PortfolioService:
                     ) for row in constraints.diagnose(metrics, scenario)
                 ]
         return Calculation(
+            inputs=request.inputs,
             dataset_hash=request.dataset_hash,
             input_hash=input_hash({"dataset": request.dataset_hash, "engine": ENGINE_VERSION,
                                    "inputs": inputs,

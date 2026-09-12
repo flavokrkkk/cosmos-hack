@@ -38,12 +38,12 @@ export function useActiveVariant(
 
   const savedVariant =
     active.kind === 'saved' ? savedItems.find((item) => item.id === active.id) : undefined
-  const compatibleSaved = Boolean(savedVariant && savedVariant.datasetHash === datasetHash)
+  const compatibleSaved = Boolean(savedVariant && !savedVariant.missingInputs && savedVariant.datasetHash === datasetHash)
   const evaluation = useEvaluate(
     datasetHash,
     active.kind === 'custom' ? active.selection : savedVariant?.selection ?? [],
     active.kind === 'custom' || compatibleSaved,
-    calculationInputs,
+    active.kind === 'saved' ? savedVariant?.inputs ?? null : calculationInputs,
   )
 
   if (active.kind === 'custom') {

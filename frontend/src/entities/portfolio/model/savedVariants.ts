@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
-import type { Scenario, SelectionItem } from '@shared/api/contracts'
+import type { CalculationInputs, Scenario, SelectionItem } from '@shared/api/contracts'
 
 /** `team` — портфель команды, `reference` — опорная точка фронта, `manual` — ручная проверка. */
 export type SavedSource = 'team' | 'reference' | 'manual' | 'saved'
@@ -14,6 +14,9 @@ export type SavedVariant = {
   /** Версия данных и движка на момент сохранения: другая версия — вариант пересчитывается заново. */
   datasetHash: string
   engineVersion: string
+  inputs: CalculationInputs | null
+  /** Старые записи без снимка нельзя воспроизвести достоверно. */
+  missingInputs?: boolean
   inputHash: string
   selection: SelectionItem[]
   source: SavedSource
@@ -46,7 +49,7 @@ export const useSavedVariants = create<SavedVariantsState & SavedVariantsActions
       items: [],
 
       save: (variant) => {
-        const item: SavedVariant = { ...variant, id: makeId(), createdAt: new Date().toISOString() }
+        const item: SavedVariant = { ...structuredClone(variant), id: makeId(), createdAt: new Date().toISOString() }
         set((state) => ({ items: [item, ...state.items] }))
         return item
       },
@@ -55,9 +58,14 @@ export const useSavedVariants = create<SavedVariantsState & SavedVariantsActions
     }),
     {
       name: 'cosmos-saved-variants',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
-      migrate: () => ({ items: [] }),
+      migrate: (persisted) => {
+        const previous = persisted as { items?: SavedVariant[] } | null
+        return { items: (previous?.items ?? []).map((item) => ({
+          ...item, inputs: item.inputs ?? null, missingInputs: item.inputs === undefined,
+        })) }
+      },
     },
   ),
 )

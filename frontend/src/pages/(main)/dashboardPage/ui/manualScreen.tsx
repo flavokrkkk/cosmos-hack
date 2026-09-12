@@ -4,7 +4,7 @@ import { LotCard, useLotDetails } from '@entities/case'
 import {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, LotChip, METRIC_TILES, METRIC_TILES_COMPACT,
   MetricTiles, PORTFOLIO_SIZE, PortfolioProgress, FinancialBreakdown, checkLabel, formatCheckValue, formatMoney,
-  scenarioDependentCodes, selectionKey, useEvaluate, useSavedVariants, useWorkspace,
+  scenarioDependentCodes, useEvaluate, useSavedVariants, useWorkspace,
 } from '@entities/portfolio'
 import {
   CalculationInputsControl, ExportButton, SearchStats, StressSwitch, buildCandidates, useActiveVariant,
@@ -90,8 +90,8 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
   )
   const compareInitial = useMemo(() => {
     const ids = [
-      active.calculation ? selectionKey(active.calculation.selection) : null,
-      auto.query.data?.recommended ? selectionKey(auto.query.data.recommended.calculation.selection) : null,
+      active.calculation ? active.calculation.input_hash : null,
+      auto.query.data?.recommended ? auto.query.data.recommended.calculation.input_hash : null,
     ]
     return [...new Set(ids.filter((id): id is string => Boolean(id)))]
   }, [active.calculation, auto.query.data])
@@ -338,7 +338,6 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
             open={compareOpen}
             onOpenChange={setCompareOpen}
             datasetHash={catalog.dataset_hash}
-            inputs={calculationInputs}
             candidates={candidates}
             initialIds={compareInitial}
           />
