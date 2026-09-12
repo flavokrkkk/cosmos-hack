@@ -140,7 +140,7 @@
     },
     "docs/management-note.md": {
       "source": "docs/23-management-note.md",
-      "source_sha256": "fe893ef05457eeadf695cd1f0d7dc22acae73a098114e559ef744fa373bffdde"
+      "source_sha256": "af8ec25343b7eaf93c55c4dbe8064bd75b8408158f441de666389a6300e1bb9a"
     },
     "docs/stress-summary.md": {
       "source": "docs/24-stress-summary.md",
@@ -160,11 +160,11 @@
     },
     "docs/management-note.pdf": {
       "source": "docs/management-note.pdf",
-      "source_sha256": "61c62c0e9b0908a3f479823440ac7887a3bfad11c5b714fea04772c41b409bc7"
+      "source_sha256": "8183bcf7e201baca82d62b61eb457154d0e8908f412f6c719b91cf8880e01e27"
     },
     "docs/stress-summary.pdf": {
       "source": "docs/stress-summary.pdf",
-      "source_sha256": "aaf36ef88d5d0102cf85585b888d0465498ed1419857270e427cccc07e0332e2"
+      "source_sha256": "5e38114d717bc512e49bf3d274791fe03008d42d709dec20d51abac872ab82b6"
     }
   },
   "files": {
@@ -179,14 +179,14 @@
     "docs/23-results-glossary.md": "74518e9b03c340aafa61053c8c1a228ec84a8f7c4ee1429fb5f91e3f6a4e0df7",
     "docs/README.md": "ad8f1028ba708e6dd7cf1b008fc0c85cfeb7a7407ea0c129bfbfba979e621def",
     "docs/algorithm.md": "ab2829c3fe928d80e471f4c6a8c80003e7a5f0a6643a1dba2fb20a96b628880d",
-    "docs/management-note.md": "a4faf5c0bd24227f7872295c857159bd3b03427af96053cf50d63a04ed171127",
-    "docs/management-note.pdf": "61c62c0e9b0908a3f479823440ac7887a3bfad11c5b714fea04772c41b409bc7",
+    "docs/management-note.md": "b8f8aea5d89082a620364790643b8929d9380eb5cac6cd65c629ce1ca7a0f681",
+    "docs/management-note.pdf": "8183bcf7e201baca82d62b61eb457154d0e8908f412f6c719b91cf8880e01e27",
     "docs/research/README.md": "4af19e1f55d613d325307f4361411d319694b18448ad58f000ee3dd429b97fc8",
     "docs/research/access-mode-d.md": "26cd707c3b3a99907605bb878e6f7bda8b32ad6d5be8c950cbddd2951e3ac034",
     "docs/research/case-literature.md": "f34d5eb041b0a7d061d9aacf34c08082bda0e493b458e33a0e2067392ce5040f",
     "docs/research/portfolio-audit-results.json": "95c871e9f0c44abadc839432b6ac844e54b9ce1d37677511312888483dea7ba4",
     "docs/stress-summary.md": "ced37648c56f9c5dc5cfa3261e9a9bc5d687b1414fa9522a7744881845de3986",
-    "docs/stress-summary.pdf": "aaf36ef88d5d0102cf85585b888d0465498ed1419857270e427cccc07e0332e2",
+    "docs/stress-summary.pdf": "5e38114d717bc512e49bf3d274791fe03008d42d709dec20d51abac872ab82b6",
     "requirements.txt": "6d83ac9c93ec11b7a55f000ec44f32b189bdc20affaf0b9f0744bf890b5be9dc",
     "results/README.md": "2ffe2c711300ac58c8a95cf9d8c3785951244bd8c3e6f68de088790a86681d26",
     "results/constraints_BASE.csv": "81bf6323de4bcb38c015ddc1ac897ebb4ff39bd40002e6acebb771aaaab5785c",

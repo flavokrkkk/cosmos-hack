@@ -48,3 +48,28 @@ def test_snapshot_matches_current_facts(facts):
              for name, (value, _) in facts.items() if snapshot.get(name) != value}
     assert not drift, ('слепок устарел, запустите python scripts/sync_documents.py --fix: '
                        f'{drift}')
+
+
+def test_choice_sensitivity_claims_in_the_note_hold():
+    """Раздел 3.3 записки описывает сценарии повторного подбора — сверяем с выгрузкой."""
+    import json
+
+    report = json.loads((ROOT / 'results/hybrid_analysis.json').read_text(encoding='utf-8'))
+    base = report['winner']['selection_id']
+    scenarios = {s['id']: s for s in report['sensitivity']}
+
+    def winner(scenario_id):
+        outcome = scenarios[scenario_id]['outcome'] or {}
+        return (outcome.get('winner') or {}).get('selection_id')
+
+    # Победитель не меняется при операционных шоках и мягких ужесточениях.
+    for scenario_id in ('cash_drop', 'opex_growth', 'combined', 'budget_1', 'vpub_10',
+                        'public_FIRE', 'public_ENV'):
+        assert winner(scenario_id) == base, scenario_id
+    for scenario_id in ('cash_drop', 'opex_growth', 'combined'):
+        assert scenarios[scenario_id]['feasible_count'] == 143, scenario_id
+    # Меняется при пороге VPUB +20%: TRANS уходит в B.
+    assert winner('vpub_20') != base and 'TRANS:B' in winner('vpub_20')
+    # При лимите −5% допустимых конфигураций нет вообще — тот же абсолютный предел 1123,5.
+    assert scenarios['budget_5']['feasible_count'] == 0
+    assert scenarios['budget_5']['budget_cap_mrub'] < 1123.5 <= scenarios['budget_1']['budget_cap_mrub']

@@ -126,6 +126,12 @@ def relations():
          limits['opex_limit:opex'] / limits['c0_limit:c0'], 3.5, 4.5),
         ('«вдвое больше до нарушения порога KCASH» (раздел 7)',
          limits['kcash_floor:cash'] / limits['zero_surplus:cash'], 2.0, 3.0),
+        ('«предел доли оператора 46%» — окно 30–60 мес. × остаток / C0 рыночных лотов (раздел 4)',
+         (2.5 * (metrics['cash_mrub_per_year'] - metrics['opex_mrub_per_year']))
+         / float(detail.loc[detail.mode_id == 'C', 'c0_mrub'].sum()) * 100, 46.0, 47.0),
+        ('«при 50% возврат уходит за контрольную точку» (раздел 4)',
+         0.5 * float(detail.loc[detail.mode_id == 'C', 'c0_mrub'].sum())
+         / (metrics['cash_mrub_per_year'] - metrics['opex_mrub_per_year']), 2.5, 99.0),
         ('«остаток 30,2% сверх расходов» (раздел 1)',
          (metrics['cash_mrub_per_year'] - metrics['opex_mrub_per_year']) / metrics['opex_mrub_per_year'] * 100,
          30.0, 31.0),

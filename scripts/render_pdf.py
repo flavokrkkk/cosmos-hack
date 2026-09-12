@@ -106,6 +106,12 @@ def main() -> int:
         print(f"{target}: {counted} стр.{tail} ({size}) — {verdict}")
         if counted not in allowed:
             failures.append(target)
+        # Первая страница записки называет свой объём — заявленное должно совпадать с измеренным.
+        if appendix_marker and (f"**{counted} страниц**" not in markdown_text
+                                or f"документ целиком — {total} страниц" not in markdown_text):
+            print(f"  ОБЪЯВЛЕННЫЙ ОБЪЁМ НЕ СОВПАДАЕТ: в тексте должно быть «**{counted} страниц**» "
+                  f"и «документ целиком — {total} страниц»")
+            failures.append(target)
         if args.check:
             path.unlink(missing_ok=True)
     return 1 if failures else 0
