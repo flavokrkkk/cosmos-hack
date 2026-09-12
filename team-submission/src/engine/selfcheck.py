@@ -30,7 +30,7 @@ def run_selfcheck() -> dict[str, object]:
     assert json.dumps(analysis, sort_keys=True, allow_nan=False) == json.dumps(repeated, sort_keys=True, allow_nan=False)
     winner = analysis["winner"]
     assert winner["q"] == min(component["normalized"] for component in winner["components"])
-    chosen_metrics = evaluate(decision.recommended.selection)[1]
+    chosen_metrics = evaluate(decision.recommended.selection, decision.inputs)[1]
     assert abs(chosen_metrics["cash_mrub_per_year"] - chosen_metrics["opex_mrub_per_year"] - winner["annual_surplus_mrub"]) < 1e-8
     assert all_passed(diagnose(chosen_metrics, "STRESS" if decision.algorithm_parameters.get("require_stress", True) else "BASE"))
     return {"status": "ok", "method": "hybrid_maximin_v1", "winner": winner["selection_id"],

@@ -1,53 +1,15 @@
+# Локальная проверка для жюри: docker compose up -d --build --wait
+# Ollama и туннель команды находятся в docker-compose.team.yml.
 services:
-  ollama:
-    profiles: ["container-llm"]
-    image: ${COSMOS_OLLAMA_IMAGE:-ollama/ollama:0.32.15}
-    environment:
-      OLLAMA_HOST: 0.0.0.0:11434
-      OLLAMA_NUM_PARALLEL: ${COSMOS_OLLAMA_PARALLEL_REQUESTS:-2}
-    ports:
-      - "127.0.0.1:${COSMOS_OLLAMA_HOST_PORT:-11435}:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-      start_period: 10s
-    restart: unless-stopped
-
-  ollama-pull:
-    profiles: ["container-llm"]
-    image: ${COSMOS_OLLAMA_IMAGE:-ollama/ollama:0.32.15}
-    environment:
-      OLLAMA_HOST: http://ollama:11434
-      OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b-instruct}
-    entrypoint: ["/bin/sh", "-c"]
-    command: ["ollama pull \"$${OLLAMA_MODEL}\""]
-    depends_on:
-      ollama:
-        condition: service_healthy
-    restart: "no"
-
   app:
     build:
       context: .
       dockerfile: backend/Dockerfile
     environment:
       COSMOS_APP_NAME: Cosmos Hack API
-      COSMOS_DEBUG: "true"
+      COSMOS_DEBUG: "false"
       COSMOS_ROOT_PATH: /api
-      COSMOS_CORS_ALLOWED_ORIGINS: ${COSMOS_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174}
-      COSMOS_OLLAMA_ENABLED: ${COSMOS_OLLAMA_ENABLED:-false}
-      COSMOS_OLLAMA_BASE_URL: ${COSMOS_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-      COSMOS_OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b-instruct}
-      COSMOS_OLLAMA_TIMEOUT_SECONDS: ${COSMOS_OLLAMA_TIMEOUT_SECONDS:-45}
-      COSMOS_OLLAMA_PARALLEL_REQUESTS: ${COSMOS_OLLAMA_PARALLEL_REQUESTS:-2}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    ports:
-      - "${COSMOS_API_HOST_PORT:-8000}:8000"
+      COSMOS_OLLAMA_ENABLED: "false"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
       interval: 5s
@@ -60,36 +22,15 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_API_URL: /api
     depends_on:
       app:
         condition: service_healthy
     ports:
-      - "${COSMOS_WEB_HOST_PORT:-5173}:80"
+      - "127.0.0.1:${COSMOS_WEB_HOST_PORT:-5173}:80"
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
       interval: 5s
       timeout: 5s
       retries: 10
     restart: unless-stopped
-
-  # Публичный туннель на демо. Вынесен в профиль, иначе обычный `docker compose up`
-  # падает с «required variable TUNA_DOMAIN is missing a value» у всех, кто не
-  # завёл TUNA_*. Запуск туннеля: docker compose --profile tunnel up -d tuna
-  tuna:
-    profiles: ["tunnel"]
-    image: yuccastream/tuna:latest
-    command: http frontend:80 --inspect=true --domain=${TUNA_DOMAIN:-} --location=${TUNA_LOCATION:-nl}
-    environment:
-      TUNA_TOKEN: ${TUNA_TOKEN:-}
-      TUNA_LOG: stdout
-      TUNA_LOG_LEVEL: info
-      TUNA_INSPECT_ADDR: 0.0.0.0:4040
-    ports:
-      - "127.0.0.1:4040:4040"
-    depends_on:
-      - frontend
-    restart: unless-stopped
-
-volumes:
-  ollama-data:

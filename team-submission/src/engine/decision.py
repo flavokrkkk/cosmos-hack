@@ -49,6 +49,10 @@ class Decision:
     assumptions: List[Dict[str, str]] = field(default_factory=list)
 
     @property
+    def inputs(self) -> Dict[str, Any] | None:
+        return self.algorithm_parameters.get("inputs")
+
+    @property
     def variants(self) -> List[Variant]:
         """Рекомендация и альтернативы в одном списке — для сравнения."""
         return [self.recommended] + list(self.alternatives)

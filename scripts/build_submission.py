@@ -57,6 +57,8 @@ def main():
     for name in official:
         copy(f'case/source/{name}', f'data/official/{name}')
     copy('config/decision.json', 'config/decision.json')
+    copy('notebooks/portfolio_review.ipynb', 'notebooks/portfolio_review.ipynb')
+    copy('notebooks/requirements.txt', 'notebooks/requirements.txt')
     for name in EXPORT_FILES:
         copy(f'results/{name}', f'results/{name}')
     for name in LEGACY_FILES:
@@ -79,14 +81,14 @@ def main():
     (target / 'run.py').write_text('import sys\nfrom pathlib import Path\nsys.path.insert(0, str(Path(__file__).resolve().parent / "src"))\nfrom engine.cli import main\nif __name__ == "__main__":\n    raise SystemExit(main())\n', encoding='utf-8')
     (target / 'tests/conftest.py').write_text('import sys\nfrom pathlib import Path\nsys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))\n', encoding='utf-8')
     (target / 'requirements.txt').write_text('numpy==2.5.3\npandas==2.3.3\npytest==8.4.2\n', encoding='utf-8')
-    (target / '.gitignore').write_text('.venv/\n__pycache__/\n.pytest_cache/\n*.pyc\n', encoding='utf-8')
+    (target / '.gitignore').write_text('.venv/\n__pycache__/\n.pytest_cache/\n.ipynb_checkpoints/\n*.pyc\n', encoding='utf-8')
     (target / 'docs/README.md').write_text('''# Материалы для эксперта
 
 `management-note.md` — управленческая записка по принятому портфелю: разделы соответствуют продуктовым критериям П1–П9, приложения содержат реестр рисков, матрицу ответственности с KPI и пролотовый расчёт. `stress-summary.md` — обязательное резюме стресс-сценария. `algorithm.md` — правило выбора, контрольный результат, границы выводов и [словарь результатов](algorithm.md#словарь-результатов).
 
 [Литература кейса](research/case-literature.md) и [сводка консультаций](notes/consultations.md) сохраняют основания принятых решений. Материалы с прежним портфелем в комплект не переносятся. Пометка «контекст основного репозитория» даёт путь от корня репозитория команды, внутри которого лежит этот комплект.
 
-По пункту 13 итоговой сдаче нужны те же два документа в PDF (`docs/management-note.pdf` — 8–12 страниц, `docs/stress-summary.pdf` — 1 страница) и `presentation.pdf` (до 12 слайдов). Сборщик переносит PDF, если они собраны в основном репозитории, и честно отражает их отсутствие в `manifest.json`: вёрстка не подменяет содержание, источником остаются markdown-файлы рядом. Notebook не используется.
+По пункту 13 итоговой сдаче нужны те же два документа в PDF (`docs/management-note.pdf` — 8–12 страниц, `docs/stress-summary.pdf` — 1 страница) и `presentation.pdf` (до 12 слайдов). Сборщик переносит PDF, если они собраны в основном репозитории, и честно отражает их отсутствие в `manifest.json`: вёрстка не подменяет содержание, источником остаются markdown-файлы рядом. Интерактивная проверка того же движка доступна в `../notebooks/portfolio_review.ipynb`; инструкции запуска находятся в первой ячейке.
 
 Начните с `../results/hybrid_analysis.json`: выбранный портфель, шесть оценок, денежный компромисс и проверки BASE/STRESS одного состава. Итоги — `portfolio_metrics.json`, расчёт по лотам — `portfolio_detail.csv`, конфигурация — `team_decision_config.json` в той же папке. В `results/` ровно четыре файла.
 ''', encoding='utf-8')
@@ -135,7 +137,7 @@ def main():
                     missing_materials=missing, source_copies=copies,
                     files={str(path.relative_to(target)): sha(path) for path in sorted(target.rglob('*'))
                            if path.is_file() and path.name != 'manifest.json'
-                           and not any(part in ('.venv','__pycache__','.pytest_cache') for part in path.relative_to(target).parts)})
+                           and not any(part in ('.venv','__pycache__','.pytest_cache','.ipynb_checkpoints') for part in path.relative_to(target).parts)})
     (target / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
     print(f'Комплект: {target}; файлов: {len(manifest["files"])}; материалы ожидаются: {missing}')
 

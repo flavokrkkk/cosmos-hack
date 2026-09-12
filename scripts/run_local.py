@@ -1,4 +1,4 @@
-"""Start the web app with optional Ollama; Python standard library only."""
+"""Team demo launcher with optional Ollama; jury uses plain docker compose up."""
 
 import argparse
 import os
@@ -21,7 +21,8 @@ def build_plan(args: argparse.Namespace) -> tuple[dict[str, str], list[list[str]
     if args.model:
         env["COSMOS_OLLAMA_MODEL"] = args.model
 
-    compose = ["docker", "compose", "-f", str(ROOT / "docker-compose.yml")]
+    compose = ["docker", "compose", "-f", str(ROOT / "docker-compose.yml"),
+               "-f", str(ROOT / "docker-compose.team.yml")]
     if args.project_name:
         compose += ["--project-name", args.project_name]
     if args.env_file:
@@ -39,7 +40,7 @@ def build_plan(args: argparse.Namespace) -> tuple[dict[str, str], list[list[str]
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Локальный запуск Cosmos Hack без обязательной LLM")
+    parser = argparse.ArgumentParser(description="Запуск демо команды с настройками Ollama")
     parser.add_argument("--ollama", choices=("off", "on", "host"), default="off",
                         help="off — без модели; on — скачать и запустить в Docker; host — уже установленная Ollama")
     parser.add_argument("--model", help="Модель Ollama; по умолчанию значение Compose/.env")
@@ -62,7 +63,7 @@ def main() -> int:
     print("Интерфейс: http://localhost:5173 (при изменении COSMOS_WEB_HOST_PORT используйте свой порт).")
     if args.ollama == "on":
         print("Модель загружается в volume. Расчёты доступны сразу; AI-объяснения — после готовности модели.")
-        print("Прогресс: docker compose logs -f ollama-pull (с теми же --project-name/--env-file, если заданы).")
+        print("Прогресс: docker compose -f docker-compose.yml -f docker-compose.team.yml logs -f ollama-pull")
     elif args.ollama == "host":
         print("Используется установленная Ollama. При её недоступности расчёты продолжают работать.")
     else:

@@ -110,7 +110,7 @@ def test_compare_keeps_all_six_criteria_and_cash_flows_visible(monkeypatch, caps
         decision.Variant("ACCA", [("FIRE", "A"), ("AGRI", "C"), ("TRANS", "C"), ("ENV", "A")]),
         decision.Variant("ABBA", [("FIRE", "A"), ("AGRI", "B"), ("TRANS", "B"), ("ENV", "A")]),
     ]
-    config = SimpleNamespace(variants=variants, algorithm_parameters={"require_stress": True})
+    config = SimpleNamespace(variants=variants, inputs=None, algorithm_parameters={"require_stress": True})
     monkeypatch.setattr(cli, "load_decision", lambda _path: config)
     assert main(["compare"]) == 0
     output = capsys.readouterr().out

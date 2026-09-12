@@ -16,11 +16,11 @@
     },
     "src/engine/canonical.py": {
       "source": "backend/app/core/services/portfolio_engine/canonical.py",
-      "source_sha256": "3294e85b4d499b9bfa0a6d295f7bf311eaa77ef13b2bd3d06296d533fb4739d3"
+      "source_sha256": "ce99a1109344892e2e4c53e1b1110acfd96c76e9a37dd1539e828c23e0927df1"
     },
     "src/engine/cli.py": {
       "source": "backend/app/core/services/portfolio_engine/cli.py",
-      "source_sha256": "2a59e57d4bcbbee831154125101d1320dc5718308d69a9936312cd39b2f09c59"
+      "source_sha256": "4dd422f09a247471418ecf6fc10bfe01d39801f359ad05d7b7bbc12931f89307"
     },
     "src/engine/constraints.py": {
       "source": "backend/app/core/services/portfolio_engine/constraints.py",
@@ -28,7 +28,7 @@
     },
     "src/engine/decision.py": {
       "source": "backend/app/core/services/portfolio_engine/decision.py",
-      "source_sha256": "e1905d484f0e9d343ed29e07513299068baa32f157c4e940efc9fd64726dd66f"
+      "source_sha256": "b298e26b594fad93dfa934e07fe42ea8ea120650dcb346f2e918189dbabd1282"
     },
     "src/engine/export_integrity.py": {
       "source": "backend/app/core/services/portfolio_engine/export_integrity.py",
@@ -36,19 +36,19 @@
     },
     "src/engine/export_report.py": {
       "source": "backend/app/core/services/portfolio_engine/export_report.py",
-      "source_sha256": "e3856d07c34b41baed8033d54186018dc78bdb1f6eca52eaa993ac461e28cef5"
+      "source_sha256": "7b50bcbeb87e4e07815e6a95da0cb3c1c55d1d04dcca63e4d7412c8c74e37242"
     },
     "src/engine/hybrid.py": {
       "source": "backend/app/core/services/portfolio_engine/hybrid.py",
-      "source_sha256": "1a61b8c42374ef048b365e8a968d4398f7ef8c0c01f2d54ef752c749ccd08ea3"
+      "source_sha256": "8fd00e750ca15ce251810dd5dd43c7f39c303feb0ebb060248b71f2997ccafbc"
     },
     "src/engine/selfcheck.py": {
       "source": "backend/app/core/services/portfolio_engine/selfcheck.py",
-      "source_sha256": "61aeb78e1c2641cbb1b8caac84f436f1b3f9ccf6f8b97f2a89310228630b08d0"
+      "source_sha256": "329caf1b776ba8f5d1bd8ece198ad7b429806636afcca8d08d8a58b9e2130a70"
     },
     "src/engine/sensitivity.py": {
       "source": "backend/app/core/services/portfolio_engine/sensitivity.py",
-      "source_sha256": "e08543f294ec6d7cc58a756e6a5ab2d27ceaef32b9c21c6cddbd7078ec836849"
+      "source_sha256": "20b1f26d334cde6a1acee87549a6af0833c8d3ae4de905d923d75e103cb25153"
     },
     "src/engine/space.py": {
       "source": "backend/app/core/services/portfolio_engine/space.py",
@@ -78,6 +78,14 @@
       "source": "config/decision.json",
       "source_sha256": "92cdd9898fc587dd15793d839c45e266507fc202240a4ae83da7c74f9c3d278b"
     },
+    "notebooks/portfolio_review.ipynb": {
+      "source": "notebooks/portfolio_review.ipynb",
+      "source_sha256": "d5fe3f571c56ed722d23f951caab31a39a1d0c2a43686606e93226b6538fc6a6"
+    },
+    "notebooks/requirements.txt": {
+      "source": "notebooks/requirements.txt",
+      "source_sha256": "3455c540a7629db2b9748cab0fe66ebeaaaba28f9fcd0fce078dcebe70d002c1"
+    },
     "results/portfolio_detail.csv": {
       "source": "results/portfolio_detail.csv",
       "source_sha256": "8996e21299667b4fa4916995864bed234b392852ec04537ca84b8220eb8744c0"
@@ -88,11 +96,11 @@
     },
     "results/team_decision_config.json": {
       "source": "results/team_decision_config.json",
-      "source_sha256": "9ced4524dfc29cc041f8175fea75c91c30c78eeb2e007bddb09a1ec53210dbdf"
+      "source_sha256": "7fb2bb75092ca7ccd3a2177814fde921d0e4b5a86ba825d45a5105f17278cc30"
     },
     "results/hybrid_analysis.json": {
       "source": "results/hybrid_analysis.json",
-      "source_sha256": "74dd75fa5e5be5ab56362bcd0bb55acb2dfcdae6541a6f2d9be6a7c984e4248b"
+      "source_sha256": "95f4b8cdb548d76f0d29593f30947ea4115c7d3c4563c0e07aaaf656a1b70fd1"
     },
     "tests/test_engine.py": {
       "source": "tests/test_engine.py",
@@ -104,19 +112,19 @@
     },
     "tests/test_cli_config.py": {
       "source": "tests/test_cli_config.py",
-      "source_sha256": "f3436ffa781f51beabefede82a71f26eb4023fc4ed7d1605cec66c552037714c"
+      "source_sha256": "8f3a5052b757474d3865bbb21e0f673a89b47ae32bcd007e7da5009b15095ff3"
     },
     "README.md": {
       "source": "scripts/submission_readme.md",
-      "source_sha256": "9026783b1c9fce4def880e76076d8afe838fddc9a50dee773dbc6ed299154d25"
+      "source_sha256": "04ca30c67c633031789fea82c25241963fee19e4aa22d14f072a1d13c44ae6ac"
     },
     "docs/algorithm.md": {
       "source": "docs/22-hybrid-selection.md",
-      "source_sha256": "1ca7dbb5707c260be650140f11c4e15c9d64624b17cb2bd91606cece873cca8f"
+      "source_sha256": "140047dc8c4b8ccd396efbb78e2113c87194cba465f81e732577b6e018c71a58"
     },
     "docs/management-note.md": {
       "source": "docs/23-management-note.md",
-      "source_sha256": "4f191be59d16213f0d5afb71a1df93a5bf462c57a17e10d9b0a0e77a3cab3db4"
+      "source_sha256": "6302b29390115cb4bae017689bccc5336b9ce03e066e17ef6de2f9a4b96c5545"
     },
     "docs/stress-summary.md": {
       "source": "docs/24-stress-summary.md",
@@ -132,11 +140,11 @@
     },
     "docs/management-note.pdf": {
       "source": "docs/management-note.pdf",
-      "source_sha256": "f94e139a1610261649e4bcff7637f0993579a1f36772ba2d08aff49ca1960dcc"
+      "source_sha256": "658ad8fcb829c4fe53f8e44611acf85b8181468657d20b392a59a7b6bbca8e2b"
     },
     "docs/management-note-appendices.pdf": {
       "source": "docs/management-note-appendices.pdf",
-      "source_sha256": "016a49cb5772b66c13807bfc289c3bf85f70f732f79e6c9d55a27ff301342700"
+      "source_sha256": "a226ba706cec0d0ad29382e94968785b0f4d8ad670f3cdc76d56bee73bb460e7"
     },
     "docs/stress-summary.pdf": {
       "source": "docs/stress-summary.pdf",
@@ -144,43 +152,45 @@
     }
   },
   "files": {
-    ".gitignore": "b0b18f5bf7184f205a45032e7a3034fffc852f9c6ad28ae26bb839e2893b5ddd",
-    "README.md": "9026783b1c9fce4def880e76076d8afe838fddc9a50dee773dbc6ed299154d25",
+    ".gitignore": "5bec4c4513cc79654d3cf97a4f12d727701e603b100a53eb7f44841168da028a",
+    "README.md": "04ca30c67c633031789fea82c25241963fee19e4aa22d14f072a1d13c44ae6ac",
     "config/decision.json": "92cdd9898fc587dd15793d839c45e266507fc202240a4ae83da7c74f9c3d278b",
     "data/official/README.md": "21776c3e41cb0f1b11f5107e0facc26bc592fe6ba184fcc70ee67ad26b15db07",
     "data/official/case_core.py": "0a6da8b99dbb2e6ff03cb94012f539d8cd0b9c7dd05525bda5b202ebb461e20c",
     "data/official/config/case_config.json": "aae20d265b69fa8ec309ce8dc435fb1ae43ed34510c2746baa5024b472426463",
     "data/official/data/access_modes.csv": "2669239db6c366c15b13df9d874dc3c8a790ba961bfeddbf9c428fa82fb861c7",
     "data/official/data/lots.csv": "8e2b6244178344f9f97050ce5c9f337cd311e9f86bbd96bbbfbdde6999c4ba8b",
-    "docs/README.md": "464083aa5b236763f6ef80b192b065b514390d35acb9f4fbe5b4e73873c609ce",
-    "docs/algorithm.md": "fe4d2323defcbe12cbca0680f8b6f3023cf92b891680000fed97aeac0b38bebb",
-    "docs/management-note-appendices.pdf": "016a49cb5772b66c13807bfc289c3bf85f70f732f79e6c9d55a27ff301342700",
-    "docs/management-note.md": "ca795fb1d4b852420b2efe2e51f84b5d1c0789f06e44d80405101f5329c797ff",
-    "docs/management-note.pdf": "f94e139a1610261649e4bcff7637f0993579a1f36772ba2d08aff49ca1960dcc",
+    "docs/README.md": "22247e8f1cbb4c8d5507cf1800a156b086b23e0fb85dcc38e9a29101f322d839",
+    "docs/algorithm.md": "5d54bc5b00f3992442a3edce2cfca1e40182083bd03511bfc32b654b6d404887",
+    "docs/management-note-appendices.pdf": "a226ba706cec0d0ad29382e94968785b0f4d8ad670f3cdc76d56bee73bb460e7",
+    "docs/management-note.md": "88323687431c4d5e516edfb52c2cad820658364214a2c353fd1de3bed0353362",
+    "docs/management-note.pdf": "658ad8fcb829c4fe53f8e44611acf85b8181468657d20b392a59a7b6bbca8e2b",
     "docs/notes/consultations.md": "0dbc2a6d52732ada64c3af393101fe34bfeafe507195f09b427314e3c733a7c4",
     "docs/research/case-literature.md": "122158cd7b735008c13c2689378653b903e9c0b6aeb27e0e620f337855eb0b1b",
     "docs/stress-summary.md": "667d426575199a0169e7a97408b34a77e44e723fcc7939a621fd1d1874f8c538",
     "docs/stress-summary.pdf": "8eb93dc90123e6fb6b5a6353c0256012abcf205128bfb60d643b326cf91516ce",
+    "notebooks/portfolio_review.ipynb": "d5fe3f571c56ed722d23f951caab31a39a1d0c2a43686606e93226b6538fc6a6",
+    "notebooks/requirements.txt": "3455c540a7629db2b9748cab0fe66ebeaaaba28f9fcd0fce078dcebe70d002c1",
     "requirements.txt": "6d83ac9c93ec11b7a55f000ec44f32b189bdc20affaf0b9f0744bf890b5be9dc",
-    "results/hybrid_analysis.json": "74dd75fa5e5be5ab56362bcd0bb55acb2dfcdae6541a6f2d9be6a7c984e4248b",
+    "results/hybrid_analysis.json": "95f4b8cdb548d76f0d29593f30947ea4115c7d3c4563c0e07aaaf656a1b70fd1",
     "results/portfolio_detail.csv": "8996e21299667b4fa4916995864bed234b392852ec04537ca84b8220eb8744c0",
     "results/portfolio_metrics.json": "0b8cf0abe82bb28a184026b420020976b0af69f44fc392a6fff727be32b894c2",
-    "results/team_decision_config.json": "9ced4524dfc29cc041f8175fea75c91c30c78eeb2e007bddb09a1ec53210dbdf",
+    "results/team_decision_config.json": "7fb2bb75092ca7ccd3a2177814fde921d0e4b5a86ba825d45a5105f17278cc30",
     "run.py": "17c3d1967620bfe00e7b674d846738f43b61363aaae5b5c1a3800cb8e802a8cc",
     "src/engine/__init__.py": "1eac05947b16964c04391edd6fda45a30f5628c2d271f04a0c917a8286739020",
     "src/engine/__main__.py": "e0930aeba5a3e2e2d94ca6c5fac4f72c0c4eb2be9bba283becf98e909091471c",
-    "src/engine/canonical.py": "3294e85b4d499b9bfa0a6d295f7bf311eaa77ef13b2bd3d06296d533fb4739d3",
-    "src/engine/cli.py": "2a59e57d4bcbbee831154125101d1320dc5718308d69a9936312cd39b2f09c59",
+    "src/engine/canonical.py": "ce99a1109344892e2e4c53e1b1110acfd96c76e9a37dd1539e828c23e0927df1",
+    "src/engine/cli.py": "4dd422f09a247471418ecf6fc10bfe01d39801f359ad05d7b7bbc12931f89307",
     "src/engine/constraints.py": "0b1d32733f1a71df6daba2ad8d34cfac59e2417be522795e1aae0bcc989082ec",
-    "src/engine/decision.py": "e1905d484f0e9d343ed29e07513299068baa32f157c4e940efc9fd64726dd66f",
+    "src/engine/decision.py": "b298e26b594fad93dfa934e07fe42ea8ea120650dcb346f2e918189dbabd1282",
     "src/engine/export_integrity.py": "22164ba7c11f83e17a75bcaff25ae50444f2428d3e65841fedc782cbc3562440",
-    "src/engine/export_report.py": "e3856d07c34b41baed8033d54186018dc78bdb1f6eca52eaa993ac461e28cef5",
-    "src/engine/hybrid.py": "1a61b8c42374ef048b365e8a968d4398f7ef8c0c01f2d54ef752c749ccd08ea3",
-    "src/engine/selfcheck.py": "61aeb78e1c2641cbb1b8caac84f436f1b3f9ccf6f8b97f2a89310228630b08d0",
-    "src/engine/sensitivity.py": "e08543f294ec6d7cc58a756e6a5ab2d27ceaef32b9c21c6cddbd7078ec836849",
+    "src/engine/export_report.py": "7b50bcbeb87e4e07815e6a95da0cb3c1c55d1d04dcca63e4d7412c8c74e37242",
+    "src/engine/hybrid.py": "8fd00e750ca15ce251810dd5dd43c7f39c303feb0ebb060248b71f2997ccafbc",
+    "src/engine/selfcheck.py": "329caf1b776ba8f5d1bd8ece198ad7b429806636afcca8d08d8a58b9e2130a70",
+    "src/engine/sensitivity.py": "20b1f26d334cde6a1acee87549a6af0833c8d3ae4de905d923d75e103cb25153",
     "src/engine/space.py": "c448155533aa7464238512d33ca3e05d2216b924cc1bc75bcaaa557106cf74a1",
     "tests/conftest.py": "a7310cb1e9bfc92d590ee5bace4c5f88ee5b2c8d8f059815b6cf82d1b0f347b5",
-    "tests/test_cli_config.py": "53fc42638c81886a426f9f3b155e6d48b5fa111af6abf00401c023dc88b11837",
+    "tests/test_cli_config.py": "3984015feb62192f605efee1a48de2c746e50db8b26509bffe173c6dea503e34",
     "tests/test_engine.py": "3e26ff051b1f87dd8fe85720a91cb0fbf50d60250bfabc5c5320faefd60f7109",
     "tests/test_hybrid.py": "4b944ac57b7fc6d489cfaab5de99f49f96e8fa970b88ba1067da2f0392e413b2"
   }

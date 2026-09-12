@@ -5,8 +5,8 @@ FastAPI обслуживает каталог, расчёт, подбор и с�
 отключена. PostgreSQL, Redis, worker, регистрация и внешние ключи текущему API не нужны.
 
 Запуск всего приложения через Docker описан в [корневом README](../README.md).
-[`scripts/run_local.py`](../scripts/run_local.py) поддерживает `--ollama off`, `on`
-и `host`: без модели, с моделью в контейнере или с установленной Ollama.
+Для жюри рекомендуем [сайт команды](https://mogged.chillflex.art/) с настроенной Ollama.
+Основной Docker запускает только frontend и backend с отключённой моделью.
 Расчёт без веб-приложения — в [документации CLI](app/core/services/portfolio_engine/README.md).
 
 ## Локальный запуск API без Docker
@@ -147,7 +147,7 @@ COSMOS_OLLAMA_TIMEOUT_SECONDS=45
 Для удалённой Ollama `COSMOS_OLLAMA_BASE_URL`, `COSMOS_OLLAMA_USERNAME` и
 `COSMOS_OLLAMA_PASSWORD` задаются только на backend. При заданных имени пользователя
 и пароле используется Basic Auth; frontend не получает адрес или учётные данные.
-Серверное развёртывание описано в [корневом README](../README.md).
+Настройки размещения — в разделе «Демо команды» ниже.
 
 Модель не выбирает лоты/режимы и не вычисляет показатели. Числа и разрешённые факты
 формирует расчётное ядро. Проверяются структура ответа и ссылки `fact_ids`, числовые
@@ -189,6 +189,36 @@ HTTP-интеграция модели находится в `OllamaClient`, с�
 При старте пространство решений прогревается вне event loop. Вычисления идут
 через thread pool и кешируются в памяти; очередь задач не нужна. Версии и хеши
 возвращаются в API. Кеш отдаёт независимые копии результатов.
+
+## Демо команды
+
+Основной `docker-compose.yml` предназначен для независимой локальной проверки.
+Он не подключает Ollama, не публикует отдельный порт API и не запускает туннель.
+Настройки демо вынесены в [docker-compose.team.yml](../docker-compose.team.yml).
+Этот файл применяется поверх основного; он сохраняет прежние имена сервисов и volume модели.
+
+Из корня репозитория:
+
+```bash
+python3 scripts/run_local.py --ollama host  # установленная Ollama команды
+python3 scripts/run_local.py --ollama on    # модель в Docker
+python3 scripts/run_local.py --ollama off   # отключить модель в окружении команды
+```
+
+Скрипт сам подключает оба Compose-файла. `on` скачивает модель в volume;
+`host` использует подготовленную Ollama, без скачивания. Доступны `--model`,
+`--ollama-url` (с `host`), `--project-name` и `--env-file`.
+Настройки портов и подключения — в [корневом .env.example](../.env.example).
+
+Публикация демо через Tuna, после запуска приложения и задания `TUNA_DOMAIN` и `TUNA_TOKEN` в локальном `.env`:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.team.yml --profile tunnel up -d --no-deps tuna
+```
+
+Для управления демо используйте оба Compose-файла. Обычный `docker compose up`
+предназначен для локальной версии без модели. Жюри настройки публикации не нужны.
+Учётные данные и адрес Ollama остаются на backend.
 
 ## Проверки
 

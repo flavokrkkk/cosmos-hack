@@ -105,6 +105,11 @@ def collect():
     facts['FLOOD-вариант: прирост остатка, %'] = (money((flood.cash - flood.opex - surplus) / surplus * 100, 1), (NOTE, SLIDES))
     facts['FLOOD-вариант: прирост VPUB, %'] = (money((flood.vpub / metrics['vpub_mrub_per_year'] - 1) * 100, 1), (NOTE, SLIDES))
     facts['FLOOD-вариант: Q'] = (str(flood.q).replace('.', ','), (NOTE, SLIDES))
+    abba = next(item for item in analysis['alternatives']
+                if item['selection_id'] == 'AGRI:B,ENV:A,FIRE:A,TRANS:B')
+    facts['ABBA: Q'] = (str(abba['q']).replace('.', ','), (NOTE,))
+    facts['ABBA: остаток'] = (money(abba['cash'] - abba['opex'], 2), (NOTE,))
+    facts['ABBA: VPUB'] = (money(abba['vpub'], 1), (NOTE,))
     facts['дефицит ядра'] = (money(abs(sum(b for b in (detail.cash_mrub_per_year - detail.opex_mrub_per_year) if b < 0)), 2), (NOTE,))
     for row in detail.itertuples():
         facts[f'{row.lot_id}: c0'] = (money(row.c0_mrub, 2), (NOTE,))
@@ -131,19 +136,21 @@ def relations():
     never = analysis['search_summary']['never_binding_constraints']
     flood = next(item for item in analysis['alternatives']
                  if item['selection_id'] == 'AGRI:C,ENV:A,FLOOD:A,TRANS:C')
+    abba = next(item for item in analysis['alternatives']
+                if item['selection_id'] == 'AGRI:B,ENV:A,FIRE:A,TRANS:B')
     limits = {r.binding_constraint.split(' ')[0] + ':' + r.input.split(' ')[0]: abs(r.change_pct)
               for r in sens.itertuples()}
     # Диапазон задан тем, что означает фраза: «двенадцатикратно» читается как «не меньше двенадцати»,
     # «вчетверо» — как округление до четырёх. Границы здесь, а не в тексте, чтобы при смене данных
     # ломался скрипт, а не доверие эксперта к записке.
     return [
+        ('«ABBA и выбранный портфель имеют одинаковое Q» (раздел 5.3)',
+         abs(abba['q'] - analysis['winner']['q']), 0.0, 1e-12),
         ('«перекрывают разрыв двенадцатикратно» (раздел 4)',
          balances[balances > 0].sum() / abs(balances[balances < 0].sum()), 12.0, 13.0),
-        ('«четыре ограничения из девяти не работают никогда» (раздел 5.1)', float(len(never)), 4.0, 5.0),
+        ('«четыре из девяти ограничений выполняются для всех» (раздел 5.1)', float(len(never)), 4.0, 5.0),
         ('«запас по росту расходов вчетверо больше» (резюме)',
          limits['opex_limit:opex'] / limits['c0_limit:c0'], 3.5, 4.5),
-        ('«вдвое больше до нарушения порога KCASH» (раздел 7)',
-         limits['kcash_floor:cash'] / limits['zero_surplus:cash'], 2.0, 3.0),
         ('«предел доли оператора 46%» — окно 30–60 мес. × остаток / C0 рыночных лотов (раздел 4)',
          (2.5 * (metrics['cash_mrub_per_year'] - metrics['opex_mrub_per_year']))
          / float(detail.loc[detail.mode_id == 'C', 'c0_mrub'].sum()) * 100, 46.0, 47.0),

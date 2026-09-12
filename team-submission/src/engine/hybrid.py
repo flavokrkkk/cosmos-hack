@@ -138,7 +138,7 @@ def score_frame(frame: pd.DataFrame, bounds: dict) -> pd.DataFrame:
 def select(scored: pd.DataFrame, delta: float | None) -> tuple[pd.Series | None, dict]:
     """Выбор по принятому правилу. Вход не содержит результатов чувствительности."""
     if scored.empty:
-        return None, dict(s_max_mrub=None, cash_floor_mrub=None, cash_eligible_count=0, q_max=None, effective_delta_mrub=None)
+        return None, dict(s_max_mrub=None, cash_floor_mrub=None, cash_eligible_count=0, q_max=None, effective_delta_mrub=None, max_q_count=0)
     s_max = max(scored.surplus_exact)
     priorities = ["q_exact", "surplus_exact", "sum_exact", "stable_id"]
     ascending = [False, False, False, True]
@@ -154,7 +154,8 @@ def select(scored: pd.DataFrame, delta: float | None) -> tuple[pd.Series | None,
         cash_floor = s_max - delta_exact
         eligible = scored[scored.surplus_exact >= cash_floor]
         row = eligible.sort_values(priorities, ascending=ascending, kind="stable").iloc[0]
-    return row, dict(s_max_mrub=float(s_max), cash_floor_mrub=float(cash_floor),
+    quality_pool = scored if delta is None else eligible
+    return row, dict(max_q_count=int((quality_pool.q_exact == row.q_exact).sum()), s_max_mrub=float(s_max), cash_floor_mrub=float(cash_floor),
                      cash_eligible_count=len(eligible), q_max=float(row.q_exact), effective_delta_mrub=float(delta_exact))
 
 
@@ -238,6 +239,7 @@ def analyze(parameters: Parameters, *, include_sensitivity: bool = True) -> tupl
     row, stages = select(scored, parameters.cash_loss_limit_mrub)
     analysis = dict(winner=outcome(row, bounds), **stages, cash_loss_limit_mrub=parameters.cash_loss_limit_mrub,
                     quality_epsilon=0, reference_count=len(reference), bounds=bounds, sensitivity=[],
+                    feasible_count=len(candidates),
                     switching_curve=switching_curve(scored, bounds), pareto_objectives=[*MAXIMIZE, *MINIMIZE],
                     normalization=NORMALIZATION, caveat=CAVEAT)
     # Диагностика выполняется после основного решения и записывает только свой раздел.

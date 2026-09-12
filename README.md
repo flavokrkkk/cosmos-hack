@@ -1,267 +1,293 @@
-# КосмоХакатон Нижний Новгород — команда «ТЧК MISIS»
+# Космос как инфраструктура — ТЧК MISIS
 
-## Принятый гибрид и комплект для проверки — 12.09.2026
+Инструмент выбора и проверки портфеля космических сервисов для **кейса 02**, АНО «КЭП», Космохакатон в Нижнем Новгороде, 11–13 сентября 2026 года.
 
-Текущая реализация использует единственный `hybrid_maximin_v1`: максимум Q → максимум S; при явно заданном Δ сначала применяется денежное ограничение. Шесть шкал и автоматический Δ раскрыты в [обосновании](docs/22-hybrid-selection.md). По умолчанию алгоритм выбирает FIRE:A, AGRI:C, TRANS:C, ENV:A; S=92,25 млн ₽/год, Q=0,5, Δ=9,5 млн ₽/год.
+Приложение подбирает четыре лота из восьми и режимы A/B/C, считает показатели по формулам организаторов, проверяет BASE/STRESS и сравнивает варианты. Выбор выполняет детерминированный алгоритм `hybrid_maximin_v1`; Ollama объясняет полученные результаты.
 
-Автономный расчётный комплект по пункту 13 инструкции: [team-submission/README.md](team-submission/README.md). Он запускается без API, Ollama, регистрации и ключей. Финальная записка и презентация проверяются отдельно по перечню материалов в комплекте.
+**Рекомендуем пользоваться [сайтом команды — mogged.chillflex.art](https://mogged.chillflex.art/).** Приложение развёрнуто, Ollama настроена на сервере команды. На сайте доступны расчёты, сравнение, редактирование входов, экспорт и модельные объяснения. Ничего устанавливать не нужно.
 
-После подготовки Python-окружения (раздел «Расчётный CLI»):
+Для независимого запуска предусмотрены Docker и ноутбук. Они используют тот же расчётный движок; скачивать Ollama для проверки решения не требуется.
 
-```bash
-backend/.venv/bin/python -m backend.app.core.services.portfolio_engine recommend
-backend/.venv/bin/python -m backend.app.core.services.portfolio_engine recommend --delta 5
-backend/.venv/bin/python -m backend.app.core.services.portfolio_engine evaluate --scenario STRESS
-backend/.venv/bin/python scripts/build_submission.py
-```
+- [Запуск](#запуск)
+- [Проверка решения](#проверка-решения)
+- [Входные данные](#контракт-входных-данных)
+- [Четыре файла результатов](#контракт-результатов)
+- [HTTP API](#контракт-api)
+- [Технические критерии Т1–Т5](#технические-критерии)
+- [Материалы и исходники](#материалы-и-сопровождение)
 
+## Запуск
 
-Кейс 02 «Космос как инфраструктура», кейсодержатель АНО «КЭП».
-Межрегиональный портфель космических сервисов общего пользования: 11–13 сентября 2026.
+### Docker — локальная версия приложения
 
-## Быстрый запуск для проверки
-
-Нужен Docker Desktop (macOS/Windows) или Docker Engine с Compose (Linux).
-Из корня чистого checkout:
+Нужен Docker с Compose. Из корня репозитория:
 
 ```bash
 docker compose up -d --build --wait
 ```
 
-Откройте **http://localhost:5173**. API и Swagger: **http://localhost:8000/docs**.
-По умолчанию запускаются только frontend и backend, **Ollama отключена**.
-Все расчёты, проверки BASE/STRESS, изменение лотов и режимов, сравнение,
-сохранение и экспорт работают без LLM. При включённой Ollama модель объясняет готовый
-расчёт; без неё интерфейс сообщает, что AI-объяснение отключено. Регистрация, личные API-ключи, PostgreSQL,
-Redis и платные сервисы не нужны.
+Приложение: **[localhost:5173](http://localhost:5173/)**. Документация API: [localhost:5173/api/docs](http://localhost:5173/api/docs).
 
-Первой сборке нужен интернет для зависимостей и Docker-образов. Модель не
-скачивается. После сборки и при наличии образов расчёты работают локально.
+Запускаются только frontend и backend. Файл `.env`, модель, туннель и внешние ключи не нужны. Расчёты, сравнение и экспорт доступны полностью; объяснения формируются по шаблонам. Для объяснений Ollama используйте сайт команды. После первой сборки локальная версия работает без интернета.
 
-### Включить или отключить Ollama
+Остановка: `docker compose down`.
 
-Для удобного переключения есть скрипт на стандартной библиотеке Python
-(подходит Python 3.9+, для расчётного CLI нужен Python 3.12):
+### Ноутбук — проверка расчётов
+
+Нужен Python 3.12. Команды одинаковы для полного репозитория и автономного [team-submission/](team-submission/):
 
 ```bash
-python3 scripts/run_local.py --ollama off   # без модели, даже если в .env включена LLM
-python3 scripts/run_local.py --ollama on    # Ollama в Docker + загрузка модели
-python3 scripts/run_local.py --ollama host  # Ollama уже установлена на этой машине
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r notebooks/requirements.txt
+.venv/bin/python -m jupyterlab notebooks/portfolio_review.ipynb
 ```
 
-В Windows используйте `python` вместо `python3`. Скрипт не переписывает `.env`,
-пересоздаёт backend с выбранной настройкой и не удаляет загруженные модели.
-`off` останавливает только контейнеры Ollama этого Compose-проекта; установленную
-на компьютере Ollama не трогает.
+В Windows путь к Python: `.venv\Scripts\python.exe`.
 
-В режиме `on` скачивается публичная `qwen3:4b-instruct` (около 2,5 ГБ), затем
-хранится в volume `ollama-data`. Повторное включение использует этот кеш.
-Пока загрузка или генерация не завершена, численные результаты доступны.
-Прогресс загрузки: `docker compose logs -f ollama-pull`.
+Выполните **Run All Cells**. В ноутбуке доступны редактор лотов и режимов, автоподбор, ручная проверка и история сравнения. Новый расчёт запускается кнопкой «Рассчитать». Сервер приложения и Ollama не нужны; исходные файлы не перезаписываются.
 
-В режиме `host` заранее установите Ollama и выполните `ollama pull qwen3:4b-instruct`.
-Backend обращается к `http://host.docker.internal:11434`; на Linux Ollama должна
-принимать подключения от Docker. Собственный адрес задаётся через
-`--ollama-url http://АДРЕС:11434`. На Mac установленная Ollama может использовать
-GPU, а Docker Desktop не предоставляет ей GPU passthrough.
-[Официальная документация Ollama](https://docs.ollama.com/faq).
+### CLI — воспроизведение выгрузки
 
-Явный выбор модели: `python3 scripts/run_local.py --ollama on --model qwen3:4b-instruct`.
-Для отдельного экземпляра: `--project-name cosmos-demo --env-file /путь/к/настройкам.env`.
-Состояние режима: **http://localhost:8000/health**, поле `capabilities.ollama_enabled`.
-Это настройка вызовов модели, а не обещание, что модель уже скачана и отвечает.
-
-**Веса модели в Git не включаются.** Перенос в Git не уменьшит объём загрузки;
-GitHub блокирует обычные файлы больше 100 MiB. Для нашего проверяемого результата
-модель необязательна, поэтому достаточно опциональной загрузки и сохраняемого
-volume. [Лимиты GitHub](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github),
-[хранение Ollama в Docker](https://docs.ollama.com/docker).
-
-### Что проверить в интерфейсе
-
-1. Запустить автоподбор и сверить состав с текущей рекомендацией.
-2. В ручном подборе открыть «Задать лоты и режимы», изменить кандидатов или допустимые A/B/C и пересчитать.
-3. Проверить BASE и STRESS, включая вариант с нарушением: видны порог, факт и PASS/FAIL.
-4. Сопоставить исходный и изменённый варианты, сохранить или выгрузить расчёт.
-
-В автоподборе используются все лоты и стандартные режимы. В ручном подборе можно
-задать 4–8 кандидатов и несколько допустимых режимов каждого лота; пустой выбор
-сбрасывает ограничения. Итоговый портфель всегда содержит ровно четыре лота.
-Для проверки фиксированного состава без подбора есть команда CLI `evaluate --portfolio`.
-Подробные контракты — [backend/README.md](backend/README.md),
-фронтенд — [frontend/README.md](frontend/README.md).
-
-«Исходные данные» открывает редактор всех восьми лотов и коэффициентов режимов
-A/B/C. Изменения действуют как явный сценарий текущей сессии и запускают новый
-расчёт; официальные файлы кейса не перезаписываются. Кнопка «Вернуть официальные»
-сбрасывает сценарий.
-
-## Расчётный CLI
-
-Выбрать 4 из 8 сервисных лотов, назначить режимы доступа, проверить в BASE и STRESS,
-обосновать финансирование и реализацию. Материалы организаторов — в [`case/`](case/)
-(не изменять). Метод описан в [docs/22-hybrid-selection.md](docs/22-hybrid-selection.md).
-
-Нужен Python 3.12. Из корня репозитория:
+Из каталога `team-submission/` — готового [автономного комплекта](team-submission/README.md):
 
 ```bash
-python3.12 -m venv backend/.venv
-source backend/.venv/bin/activate
-python -m pip install -r requirements.txt
-python -m backend.app.core.services.portfolio_engine evaluate     # портфель + PASS/FAIL по ограничениям, BASE и STRESS
-python -m backend.app.core.services.portfolio_engine space        # полный перебор 5670 конфигураций
-python -m backend.app.core.services.portfolio_engine sensitivity  # запас по входным данным и где портфель ломается
-python -m pytest tests/ -q    # проверки формул, границ, фронта и сверки документов с расчётом
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python run.py recommend
+.venv/bin/python run.py evaluate --snapshot /путь/team_decision_config.json
 ```
 
-Условия поиска задаются **без правки кода** в [`config/decision.json`](config/decision.json), точный состав для проверки —
-флаг `--portfolio FIRE:A,AGRI:A,TRANS:A,ENV:A`. Контракт для backend и что делать нельзя —
-[документация ядра](backend/app/core/services/portfolio_engine/README.md). Сопоставление
-портфелей и разбор пространства решений — раздел 5 [записки](docs/23-management-note.md).
+`recommend` подбирает портфель; `evaluate --snapshot` воспроизводит состав и входы из выгрузки. Другие команды и параметры — в [документации движка](backend/app/core/services/portfolio_engine/README.md). Для проверки приложения достаточно сайта или Docker; CLI и ноутбук — дополнительные способы работы с расчётом.
 
-## Материалы решения и как сверить цифры
+## Проверка решения
 
-Требование кейсодержателя: цифры в записке, на слайдах и в выводе кода **обязаны совпадать**.
-Зарегистрированные показатели Markdown автоматически сверяются с результатами расчёта;
-окончательную дизайнерскую презентацию нужно проверить отдельно.
+В интерфейсе доступны автоподбор, изменение исходных данных и ручное ограничение кандидатов и режимов. Сохранённые варианты можно сравнить по составу, входам и показателям, затем выгрузить результат. Точная проверка произвольного состава, включая недопустимый, доступна в ноутбуке, API и CLI.
 
-| Материал | Где |
-|---|---|
-| **Управленческая записка**, 12 страниц | [docs/management-note.pdf](docs/management-note.pdf), исходник [docs/23-management-note.md](docs/23-management-note.md) |
-| **Приложения к записке** А–Г: реестр рисков, матрица ответственности и KPI, расчётные таблицы, источники | [docs/management-note-appendices.pdf](docs/management-note-appendices.pdf) — тот же исходник |
-| **Резюме стресс-сценария**, одна страница | [docs/stress-summary.pdf](docs/stress-summary.pdf), исходник [docs/24-stress-summary.md](docs/24-stress-summary.md) |
-| Как вычислен портфель | [docs/22-hybrid-selection.md](docs/22-hybrid-selection.md) |
-| Скелет презентации | [docs/25-presentation-skeleton.md](docs/25-presentation-skeleton.md) |
-| Обозначения и формулы | [Словарь результатов](docs/22-hybrid-selection.md#словарь-результатов) |
-| Рекомендуемый портфель и результат выбора | [results/hybrid_analysis.json](results/hybrid_analysis.json) |
-| Контрольные выгрузки | [results/](results) |
-| Автономный комплект по п. 13 | [team-submission/](team-submission) |
+BASE и STRESS проверяют один состав при разных лимитах запуска. Для примера `FIRE:A,FLOOD:A,AGRI:C,TRANS:C` на официальных входах BASE выполняется, а STRESS нарушается по C0. Для нового подбора под другой бюджет используется отдельный запуск алгоритма.
 
-Сверка чисел: `python scripts/sync_documents.py` проверяет готовый экспорт и зарегистрированные
-числовые факты. `--fix` обновляет только именованные маркеры `<!-- fact: NAME -->VALUE<!-- /fact -->`;
-неоднозначные вхождения блокируют запись. После изменения исходников выполните один полный цикл:
+Контрольные результаты находятся в [results/](results/); основной отчёт — [hybrid_analysis.json](results/hybrid_analysis.json). При одинаковых входах и условиях результаты сайта, Docker, ноутбука и CLI должны совпадать. Изменение входов создаёт новый расчёт со своим снимком данных.
+
+Проверки формул и воспроизводимости: `run.py selfcheck`; автоматические проверки — в [tests/](tests/) и [backend/tests/](backend/tests/). Команды для разработки приведены в [backend/README.md](backend/README.md#проверки) и [frontend/README.md](frontend/README.md).
+
+## Контракт входных данных
+
+Канонические файлы организаторов находятся в [case/source/](case/source/): `case_core.py`, `data/lots.csv`, `data/access_modes.csv`, `config/case_config.json`. Их нельзя незаметно заменять пользовательским сценарием. Источники и происхождение параметров собраны в [литературе кейса](docs/research/case-literature.md).
+
+В API **`inputs: null`** означает официальные данные. Пользовательский `inputs` — объект с полными массивами **`lots`** (восемь уникальных лотов) и **`modes`** (A/B/C). Это полный снимок, не частичный patch. Проще всего скопировать `lots` и `modes` из `GET /portfolio/catalog`, изменить нужные значения и отправить их обратно.
+
+### Поля лота
+
+- `lot_id` — фиксированный ключ: FIRE, FLOOD, AGRI, INFRA, ARCTIC, TRANS, ENV или SSA.
+- `service`, `title` — название сервиса и подпись UI; `territorial_archetype`, `territory_title` — архетип и его подпись. `title` и `territory_title` обязательны в API-снимке, но отсутствуют в исходном CSV и не участвуют в формулах.
+- `capability_groups` — непустой массив групп в API; в исходном CSV и построчной детализации группы разделены `;`. `federal` — логический признак: федеральный лот не добавляет территориальный архетип.
+- `c0_mrub` — разовые вложения на запуск, млн ₽.
+- `opex_mrub_per_year` — расходы; `anchor_cash_mrub_per_year` и `commercial_cash_mrub_per_year` — две части поступлений; `vpub_mrub_per_year` — общественная ценность. Единица всех четырёх полей — млн ₽/год.
+- `readiness_1_5`, `resilience_1_5`, `scale_1_5` — индексы готовности, устойчивости и тиражируемости от 1 до 5.
+- `t_rep` — показатель кейса от 0 до 1; его смысл не домысливается, используется официальный порог.
+
+Денежные входы неотрицательны. В API неизвестные поля запрещены, нечисловые и неконечные числовые значения отклоняются. Пределы длины строк и полная схема — в [DTO](backend/app/core/dto/portfolio.py).
+
+### Поля режима
+
+`mode_id` — A/B/C; `k_c0`, `k_opex`, `k_vpub`, `k_anchor`, `k_commercial` — неотрицательные множители соответствующих показателей. `public_core` — логический признак зачёта в общественное ядро. Новые режимы, включая исследовательский D, в принятом алгоритме не используются.
+
+Формулы одного лота после режима:
+
+```text
+C0   = c0_mrub × k_c0
+OPEX = opex_mrub_per_year × k_opex
+VPUB = vpub_mrub_per_year × k_vpub
+CASH = anchor_cash_mrub_per_year × k_anchor
+     + commercial_cash_mrub_per_year × k_commercial
+```
+
+Денежные показатели суммируются, три индекса и `t_rep` усредняются. `S = CASH − OPEX`; `KCASH = CASH / OPEX`. Нулевой суммарный OPEX делает KCASH неопределённым: точная проверка сообщает об ошибке. В поиске такие варианты не проходят проверку покрытия расходов.
+
+VPUB не складывается с CASH. S не является чистой прибылью: не учитывает возврат C0, налоги и стоимость капитала. KCASH означает покрытие расходов, а не окупаемость.
+
+### Параметры поиска
+
+- `method_id`: только `hybrid_maximin_v1`; в конфигурации CLI метод называется `decision_method`.
+- `require_stress`: `true` — пройти BASE и STRESS, `false` — достаточно BASE.
+- `lot_ids`: `null` или пустой список в API — все лоты; иначе 4–8 уникальных кандидатов.
+- `allowed_modes_by_lot`: например, `{"FIRE":["A"],"AGRI":["B","C"]}`. Неуказанный лот или пустой список его режимов не ограничивает A/B/C.
+- `cash_loss_limit_mrub`: неотрицательный Δ в млн ₽/год; `null` — автоматический приоритет Q → S. Ноль допустим и сохраняет максимальный S.
+- `quality_epsilon`: только `0`.
+- `budget_cap_mrub`, `vpub_floor_mrub_per_year`: дополнительные предел запуска и минимум общественной ценности; `null` оставляет условия кейса. Эти параметры могут только ужесточить официальные пороги.
+- `required_public_lot_ids`: до четырёх лотов, обязательных именно в общественном ядре; они должны входить в область поиска.
+- `with_explanations`: только API; `false` возвращает числа без ожидания объяснений, на победителя не влияет.
+
+Нормировка проводится по всей допустимой области выбранного сценария на текущих входах **до** фильтров кандидатов, дополнительных порогов и Δ. Для каждого портфеля Q — минимум шести оценок. Выбирается максимум Q, затем максимум S; при дальнейшем равенстве — сумма оценок и стабильный идентификатор. Спецификация и ограничения метода — в [docs/22-hybrid-selection.md](docs/22-hybrid-selection.md).
+
+## Контракт результатов
+
+В контрольном [results/](results/) и в [комплекте](team-submission/results/) ровно четыре файла. Это вывод вычислений, а не входной список победителей. JSON — UTF-8; CSV использует запятую как разделитель и точку в десятичных числах. UI округляет отображение, но выгружает показатели из ответа API без дополнительного округления.
+
+### portfolio_detail.csv
+
+Одна строка на пару лот–режим. `lot_id`, `mode_id`, денежные показатели **после** применения режима, три индекса, `t_rep`, архетип, группы, `federal` и `public_core`. Денежные поля и единицы совпадают с описанием выше. Именно этот файл позволяет проследить вклад каждого лота.
+
+### portfolio_metrics.json
+
+Суммарные `c0_mrub`, `opex_mrub_per_year`, `vpub_mrub_per_year`, `cash_mrub_per_year`; `kcash`, средние `t_rep` и три индекса. Также `selected_lots`, `territorial_archetypes`, `capability_groups`, `public_core_lots` — количества, `capability_set` — список групп. S можно получить как CASH − OPEX; отдельного поля S в этом файле нет.
+
+### team_decision_config.json
+
+Контрольный экспорт CLI содержит `decision_method`, `scenario`, `algorithm_parameters`, вычисленный `recommended`, `alternatives`, `management`, `assumptions`, название команды и тезис. Пользовательские входы находятся в `algorithm_parameters.inputs`, если они заданы. В `recommended.selection` пары записаны как `["FIRE","A"]`.
+
+`document_values` — снимок зарегистрированных чисел документов. `export_provenance` версии 2 связывает хешами официальные входы, исходную конфигурацию, реализацию движка и четыре результата. При вычислении собственной подписи конфигурации исключается только само поле `export_provenance`.
+
+У выгрузки **из UI** другой контекст: `exported_by="frontend/dashboard"`, `selection` — массив объектов `{lot_id, mode_id}`, входы лежат в верхнем `inputs`, параметры подбора — в `search_request`. Также сохранены `dataset_hash`, `engine_version`, `input_hash`, `is_recommended`. Для ручного состава `recommended=null`; у него не утверждается оптимальность.
+
+`management_status="team_solution"` относится к результату с параметрами решения команды; `reference_requires_review` означает, что приложенное управленческое обоснование нужно пересмотреть для этого эксперимента. UI-снимок не содержит подпись контрольного экспорта CLI. Команда `evaluate --snapshot` понимает обе структуры.
+
+### hybrid_analysis.json
+
+`format_version=2` — компактный отчёт. Формат API `RecommendationResult` описан отдельно ниже: его нельзя считать дословной схемой этого файла.
+
+**Выбор и шкалы:**
+
+- `method`, `selection_rule` — метод и правило выбора. Контрольный CLI-отчёт также содержит `scenario`.
+- `winner` — выбранный состав, `selection_id`, S, Q, точное представление `q_exact` строкой и массив `components` из шести критериев.
+- В каждом компоненте `key`, `title`, `direction` описывают критерий; `raw` — исходное значение; `minimum` и `maximum` — границы допустимой области; `normalized` — оценка; `bottleneck` отмечает минимум, определивший Q.
+- Для направлений `max` оценка равна `(raw − minimum) / (maximum − minimum)`; для C0 с направлением `min` — обратная. Постоянный критерий получает 1. Нормальная шкала основного выбора — 0–1; при оценке вариантов вне исходной области, в том числе дополнительных шоков, значения могут выходить за эти границы.
+- `reference_count` — размер области для нормировки; `q_max` — Q выбранного победителя после применённых условий, включая ручной Δ.
+
+**Денежный компромисс:**
+
+- `s_max_mrub` — максимальный S среди кандидатов после условий поиска, до Δ.
+- `cash_loss_limit_mrub` — заданный пользователем Δ или `null` для автоматического режима.
+- `effective_delta_mrub` — применённый предел: в автоматическом режиме цена достижения максимального Q; в ручном — заданный Δ, который не обязательно полностью использован победителем.
+- `cash_floor_mrub` — нижняя граница S; `cash_eligible_count` — число вариантов, прошедших её; `quality_epsilon` — нулевой допуск по Q.
+
+**Проверки и границы:**
+
+- `checks.BASE`, `checks.STRESS` — проверки **одного** состава. Каждая строка содержит `code`, `title`, `operator`, `threshold`, `actual`, `unit`, `slack`, `status` (`PASS`/`FAIL`). Положительный запас означает выполнение неравенства с запасом; отрицательный — нарушение. Для равенства невыполненное условие имеет `slack=null`.
+- `search_summary` — счётчики перебора. В CLI `total_count`, `base_count`, `stress_count` относятся ко всему пространству на входах расчёта; `feasible_count` — к кандидатам после условий поиска; `max_q_count` — к вариантам с лучшим Q до денежного разрешения равенства, с учётом ручного Δ. Поле `scope` фиксирует область подсчёта.
+- Дополнительные поля CLI: `stress_lot_sets`, `min_stress_c0`, `selected_lot_set_stress_count`, `never_binding_constraints`. Последнее обозначает проверки, которые не отсекают ни одного варианта в рассмотренном пространстве, а не отменённые требования.
+- `headroom.BASE/STRESS` в CLI — запасы до границ при отдельном изменении входа: `input`, `direction`, `limit_factor`, `change_pct`, `binding_constraint`. Это не вероятность отказа. Непредставимый конечным числом относительный запас записывается как `null`.
+
+**Альтернативы и чувствительность:**
+
+- `alternatives` в CLI — варианты конфигурации, их показатели, Q и статусы BASE/STRESS. Короткие поля `c0`, `opex`, `cash`, `vpub` используют те же денежные единицы.
+- `switching_curve` — интервалы Δ: левая граница `delta_from_mrub` включается, правая `delta_to_exclusive_mrub` не включается; `null` справа означает отсутствие верхней границы. В каждом интервале указан компактный `winner`.
+- `sensitivity` — отдельные сценарии после выбора: условие, количество допустимых вариантов, сменился ли победитель и остаётся ли прежний состав допустимым. Это допущения команды, не вероятность событий и не замена официального STRESS.
+- `caveat` — ограничения интерпретации отчёта.
+
+**Особенности UI-выгрузки:** дополнительно есть `selection_status` (`recommended`, `alternative`, `manual_evaluation`), `selection`, `financial` и необязательный `comparison`. У альтернативы или ручного варианта `winner` и показатели оптимальности равны `null`, кривые и чувствительность пусты. Это отсутствие утверждения об оптимальности, а не нулевое качество. `search_summary` UI содержит счётчики связанного запроса с его ограничениями кандидатов; набора дополнительных полей CLI и раздела `headroom` в нём нет. `comparison`, если передан при выгрузке, содержит входы, состав и показатели каждого варианта, `baseline_index` и разницы.
+
+Реализации контракта: [экспорт CLI](backend/app/core/services/portfolio_engine/export_report.py), [экспорт UI](frontend/src/entities/portfolio/lib/snapshot.ts), [проверка происхождения](backend/app/core/services/portfolio_engine/export_integrity.py).
+
+## Контракт API
+
+В Docker и демо браузер использует префикс `/api`; прямой backend обслуживает те же маршруты без этого префикса. Например: `/api/portfolio/catalog` через frontend и `/portfolio/catalog` на порту API.
+
+Актуальная машиночитаемая схема — `/api/openapi.json` через прокси; Swagger — `/api/docs`. Источник схемы — [portfolio.py](backend/app/core/dto/portfolio.py), обработчики — [routers/portfolio.py](backend/app/api/v1/routers/portfolio.py). Все маршруты публичные.
+
+### Маршруты
+
+- **`GET /health`** — состояние приложения и флаг включения Ollama.
+- **`GET /portfolio/catalog`** → `CaseCatalog`: версия кейса, `dataset_hash`, `engine_version`, лоты, режимы, официальные пороги, метод, критерии, источники и `team_decision` с контекстом конфигурации команды.
+- **`POST /portfolio/evaluate`**: `{dataset_hash, selection, inputs?}` → `Calculation`. Принимает 0–4 уникальные пары лот–режим. Проверяет заданный состав, ничего не подбирает. Поле `scenario` не принимается: ответ уже содержит BASE и STRESS.
+- **`POST /portfolio/recommend`**: `{dataset_hash, inputs?, ...параметры поиска}` → `RecommendationResult`. Возвращает рекомендацию, альтернативы и полный анализ выбора.
+- **`POST /portfolio/compare`**: `{variants: [EvaluateRequest, ...]}` → `ComparisonResult`. От двух до четырёх полных портфелей; каждый использует собственные `inputs`. Разницы `deltas` равны «вариант минус первый», `baseline_index=0`. Один состав с разными входами сравнивать можно.
+- **`POST /portfolio/explain`**: `{dataset_hash, selection, inputs?, scenario?}` → расчёт, подтверждённые факты и текст. Требуются четыре лота; `scenario` — BASE/STRESS, по умолчанию STRESS.
+- **`POST /portfolio/compare/analyze`**: `{variants, scenario?}` → сравнение и текстовое объяснение. Сейчас требуются разные пары состава/режимов: одинаковый состав с разными ценами поддерживает численный `/compare`, но не этот маршрут объяснения.
+
+### Структура расчёта и ответа подбора
+
+`Calculation` возвращает `dataset_hash`, `engine_version`, `input_hash`, собственные `inputs`, `selection`, построчный `detail`, итоговые `metrics`, `financial`, `checks` и `feasible_by_scenario`.
+
+`status="complete"` означает четыре лота, **не** прохождение ограничений. При 1–3 лотах статус `incomplete`, показатели предварительные и условие количества не выполнено. При пустом составе `metrics=null`. В API строки проверок используют `passed: boolean`; в файле экспорта — `status: "PASS" | "FAIL"`.
+
+`financial.annual_surplus_mrub` — S; `annual_funding_gap_mrub` — непокрытые годовые расходы; `operating_self_financed` — покрытие эксплуатации. Также доступны якорные/коммерческие поступления, запасы до нулевого остатка и `startup_headroom_mrub` по сценариям. Процентные запасы могут быть `null`, если неприменимы; это не ноль.
+
+`RecommendationResult` содержит нормализованный `request`, свой `input_hash`, `method`, счётчики `considered_count`, `base_count`, `stress_count`, `feasible_count`, `pareto_count`, `recommended`, `alternatives`, `analysis`. Вариант содержит `title`, `reason`, `calculation`, необязательное `explanation`. `analysis` включает полные шкалы `bounds`, компоненты победителя, денежные пороги и отдельную чувствительность.
+
+Если кандидатов нет, ответ имеет HTTP 200, `status="no_feasible"`, `recommended=null`, `alternatives=[]`. Условия автоматически не ослабляются. Отсутствие решения не следует путать с неверным форматом запроса.
+
+### Версии, ошибки и пояснения
+
+`dataset_hash` берётся из каталога и обязателен для каждого расчётного запроса; в сравнении — у каждого варианта. Это версия официального источника, пользовательские правки передаются отдельно. `input_hash` расчёта учитывает версию движка, данные, снимок входов и выбранные пары. Хеш запроса подбора относится к параметрам поиска и не равен по смыслу хешу отдельного портфеля.
+
+- **200 + FAIL** — запрос корректен, портфель нарушает условие кейса.
+- **409** — версия данных не совпала; нужно обновить каталог.
+- **422** — ошибка входов: неизвестный ID, дубликат, недопустимый диапазон, лишнее поле, неполный снимок, неопределённый KCASH и т. п. Ответ FastAPI содержит `detail`: строку для прикладной ошибки либо список ошибок валидации с `loc`, `msg`, `type`.
+
+Клиент не присылает готовые итоговые числа: backend пересчитывает их из входов. Объяснения содержат факты с идентификаторами, `generated_by` (`ollama`/`template`), `model`, `warning`, `unavailable_reason`. Пакетные объяснения дополнительно указывают `composition`. Недоступность модели не меняет расчёт или победителя. Для численной проверки используйте `with_explanations=false`.
+
+## Технические критерии
+
+Реализация по [техническим критериям Т1–Т5](case/criteria.pdf), страницы 6–7. Продуктовое обоснование П1–П9 — в управленческой записке.
+
+### Т1. Корректность программных расчётов
+
+Формулы лота и портфеля берутся из неизменённого [case_core.py](case/source/case_core.py). [canonical.py](backend/app/core/services/portfolio_engine/canonical.py) обеспечивает вызов и валидацию; [space.py](backend/app/core/services/portfolio_engine/space.py) перебирает составы и режимы; [hybrid.py](backend/app/core/services/portfolio_engine/hybrid.py) реализует опубликованное правило Q → S. UI, API, CLI и ноутбук используют этот движок. LLM не выбирает победителя и не рассчитывает показатели.
+
+
+### Т2. Изменение портфеля и параметров
+
+Редактор UI и поля ноутбука меняют входы лотов и коэффициенты режимов без редактирования Python/TypeScript. Доступны выбор кандидатов и разрешённых режимов, точная проверка состава через ноутбук/API/CLI и новый расчёт. API принимает полный снимок; CLI читает параметры из конфигурации. Официальные исходники сохраняются отдельно, результат содержит собственные входы.
+
+
+### Т3. Проверка ограничений
+
+[constraints.py](backend/app/core/services/portfolio_engine/constraints.py) проверяет девять условий: количество лотов, территориальные архетипы, группы возможностей, общественное ядро, C0, OPEX, VPUB, KCASH и t_rep. Показывает порог, факт, направление проверки, запас и PASS/FAIL; сверяет результат с официальной функцией. Учтён канонический допуск неравенств `1e-9`.
+
+
+### Т4. Сопоставление вариантов и сценариев
+
+UI сравнивает составы, параметры, показатели и разницы; каждый сохранённый вариант имеет свой снимок входов. Ноутбук показывает историю расчётов. API `/compare` и CLI `compare` доступны для независимого сопоставления. BASE/STRESS можно проверить для одного состава; новый подбор по другому сценарию выполняется отдельно.
+
+
+### Т5. Запуск и воспроизводимость
+
+Предоставлены исходный код, официальные данные, конфигурация, зависимости, инструкции Docker/ноутбука/CLI и готовый автономный комплект. Docker и ноутбук не требуют личных ключей или присутствия команды. Модель необязательна. Контрольные суммы связывают результаты с входами и реализацией; скачанный снимок воспроизводится через CLI.
+
+
+## Материалы и сопровождение
+
+### Материалы решения
+
+- [Управленческая записка, PDF](docs/management-note.pdf) и [приложения](docs/management-note-appendices.pdf); [исходник](docs/23-management-note.md).
+- [Одностраничное стресс-резюме](docs/stress-summary.pdf); [исходник](docs/24-stress-summary.md).
+- [Алгоритм и словарь](docs/22-hybrid-selection.md), [скелет презентации](docs/25-presentation-skeleton.md).
+- [Карта документации](docs/README.md), [результаты](results/), [автономный комплект](team-submission/).
+
+Окончательная презентация учитывается сборщиком как `presentation.pdf`. Наличие и отсутствие файлов отражены в манифесте; наличие скелета не означает готовность финального PDF.
+
+### Структура кода
+
+- `frontend/` — React/TypeScript/Vite; структура FSD, серверное состояние React Query.
+- `backend/app/api/` — маршруты, `core/dto/` — контракты, `core/services/` — вычисления и объяснения; HTTP-клиент Ollama отделён от расчёта.
+- `backend/app/core/services/portfolio_engine/` — единственный расчётный движок; отдельной корневой папки `engine/` нет.
+- `case/` — неизменяемые материалы организаторов; `config/` — параметры команды.
+- `notebooks/` — интерактивный вход в движок; `tests/` — контрольные проверки.
+- `scripts/` — запуск, сверка документов, рендеринг и сборка; `team-submission/` — результат сборки.
+
+Соглашения разработки — [AGENTS.md](AGENTS.md), инвентаризация подготовки до хакатона — [PREEXISTING.md](PREEXISTING.md). Снятые прототипы и исторические материалы остаются в Git; для текущего решения не нужны.
+
+### Сборка комплекта — для команды
+
+Эксперту не нужно запускать `build_submission.py`: комплект уже находится в репозитории. Скрипт копирует действующий движок, официальные входы, конфигурацию, четыре результата, ноутбук и материалы. Он не содержит второй реализации алгоритма. Файлы внутри `team-submission/` редактировать вручную не следует.
+
+После изменения расчётных источников команда выполняет один цикл:
 
 ```bash
-python -m backend.app.core.services.portfolio_engine export
-python scripts/sync_documents.py --fix
-python scripts/render_pdf.py
-python scripts/build_submission.py --skip-export
+backend/.venv/bin/python -m backend.app.core.services.portfolio_engine export
+backend/.venv/bin/python scripts/sync_documents.py --fix
+backend/.venv/bin/python scripts/render_pdf.py
+backend/.venv/bin/python scripts/build_submission.py --skip-export
 ```
 
-Поле `export_provenance` в `results/team_decision_config.json` связывает входы, код и четыре выгрузки. Сверка и сборка не повторяют
-подбор. `render_pdf.py --check` проверяет объём во временных файлах, сохраняя готовые PDF.
+`sync_documents.py` сверяет зарегистрированные числа с готовым экспортом; `--fix` заменяет только явно связанные маркеры. Проверка происхождения и сборка с `--skip-export` не повторяют перебор. `render_pdf.py --check` проверяет PDF во временных файлах. Для подготовки PDF нужен браузерный рендерер, указанный в скрипте; он не требуется пользователю приложения или ноутбука.
 
-**Версия исходных данных.** Файлы в [`case/source/`](case/source) побайтово совпадают с
-публичным репозиторием кейсодержателя <https://github.com/SpaceEconomyPolicy/test>,
-ветка `main`, коммит `3fa773b8` от 11.09.2026 01:14 UTC. Проверяется так:
+Настройки демо команды, Ollama и публикации — в [backend/README.md](backend/README.md#демо-команды). Для локальной проверки они не требуются.
 
-```bash
-git hash-object case/source/data/lots.csv        # 30cff39e…
-git hash-object case/source/case_core.py         # 8fd3e053…
-```
+### Источники и лицензии
 
-Сводный `dataset_hash` этого набора, который бэкенд отдаёт в `GET /portfolio/catalog`
-и который показан в подвале интерфейса:
-`1700fdbd1f2d51b7b639304323147dfa592a71d541c9ea723dca32b66fe38f22`. Другое значение
-означает другие исходные данные.
+Официальный источник — [SpaceEconomyPolicy/test](https://github.com/SpaceEconomyPolicy/test), коммит `3fa773b8e416f814634ad3b017a3a2cbcabc3331`. Авторство `case_core.py` и материалов кейса принадлежит организаторам; отдельная лицензия на них командой не заявляется. Совокупная версия четырёх расчётных файлов возвращается API как `dataset_hash`; [проверка происхождения](backend/app/core/services/portfolio_engine/export_integrity.py) сверяет их вместе с реализацией и результатами.
 
-**Как воспроизвести любое число записки:**
+Модель и численные параметры не обучаются на внешних данных. Исследовательские основания и исследованный репозиторий другой команды перечислены в [литературе](docs/research/case-literature.md); чужой оптимизатор в решение не включён. Предшествующий шаблон инфраструктуры и локальный справочный checkout описаны в [PREEXISTING.md](PREEXISTING.md).
 
-```bash
-python -m backend.app.core.services.portfolio_engine evaluate --scenario STRESS    # девять проверок, разделы 1 и 7 записки
-python -m backend.app.core.services.portfolio_engine space                         # 5670 / 1031 / 143, разделы 5.1–5.2
-python -m backend.app.core.services.portfolio_engine pareto --scenario STRESS      # недоминируемые варианты, раздел 5.3
-python -m backend.app.core.services.portfolio_engine sensitivity --scenario STRESS # границы слома, раздел 7
-python -m backend.app.core.services.portfolio_engine export                        # все выгрузки в results/
-python -m pytest tests/ -q                     # формулы, границы, фронт и сверка с документами
-```
-
-| Число в записке | Откуда берётся |
-|---|---|
-| C0, OPEX, VPUB, CASH, KCASH и индексы текущего портфеля | `results/portfolio_metrics.json` |
-| Расчёт по лотам, раздел 3 | `results/portfolio_detail.csv` |
-| 5670 / 1031 / 143 и связывающие ограничения | `results/hybrid_analysis.json` → `search_summary` |
-| Запасы по ограничениям, раздел 7 | `results/hybrid_analysis.json` → `checks.STRESS` |
-| Границы слома входов, раздел 7 | `results/hybrid_analysis.json` → `headroom.STRESS` |
-
-`tests/test_documents_match_engine.py` сверяет опорные показатели и состав с движком;
-`tests/test_document_numbers.py` проверяет реестр фактов и тайминг. Контекст остальных численных
-утверждений и финальный PDF презентации проверяются при редактуре.
-
-## Документы и источники
-
-[docs/README.md](docs/README.md) содержит короткую карту финальной записки, стресс-резюме,
-скелета презентации и принятого метода. Там же — подтверждающие исследования и консультации.
-Старые планы, черновики и дубли удалены; сохранены первичные материалы и актуальные результаты.
-
-## Приложения и настройки
-
-- `frontend/` — React + TypeScript + Vite, слои `app`, `pages`, `widgets`,
-  `features`, `entities`, `shared`; публичный дашборд без авторизации.
-- `backend/` — FastAPI; маршруты `/portfolio/{catalog,evaluate,recommend,compare,explain}`
-  и `/portfolio/compare/analyze`. Числа вычисляет Python, LLM только объясняет готовые факты.
-- `docker-compose.yml` — frontend и backend; необязательные профили `container-llm` и `tunnel`.
-- `docker-compose.local.yml` — отдельная Ollama для запуска приложений напрямую на машине.
-
-Настройки можно скопировать из примера:
-
-```bash
-cp .env.example .env
-```
-
-`COSMOS_WEB_HOST_PORT` и `COSMOS_API_HOST_PORT` меняют внешние порты.
-`COSMOS_OLLAMA_ENABLED` включает обращения к LLM; `COSMOS_OLLAMA_BASE_URL` задаёт её адрес
-**из контейнера backend**; `COSMOS_OLLAMA_MODEL` — модель. Браузер вызывает только FastAPI.
-Для ручного запуска модели в контейнере задайте `COSMOS_OLLAMA_ENABLED=true`,
-`COSMOS_OLLAMA_BASE_URL=http://ollama:11434` и выполните:
-
-```bash
-docker compose --profile container-llm up -d --build
-```
-
-Чтобы отключить LLM независимо от содержимого `.env`, используйте скрипт `run_local.py --ollama off`.
-Полная остановка, включая профили Ollama и туннеля: `docker compose --profile '*' down`.
-Используйте те же `--project-name` / `--env-file`, если задавали их при запуске.
-**Без `-v`** кеш модели сохраняется.
-Ollama в основном Compose доступна на `127.0.0.1:11435`, чтобы не занимать стандартный
-порт установленной Ollama. Между контейнерами используется `ollama:11434`.
-
-Туннель для демонстрации необязателен и не участвует в проверке локального запуска:
-
-```bash
-docker compose --profile tunnel up -d tuna
-```
-
-Его `TUNA_DOMAIN` и `TUNA_TOKEN` задаются в личном `.env`; секреты в репозиторий не входят.
-
-### Проверки разработчика
-
-Python 3.12 и зависимости из `backend/requirements-dev.txt`, Node.js 22 и `npm ci` в `frontend/`:
-
-```bash
-backend/.venv/bin/python -m pytest tests/ backend/tests/ -q
-backend/.venv/bin/python -m backend.app.core.services.portfolio_engine selfcheck
-npm --prefix frontend run lint
-npm --prefix frontend run build
-```
-
-Версии основных Python-зависимостей зафиксированы в `backend/requirements.txt`,
-фронтенда — в `frontend/package-lock.json`. Автономный комплект
-[team-submission/](team-submission/) запускается вообще без Docker и Ollama по своему README.
-
-## Что где
-
-- Конвенции репо и слоёв — [AGENTS.md](AGENTS.md); что было готово до старта — [PREEXISTING.md](PREEXISTING.md).
-- Правила для ИИ-агентов и ведения базы знаний — [CLAUDE.md](CLAUDE.md) (Claude Code) и раздел
-  *Documentation and knowledge base* в [AGENTS.md](AGENTS.md) (все агенты и люди): всё новое знание —
-  в `docs/` по маршрутизации, новых `.md` в корне не создавать.
-- NDVI-кит под ростовский вегетационный кейс (бывший `ml/`) **снят** — Кейс 02 управленческий,
-  машинное обучение не нужно. Код в истории, тег `ndvi-kit`:
-  `git checkout ndvi-kit -- ml/`. Подробности — [PREEXISTING.md](PREEXISTING.md).
-- Старый NDVI-плейбук удалён вместе с китом: относился к ростовскому кейсу. В истории репозитория,
-  тег `ndvi-kit`.
-
-## Материалы события
-
-- Хаб серии: https://космохакатон.рф/ · площадка НН: https://нн.космохакатон.рф/
-- Личный кабинет: https://xn--m1aa.xn--80aa2abijcbdyq6a.xn--p1ai/personal/profile
+Основные зависимости: NumPy, pandas, JupyterLab и ipywidgets — BSD-3-Clause; React, Vite, FastAPI, pytest и Ollama — MIT; TypeScript — Apache-2.0. Python-зависимости перечислены в [requirements.txt](requirements.txt), [backend/requirements.txt](backend/requirements.txt), [backend/requirements-dev.txt](backend/requirements-dev.txt) и [notebooks/requirements.txt](notebooks/requirements.txt); frontend зафиксирован в [package-lock.json](frontend/package-lock.json). Карточка необязательной модели и её лицензия — в [backend/README.md](backend/README.md#ollama). Собственная лицензия проекта определяется наличием соответствующего файла в репозитории, а не этим перечнем зависимостей.

@@ -230,6 +230,9 @@
     "FLOOD-вариант: прирост остатка, %": "7,9",
     "FLOOD-вариант: прирост VPUB, %": "3,3",
     "FLOOD-вариант: Q": "0,125",
+    "ABBA: Q": "0,5",
+    "ABBA: остаток": "57,50",
+    "ABBA: VPUB": "1289,0",
     "дефицит ядра": "8,00",
     "AGRI: c0": "254,80",
     "AGRI: баланс": "56,25",
@@ -264,23 +267,23 @@
       "implementation": {
         "__init__.py": "1eac05947b16964c04391edd6fda45a30f5628c2d271f04a0c917a8286739020",
         "__main__.py": "e0930aeba5a3e2e2d94ca6c5fac4f72c0c4eb2be9bba283becf98e909091471c",
-        "canonical.py": "3294e85b4d499b9bfa0a6d295f7bf311eaa77ef13b2bd3d06296d533fb4739d3",
-        "cli.py": "2a59e57d4bcbbee831154125101d1320dc5718308d69a9936312cd39b2f09c59",
+        "canonical.py": "ce99a1109344892e2e4c53e1b1110acfd96c76e9a37dd1539e828c23e0927df1",
+        "cli.py": "4dd422f09a247471418ecf6fc10bfe01d39801f359ad05d7b7bbc12931f89307",
         "constraints.py": "0b1d32733f1a71df6daba2ad8d34cfac59e2417be522795e1aae0bcc989082ec",
-        "decision.py": "e1905d484f0e9d343ed29e07513299068baa32f157c4e940efc9fd64726dd66f",
+        "decision.py": "b298e26b594fad93dfa934e07fe42ea8ea120650dcb346f2e918189dbabd1282",
         "export_integrity.py": "22164ba7c11f83e17a75bcaff25ae50444f2428d3e65841fedc782cbc3562440",
-        "export_report.py": "e3856d07c34b41baed8033d54186018dc78bdb1f6eca52eaa993ac461e28cef5",
-        "hybrid.py": "1a61b8c42374ef048b365e8a968d4398f7ef8c0c01f2d54ef752c749ccd08ea3",
-        "selfcheck.py": "61aeb78e1c2641cbb1b8caac84f436f1b3f9ccf6f8b97f2a89310228630b08d0",
-        "sensitivity.py": "e08543f294ec6d7cc58a756e6a5ab2d27ceaef32b9c21c6cddbd7078ec836849",
+        "export_report.py": "7b50bcbeb87e4e07815e6a95da0cb3c1c55d1d04dcca63e4d7412c8c74e37242",
+        "hybrid.py": "8fd00e750ca15ce251810dd5dd43c7f39c303feb0ebb060248b71f2997ccafbc",
+        "selfcheck.py": "329caf1b776ba8f5d1bd8ece198ad7b429806636afcca8d08d8a58b9e2130a70",
+        "sensitivity.py": "20b1f26d334cde6a1acee87549a6af0833c8d3ae4de905d923d75e103cb25153",
         "space.py": "c448155533aa7464238512d33ca3e05d2216b924cc1bc75bcaaa557106cf74a1"
       }
     },
     "files": {
       "portfolio_detail.csv": "8996e21299667b4fa4916995864bed234b392852ec04537ca84b8220eb8744c0",
       "portfolio_metrics.json": "0b8cf0abe82bb28a184026b420020976b0af69f44fc392a6fff727be32b894c2",
-      "hybrid_analysis.json": "74dd75fa5e5be5ab56362bcd0bb55acb2dfcdae6541a6f2d9be6a7c984e4248b",
-      "team_decision_config.json": "397b9d60729d64be67f1ab77e33a17a53dcdb36b263a8dc0903b42e4e8c37986"
+      "hybrid_analysis.json": "95f4b8cdb548d76f0d29593f30947ea4115c7d3c4563c0e07aaaf656a1b70fd1",
+      "team_decision_config.json": "abdaaee5088af1b33a27f27d555e52579148269e6dd9b8afc117b58042b09794"
     }
   }
 }

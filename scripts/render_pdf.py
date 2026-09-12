@@ -48,6 +48,7 @@ body { font: {size}/1.33 -apple-system, "Helvetica Neue", Arial, sans-serif; col
 h1 { font-size: 1.45em; margin: 0 0 .25em; }
 h2 { font-size: 1.12em; margin: 1em 0 .35em; border-bottom: 1px solid #ccc; padding-bottom: .1em; }
 h3 { font-size: 1em; margin: .8em 0 .3em; }
+h1, h2, h3 { break-after: avoid-page; }
 p, ul, ol { margin: .42em 0; }
 li { margin: .12em 0; }
 table { border-collapse: collapse; width: 100%; margin: .5em 0; font-size: .9em; }

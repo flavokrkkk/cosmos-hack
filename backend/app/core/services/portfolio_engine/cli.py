@@ -129,10 +129,12 @@ def _inputs_from_args(args, decision=None):
 def cmd_evaluate(args) -> int:
     if args.snapshot is not None:
         snapshot = json.loads(args.snapshot.read_text(encoding="utf-8"))
+        if not isinstance(snapshot, dict):
+            raise ValueError("Снимок должен быть JSON-объектом")
         expected = snapshot.get("dataset_hash") or snapshot.get("export_provenance", {}).get("sources", {}).get("case_sha256")
         if expected and expected != source_version():
             raise ValueError("Снимок относится к другой версии исходных данных кейса")
-        saved_selection = snapshot.get("selection") or snapshot.get("recommended", {}).get("selection")
+        saved_selection = snapshot.get("selection") or (snapshot.get("recommended") or {}).get("selection")
         if not saved_selection:
             raise ValueError("В снимке отсутствует состав портфеля")
         selection = [(item["lot_id"], item["mode_id"]) if isinstance(item, dict) else tuple(item) for item in saved_selection]
@@ -284,7 +286,9 @@ def cmd_export(args) -> int:
     output.mkdir(parents=True, exist_ok=True)
     # Сохраняем слепок для безопасного сравнения документов после нового экспорта.
     previous = output / CONFIG_NAME
-    document_values = json.loads(previous.read_text()).get("document_values", {}) if previous.exists() else {}
+    previous_config = json.loads(previous.read_text()) if previous.exists() else {}
+    document_values = previous_config.get("document_values", {})
+    cleanup_legacy = output.resolve() == RESULTS_DIR.resolve() or "export_provenance" in previous_config
     legacy_snapshot = output / "document_facts.json"
     if not document_values and legacy_snapshot.exists():
         document_values = json.loads(legacy_snapshot.read_text())
@@ -296,8 +300,9 @@ def cmd_export(args) -> int:
             json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     write_export_provenance(output, args.config)
     # Только известные артефакты прежнего формата, не произвольные файлы пользователя.
-    for name in LEGACY_FILES:
-        (output / name).unlink(missing_ok=True)
+    if cleanup_legacy:
+        for name in LEGACY_FILES:
+            (output / name).unlink(missing_ok=True)
     print(f"Записано в {output}:")
     for name in EXPORT_FILES:
         print("  •", name)

@@ -295,6 +295,8 @@
     "min_stress_c0": 1123.5,
     "selected_lot_set_stress_count": 33,
     "max_q_count": 11,
+    "feasible_count": 143,
+    "scope": "total/base/stress: вся область на входах расчёта; feasible/max_q: после условий поиска",
     "never_binding_constraints": [
       "exact_lot_count",
       "territorial_archetypes",

@@ -1,0 +1,64 @@
+# Настройки демо команды; для жюри достаточно основного docker-compose.yml.
+# docker compose -f docker-compose.yml -f docker-compose.team.yml ...
+services:
+  app:
+    environment:
+      COSMOS_CORS_ALLOWED_ORIGINS: ${COSMOS_CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174}
+      COSMOS_OLLAMA_ENABLED: ${COSMOS_OLLAMA_ENABLED:-true}
+      COSMOS_OLLAMA_BASE_URL: ${COSMOS_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      COSMOS_OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b-instruct}
+      COSMOS_OLLAMA_TIMEOUT_SECONDS: ${COSMOS_OLLAMA_TIMEOUT_SECONDS:-45}
+      COSMOS_OLLAMA_PARALLEL_REQUESTS: ${COSMOS_OLLAMA_PARALLEL_REQUESTS:-2}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:${COSMOS_API_HOST_PORT:-8000}:8000"
+
+  ollama:
+    profiles: ["container-llm"]
+    image: ${COSMOS_OLLAMA_IMAGE:-ollama/ollama:0.32.15}
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NUM_PARALLEL: ${COSMOS_OLLAMA_PARALLEL_REQUESTS:-2}
+    ports:
+      - "127.0.0.1:${COSMOS_OLLAMA_HOST_PORT:-11435}:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  ollama-pull:
+    profiles: ["container-llm"]
+    image: ${COSMOS_OLLAMA_IMAGE:-ollama/ollama:0.32.15}
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: ${COSMOS_OLLAMA_MODEL:-qwen3:4b-instruct}
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["ollama pull \"$${OLLAMA_MODEL}\""]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: "no"
+
+  tuna:
+    profiles: ["tunnel"]
+    image: yuccastream/tuna:latest
+    command: http frontend:80 --inspect=true --domain=${TUNA_DOMAIN:-} --location=${TUNA_LOCATION:-nl}
+    environment:
+      TUNA_TOKEN: ${TUNA_TOKEN:-}
+      TUNA_LOG: stdout
+      TUNA_LOG_LEVEL: info
+      TUNA_INSPECT_ADDR: 0.0.0.0:4040
+    ports:
+      - "127.0.0.1:4040:4040"
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
+volumes:
+  ollama-data:
