@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.v1.dependencies import get_ollama_service, get_recommendation_summary_service
-from app.core.dto.ollama import BatchExplanationDraft, OllamaChatResult
+from app.core.dto.ollama import BatchExplanationDraft, EvidenceBatch, OllamaChatResult
 from app.core.dto.portfolio import RecommendRequest
 from app.core.services.ollama_service import OllamaService
 from app.core.services.portfolio_service import PortfolioService
@@ -29,6 +29,31 @@ class FakeBatch:
     def __init__(self, failure=None):
         self.calls = []
         self.failure = failure
+
+    async def select_evidence(self, portfolios):
+        self.calls.append(portfolios)
+        if self.failure == "offline":
+            raise OllamaUnavailableError("offline")
+        if self.failure == "timeout":
+            await asyncio.Event().wait()
+        items = [{"key": p["key"],
+                  "narrative": "Портфель проходит условия сценария. Его преимущество подтверждается расчётом. При этом у варианта есть существенное ограничение.",
+                  "summary_ids": ["budget", "cash_balance"],
+                  "strength_ids": [f["id"] for f in p["facts"] if f["kind"] == "strength"][:2],
+                  "limitation_ids": [f["id"] for f in p["facts"] if f["kind"] == "limitation"][:2]} for p in portfolios]
+        if self.failure == "missing":
+            items.pop()
+        elif self.failure == "duplicate":
+            items[-1]["key"] = items[0]["key"]
+        elif self.failure == "unknown":
+            items[0]["key"] = "unknown"
+        elif self.failure == "invented_fact":
+            items[0]["strength_ids"] = ["invented"]
+        elif self.failure == "wrong_section":
+            items[0]["strength_ids"] = ["scope_limit"]
+        elif self.failure == "generic":
+            items[0]["summary_ids"] = ["portfolio_status", "scope_limit"]
+        return EvidenceBatch(items=list(reversed(items))), OllamaChatResult(model=self.model, content="{}")
 
     async def explain_portfolios(self, portfolios):
         self.calls.append(portfolios)
@@ -66,7 +91,7 @@ def test_one_batch_bound_by_id_and_cached_without_mutating_engine():
         result = await service.recommend(request(), ollama)
         assert len(ollama.calls) == 1
         assert len(ollama.calls[0]) == len(variants(original))
-        assert variants(result)[0].explanation.explanation.headline == "Первый"
+        assert variants(result)[0].explanation.explanation.headline == variants(original)[0].title
         for before, after in zip(variants(original), variants(result)):
             assert before.calculation == after.calculation
             assert before.explanation is None
@@ -76,7 +101,7 @@ def test_one_batch_bound_by_id_and_cached_without_mutating_engine():
             assert any(f.id.startswith("comparison_") for f in after.explanation.facts)
         variants(result)[0].explanation.explanation.headline = "mutated"
         cached = await service.recommend(request(), ollama)
-        assert variants(cached)[0].explanation.explanation.headline == "Первый"
+        assert variants(cached)[0].explanation.explanation.headline == variants(original)[0].title
         assert len(ollama.calls) == 1
         await service.recommend(request(False), ollama)
         assert len(ollama.calls) == 2
@@ -86,7 +111,7 @@ def test_one_batch_bound_by_id_and_cached_without_mutating_engine():
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("failure", ["offline", "timeout", "missing", "duplicate", "unknown", "invented_fact", "numbers"])
+@pytest.mark.parametrize("failure", ["offline", "timeout", "missing", "duplicate", "unknown", "invented_fact", "wrong_section", "generic"])
 def test_batch_failure_keeps_all_calculations(failure):
     async def run():
         service = RecommendationSummaryService(timeout_seconds=0.02)
@@ -106,10 +131,10 @@ def test_concurrent_identical_requests_share_generation_even_if_one_disconnects(
         started, finish = asyncio.Event(), asyncio.Event()
 
         class SlowBatch(FakeBatch):
-            async def explain_portfolios(self, portfolios):
+            async def select_evidence(self, portfolios):
                 started.set()
                 await finish.wait()
-                return await super().explain_portfolios(portfolios)
+                return await super().select_evidence(portfolios)
 
         service, ollama = RecommendationSummaryService(), SlowBatch()
         first = asyncio.create_task(service.recommend(request(), ollama))

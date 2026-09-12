@@ -208,7 +208,7 @@ function ComparisonAnalysis({ result }: { result: ComparisonResult }) {
       {analysis && !query.isFetching ? (
         <div className="mt-4 flex flex-col gap-3">
           <Tag tone={analysis.generated_by === 'ollama' ? 'brand' : 'warn'}>
-            {analysis.generated_by === 'ollama' ? 'Суммаризировано AI' : 'Шаблон по расчёту'} · {analysis.scenario}
+            {analysis.generated_by === 'ollama' ? (analysis.composition === 'extractive' ? 'AI выбрал акценты · факты расчёта' : 'Суммаризировано AI') : 'Факты расчёта · без AI'} · {analysis.scenario}
           </Tag>
           <p className="font-semibold">{analysis.explanation.headline}</p>
           <p className="text-[14px]">{analysis.explanation.summary}</p>

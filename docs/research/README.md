@@ -18,7 +18,7 @@ _База знаний Кейса 02 · [← индекс](../README.md)_
 | [portfolio-space.md](portfolio-space.md) | **Полный перебор 5670 конфигураций каноническим кодом** | ✅ ФАКТ | BASE 1031, STRESS 143, только 8 наборов лотов переживают стресс; `ARCTIC` не проходит никогда; связывают решение `public_core`, `c0`, `opex`, `vpub` |
 | [ollama-model.md](ollama-model.md) | Локальная модель для объяснения готового расчёта | ✅ решение зафиксировано | `qwen3:4b-instruct`: русский язык, structured output, Apache-2.0; LLM не считает и имеет шаблонный fallback |
 | [sources.md](sources.md) | Ключевые первоисточники | ✅ | |
-| [github-repositories.md](github-repositories.md) | Публичные репозитории серии «КосмоХакатон» 2026 | ✅ на 12.09 | Официальный источник Кейса 02; три решения ростовского этапа; прямых решений команд НН пока не найдено |
+| [github-repositories.md](github-repositories.md) | GitHub и GitVerse: репозитории нижегородского Кейса 02 | ✅ GitHub; ⚠️ GitVerse, на 12.09 | Найден `Mihail239239/Clodex_Cosmoton`: собственная модель и варианты D; GitVerse проверен частично из-за таймаутов |
 
 ## Как пользоваться
 

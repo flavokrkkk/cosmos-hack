@@ -36,7 +36,7 @@ def client():
     class OfflineOllama:
         model = "test-offline"
 
-        async def explain_portfolios(self, portfolios):
+        async def select_evidence(self, portfolios):
             raise OllamaUnavailableError("offline")
 
     summaries = RecommendationSummaryService()

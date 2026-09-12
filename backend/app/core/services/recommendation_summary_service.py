@@ -6,7 +6,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.core.dto.portfolio import ExplanationFact, RecommendRequest, RecommendationExplanation, RecommendationResult
 from app.core.services.ollama_service import OllamaService
-from app.core.services.portfolio_explanation_service import _build_facts, _template_explanation, _validate_explanation
+from app.core.services.explanation_evidence import portfolio_evidence, render_evidence, number
 from app.core.services.portfolio_service import input_hash
 from app.core.services.recommendation_service import RecommendationService
 from app.infrastructure.errors.ollama_errors import OllamaError, OllamaResponseError
@@ -14,7 +14,7 @@ from app.infrastructure.logging.logger import get_logger
 
 
 logger = get_logger(__name__)
-PROMPT_VERSION = "recommend-batch-v2"
+PROMPT_VERSION = "recommend-narrative-v5"
 
 
 class RecommendationSummaryService:
@@ -51,13 +51,21 @@ class RecommendationSummaryService:
             scenario = "STRESS" if result.request.require_stress else "BASE"
             facts_by_key = {}
             for index, variant in enumerate(variants):
-                facts = _build_facts(variant.calculation, scenario)
-                facts.append(ExplanationFact(id="selection_reason", text=variant.reason, source="system"))
+                facts = portfolio_evidence(variant.calculation, scenario)
                 for metric, label in (("c0_mrub", "Стартовые затраты"), ("vpub_mrub_per_year", "Общественная ценность"), ("kcash", "Покрытие расходов"), ("t_rep", "Тиражируемость")):
                     value = getattr(variant.calculation.metrics, metric)
                     others = [getattr(v.calculation.metrics, metric) for v in variants]
-                    position = "одинаковы" if min(others) == max(others) else "минимальны" if value == min(others) else "максимальны" if value == max(others) else "между минимумом и максимумом"
-                    facts.append(ExplanationFact(id=f"comparison_{metric}", text=f"{label}: {position} среди показанных вариантов; равенство с другими возможно.", source="calculation"))
+                    if min(others) == max(others):
+                        continue
+                    lower_is_better = metric == "c0_mrub"
+                    best = min(others) if lower_is_better else max(others)
+                    unit = " млн ₽" if metric == "c0_mrub" else " млн ₽/год" if metric == "vpub_mrub_per_year" else ""
+                    precision = 2 if unit else 4
+                    if value == best:
+                        text = f"{label} — {number(value, precision)}{unit}: {'наименьшее' if lower_is_better else 'наибольшее'} значение среди показанных вариантов (возможны совпадения)."
+                    else:
+                        text = f"{label} — {number(value, precision)}{unit}; среди показанных вариантов есть {'меньшее' if lower_is_better else 'большее'} значение — {number(best, precision)}{unit}."
+                    facts.append(ExplanationFact(id=f"comparison_{metric}", text=text, source="calculation", kind="strength" if value == best else "limitation"))
                 facts_by_key[f"v{index}"] = facts
             explanations = {}
             model = None
@@ -66,14 +74,15 @@ class RecommendationSummaryService:
                 # Время ожидания занятой модели тоже входит в предел HTTP-запроса.
                 async with asyncio.timeout(self._timeout):
                     async with self._slot:
-                        draft, response = await ollama.explain_portfolios([
+                        draft, response = await ollama.select_evidence([
                             {"key": item_key, "facts": [fact.model_dump() for fact in facts]}
                             for item_key, facts in facts_by_key.items()
                         ])
                 keys = [item.key for item in draft.items]
                 if len(keys) != len(set(keys)) or set(keys) != set(facts_by_key):
                     raise OllamaResponseError("Ollama returned missing, duplicate or unknown portfolio keys")
-                explanations = {item.key: _validate_explanation(item, facts_by_key[item.key]) for item in draft.items}
+                titles = {f"v{index}": variant.title for index, variant in enumerate(variants)}
+                explanations = {item.key: render_evidence(titles[item.key], facts_by_key[item.key], item) for item in draft.items}
                 model = response.model
             except (OllamaError, TimeoutError) as error:
                 logger.warning("recommendation_summary_fallback", reason=str(error), input_hash=result.input_hash)
@@ -84,10 +93,11 @@ class RecommendationSummaryService:
                     input_hash=variant.calculation.input_hash,
                     scenario=scenario,
                     facts=facts_by_key[item_key],
-                    explanation=explanations.get(item_key) or _template_explanation(variant.calculation, scenario, facts_by_key[item_key]),
+                    explanation=explanations.get(item_key) or render_evidence(variant.title, facts_by_key[item_key]),
                     model=model,
                     generated_by="ollama" if explanations else "template",
                     warning=warning,
+                    composition="generative" if explanations else "extractive",
                 )
             # Сбой не закрепляем надолго: следующий подбор сможет повторить генерацию.
             self._cache[key] = (monotonic() + (86400 if explanations else 15), result)

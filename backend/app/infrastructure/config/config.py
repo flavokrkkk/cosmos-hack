@@ -44,6 +44,12 @@ class OllamaSettings(Config):
         45.0,
         validation_alias="COSMOS_OLLAMA_TIMEOUT_SECONDS",
     )
+    parallel_requests: int = Field(
+        2,
+        ge=1,
+        le=5,
+        validation_alias="COSMOS_OLLAMA_PARALLEL_REQUESTS",
+    )
     username: str | None = Field(
         None,
         validation_alias="COSMOS_OLLAMA_USERNAME",

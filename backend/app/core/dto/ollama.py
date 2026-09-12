@@ -55,3 +55,17 @@ class ComparisonExplanationDraft(PortfolioExplanationDraft):
     summary: str = Field(min_length=1, max_length=220)
     strengths: list[ComparisonExplanationPoint] = Field(min_length=1, max_length=2)
     limitations: list[ComparisonExplanationPoint] = Field(min_length=1, max_length=2)
+
+
+class EvidenceSelection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    key: str
+    narrative: str = Field(min_length=80, max_length=650)
+    summary_ids: list[str] = Field(min_length=2, max_length=2)
+    strength_ids: list[str] = Field(max_length=2)
+    limitation_ids: list[str] = Field(max_length=2)
+
+
+class EvidenceBatch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    items: list[EvidenceSelection] = Field(min_length=1, max_length=5)

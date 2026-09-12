@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.v1.dependencies import get_comparison_analysis_service, get_ollama_service
-from app.core.dto.ollama import OllamaChatResult, PortfolioExplanationDraft
+from app.core.dto.ollama import OllamaChatResult, PortfolioExplanationDraft, EvidenceBatch
 from app.core.dto.portfolio import ComparisonAnalysisRequest, CompareRequest, RecommendRequest
 from app.core.services.comparison_analysis_service import ComparisonAnalysisService, comparison_facts
 from app.core.services.portfolio_service import PortfolioService
@@ -27,6 +27,24 @@ class FakeOllama:
     def __init__(self, failure=None):
         self.calls = []
         self.failure = failure
+
+    async def select_evidence(self, portfolios):
+        facts = portfolios[0]["facts"]
+        self.calls.append(facts)
+        if self.failure == "offline":
+            raise OllamaUnavailableError("offline")
+        strength_ids = [fact["id"] for fact in facts if fact["kind"] == "strength"][:2]
+        if self.failure == "unknown":
+            strength_ids = ["invented"]
+        elif self.failure == "wrong_section":
+            strength_ids = ["scope"]
+        return EvidenceBatch(items=[{
+            "key": "comparison",
+            "narrative": "Варианты отличаются по расчётным показателям. У каждого есть своё преимущество. При выборе важно учитывать показанные ограничения.",
+            "summary_ids": ["v1_c0_mrub", "v1_vpub_mrub_per_year"],
+            "strength_ids": strength_ids,
+            "limitation_ids": [fact["id"] for fact in facts if fact["kind"] == "limitation"][:2],
+        }]), OllamaChatResult(model=self.model, content="{}")
 
     async def analyze_comparison(self, facts):
         self.calls.append(facts)
@@ -62,7 +80,7 @@ def test_analysis_uses_recalculation_cache_and_order():
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("failure", ["offline", "numbers", "unknown"])
+@pytest.mark.parametrize("failure", ["offline", "wrong_section", "unknown"])
 def test_failure_preserves_comparison(failure):
     async def run():
         service, ollama = ComparisonAnalysisService(), FakeOllama(failure)

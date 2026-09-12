@@ -36,6 +36,7 @@ async def lifespan(app: FastAPI):
     app.state.ollama_service = OllamaService(
         ollama_client,
         settings.ollama.model,
+        settings.ollama.parallel_requests,
     )
     app.state.recommendation_summary_service = RecommendationSummaryService()
     app.state.comparison_analysis_service = ComparisonAnalysisService()
@@ -43,6 +44,7 @@ async def lifespan(app: FastAPI):
         "ollama_client_configured",
         base_url=settings.ollama.base_url,
         model=settings.ollama.model,
+        parallel_requests=settings.ollama.parallel_requests,
     )
 
     try:

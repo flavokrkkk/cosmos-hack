@@ -231,6 +231,7 @@ export type ExplanationFact = {
   id: string
   text: string
   source: 'calculation' | 'system'
+  kind?: 'strength' | 'limitation' | 'context'
 }
 
 export type ExplanationPoint = {
@@ -257,5 +258,6 @@ export type PortfolioExplanationResult = {
 }
 
 export type RecommendationExplanation = Omit<PortfolioExplanationResult, 'calculation'> & {
+  composition: 'generative' | 'extractive'
   input_hash: string
 }

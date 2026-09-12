@@ -35,7 +35,7 @@ class PortfolioExplanationService:
         model = None
         try:
             draft, response = await ollama.explain_portfolio(
-                [fact.model_dump() for fact in facts],
+                [fact.model_dump(exclude={"kind"}) for fact in facts],
             )
             explanation = _validate_explanation(draft, facts)
             model = response.model

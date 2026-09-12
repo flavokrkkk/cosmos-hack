@@ -15,30 +15,10 @@ export function VariantExplanation({ result }: Props) {
       {result ? (
         <>
           <Tag tone={result.generated_by === 'ollama' ? 'brand' : 'warn'}>
-            {result.generated_by === 'ollama' ? 'Ollama' : 'Шаблон бэкенда'}
+            {result.generated_by === 'ollama' ? (result.composition === 'extractive' ? 'AI выбрал факты' : 'Ollama') : 'Факты расчёта · без AI'}
           </Tag>
           <p className="mt-2 text-ink-700">{result.explanation.summary}</p>
-          <details className="mt-2">
-            <summary className="cursor-pointer font-medium text-brand">Полное объяснение</summary>
-            <p className="mt-2 font-semibold">{result.explanation.headline}</p>
-            {[
-              { title: 'Сильные стороны', points: result.explanation.strengths },
-              { title: 'Ограничения', points: result.explanation.limitations },
-            ].map(({ title, points }) => points.length ? (
-              <div key={title} className="mt-2">
-                <p className="font-semibold">{title}</p>
-                <ul className="list-disc space-y-1 pl-4">
-                  {points.map((point, index) => (
-                    <li key={index} title={point.fact_ids.map((id) => result.facts.find((fact) => fact.id === id)?.text ?? id).join('\n')}>
-                      {point.text}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null)}
-            {result.model ? <p className="mt-2 text-muted">Модель: {result.model}</p> : null}
-            {result.warning ? <p className="mt-2 text-warn">{result.warning}</p> : null}
-          </details>
+          {result.warning ? <p className="mt-2 text-warn">{result.warning}</p> : null}
           {result.generated_by === 'template' ? <p className="mt-2 text-warn">Для повторной генерации запустите подбор заново.</p> : null}
         </>
       ) : null}

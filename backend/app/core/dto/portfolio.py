@@ -206,6 +206,7 @@ class ExplanationFact(PortfolioSchema):
     id: str
     text: str
     source: Literal["calculation", "system"]
+    kind: Literal["strength", "limitation", "context"] = "context"
 
 
 class ExplanationPoint(PortfolioSchema):
@@ -238,6 +239,7 @@ class RecommendationExplanation(PortfolioSchema):
     model: str | None
     generated_by: Literal["ollama", "template"]
     warning: str | None = None
+    composition: Literal["generative", "extractive"] = "generative"
 
 
 class ComparisonAnalysisRequest(CompareRequest):
