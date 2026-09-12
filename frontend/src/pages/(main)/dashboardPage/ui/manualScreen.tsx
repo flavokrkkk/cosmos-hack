@@ -3,15 +3,16 @@ import { Suspense, useMemo, useState } from 'react'
 import { LotCard, useLotDetails } from '@entities/case'
 import {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, LotChip, METRIC_TILES, METRIC_TILES_COMPACT,
-  MetricTiles, PortfolioProgress, FinancialBreakdown, formatMoney, scenarioDependentCodes,
-  selectionKey, useEvaluate, useSavedVariants, useWorkspace,
+  MetricTiles, PortfolioProgress, FinancialBreakdown, checkLabel, formatCheckValue, formatMoney,
+  scenarioDependentCodes, selectionKey, useEvaluate, useSavedVariants, useWorkspace,
 } from '@entities/portfolio'
 import {
-  ExportButton, SearchSettings, SearchStats, StressSwitch, buildCandidates,
-  useActiveVariant, useAutoRecommendation, useManualRecommendation, useManualSelection,
+  ExportButton, SearchSettings, SearchStats, StressSwitch, buildCandidates, useActiveVariant,
+  useAutoRecommendation, useManualRecommendation, useManualSelection, useUniformModeDiagnostics,
+  type UniformModeDiagnostic,
 } from '@features'
 import { normalizeApiError } from '@shared/api'
-import type { Calculation, CaseCatalog, RecommendationResult, Scenario } from '@shared/api/contracts'
+import type { CaseCatalog, RecommendationResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Button, Panel, PanelHeader, PanelTitle, Segmented, Skeleton, Tag } from '@shared/ui'
@@ -69,13 +70,11 @@ export function ManualScreen({ catalog }: Props) {
     () => selection.lotIds.map((lotId) => ({ lot_id: lotId, mode_id: placeholderMode })),
     [selection.lotIds, placeholderMode],
   )
-  /* Тот же расчёт служит диагностикой при 4/4 без допустимых режимов: показываем,
-     какие условия нарушаются даже когда все лоты в общественном ядре (Т3). */
-  const partial = useEvaluate(
-    catalog.dataset_hash,
-    partialSelection,
-    selection.count > 0 && (!selection.isComplete || query.data?.status === 'no_feasible'),
-  )
+  const partial = useEvaluate(catalog.dataset_hash, partialSelection, selection.count > 0 && !selection.isComplete)
+
+  /* 4/4 без допустимых режимов: диагностика с одним режимом у всех лотов — по разу на A, B и C (Т3). */
+  const noFeasible = selection.isComplete && query.data?.status === 'no_feasible'
+  const uniform = useUniformModeDiagnostics(catalog.dataset_hash, selection.lotIds, catalog.modes, noFeasible)
   const modeByLot = useMemo(
     () => new Map((active.calculation?.detail ?? []).map((item) => [item.lot_id, item.mode_id])),
     [active.calculation],
@@ -207,9 +206,9 @@ export function ManualScreen({ catalog }: Props) {
             {complete && result?.status === 'no_feasible' ? (
               <NoModesBlock
                 result={result}
-                diagnostic={partial.data}
+                diagnostics={uniform.diagnostics}
+                alwaysFailing={uniform.alwaysFailing(scenario)}
                 scenario={scenario}
-                placeholderMode={placeholderMode}
                 onSearchInBase={() => setRequireStress(false)}
               />
             ) : null}
@@ -325,44 +324,94 @@ export function ManualScreen({ catalog }: Props) {
 }
 
 /**
- * Допустимых режимов нет. Чтобы эксперт видел «вариант с нарушением» (Т3), ниже —
- * диагностика того же состава с режимом общественного ядра у всех лотов: какие из
- * девяти условий не проходят. Это не подмена состава: лоты те же, режим — заглушка.
+ * Допустимых режимов нет. Сервер перебрал все сочетания A/B/C для этих лотов —
+ * ни одно не проходит девять условий. Чтобы эксперт видел «вариант с нарушением»
+ * (Т3) и понимал, что именно мешает, ниже тот же состав считается с одним режимом
+ * у всех лотов; режим выбирает сам пользователь, а условия, нарушенные при любом
+ * из режимов, названы блокерами набора.
  */
 function NoModesBlock({
-  result, diagnostic, scenario, placeholderMode, onSearchInBase,
+  result, diagnostics, alwaysFailing, scenario, onSearchInBase,
 }: {
   result: RecommendationResult
-  diagnostic: Calculation | undefined
+  diagnostics: UniformModeDiagnostic[]
+  alwaysFailing: string[]
   scenario: Scenario
-  placeholderMode: string
   onSearchInBase: () => void
 }) {
   const canSearchInBase = result.request.require_stress && result.base_count > 0
-  const checks = diagnostic?.checks[scenario]
+  const [modeId, setModeId] = useState(diagnostics[0]?.mode.mode_id ?? 'A')
+  const current = diagnostics.find((item) => item.mode.mode_id === modeId) ?? diagnostics[0]
+  const checks = current?.calculation?.checks[scenario]
+  /* Для каждого блокера — лучшее значение среди режимов: у «≤» минимум, у «≥» максимум. */
+  const blockers = alwaysFailing.flatMap((code) => {
+    const variants = diagnostics
+      .map((item) => item.calculation?.checks[scenario]?.find((check) => check.code === code))
+      .filter((check): check is NonNullable<typeof check> => Boolean(check))
+    if (variants.length === 0) return []
+    const best = variants.reduce((acc, check) =>
+      (check.operator === '<=' ? check.actual < acc.actual : check.actual > acc.actual) ? check : acc,
+    )
+    return [best]
+  })
+
   return (
     <>
       <Panel>
         <PanelTitle className="text-[20px]">Сочетания режимов нет</PanelTitle>
         <p className="mt-2 text-[13.5px] leading-snug text-ink-500">
-          Ни одно сочетание режимов для этих лотов не проходит
-          {result.request.require_stress ? ' STRESS' : ' BASE'} — замените один из лотов.
+          Сервер перебрал все сочетания A/B/C для этих лотов — ни одно не проходит
+          {result.request.require_stress ? ' STRESS' : ' BASE'}. Замените один из лотов.
         </p>
         <SearchStats result={result} className="mt-3 justify-start" />
         {canSearchInBase ? (
           <Button size="sm" className="mt-4" onClick={onSearchInBase}>Искать без условия STRESS</Button>
         ) : null}
       </Panel>
-      {diagnostic && checks ? (
-        <Panel>
-          <PanelHeader className="mb-3">
-            <PanelTitle className="text-[20px]">Что нарушается</PanelTitle>
-            <FeasibilityBadge calculation={diagnostic} scenario={scenario} size="sm" />
-          </PanelHeader>
-          <p className="mb-3 text-[12.5px] text-muted">Все лоты в режиме {placeholderMode} · сценарий {scenario}</p>
-          <ConstraintTiles checks={checks} scenarioDependent={scenarioDependentCodes(diagnostic)} scenario={scenario} />
-        </Panel>
-      ) : null}
+
+      <Panel>
+        <PanelHeader className="mb-2">
+          <PanelTitle className="text-[20px]">Что мешает</PanelTitle>
+          {current?.calculation ? <FeasibilityBadge calculation={current.calculation} scenario={scenario} size="sm" /> : null}
+        </PanelHeader>
+        {blockers.length > 0 ? (
+          <p className="mb-3 text-[13px] leading-snug text-ink-700">
+            Не проходит ни при одном сочетании режимов; лучший одинаковый режим даёт:{' '}
+            {blockers.map((check, index) => (
+              <span key={check.code} className="tabular-nums">
+                {index > 0 ? '; ' : ''}
+                <strong>{checkLabel(check).split(',')[0]}</strong> {formatCheckValue(check)}
+              </span>
+            ))}
+            .
+          </p>
+        ) : (
+          <p className="mb-3 text-[13px] leading-snug text-muted">
+            При одинаковом режиме у всех лотов часть условий проходит, но сочетания, где проходят все девять, нет.
+          </p>
+        )}
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-[12.5px] text-muted">Проверить состав, если у всех лотов режим</span>
+          <Segmented
+            size="sm"
+            value={modeId}
+            onChange={setModeId}
+            options={diagnostics.map((item) => ({ value: item.mode.mode_id, label: item.mode.mode_id }))}
+            label="Режим для всех лотов в диагностике"
+          />
+        </div>
+        {checks && current?.calculation ? (
+          <ConstraintTiles
+            checks={checks}
+            scenarioDependent={scenarioDependentCodes(current.calculation)}
+            scenario={scenario}
+          />
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" aria-busy>
+            {Array.from({ length: 9 }, (_, index) => <Skeleton key={index} className="h-[76px]" />)}
+          </div>
+        )}
+      </Panel>
     </>
   )
 }

@@ -21,7 +21,8 @@ export function ConstraintTiles({ checks, scenarioDependent, scenario, className
     <div className={cn('grid grid-cols-2 gap-3 sm:grid-cols-3', className)}>
       {checks.map((check) => (
         <Tooltip
-          key={check.code}
+          /* Ключ со сценарием: сменился порог — плитка перемонтируется и подсвечивается. */
+          key={scenarioDependent?.has(check.code) ? `${check.code}:${scenario}` : check.code}
           content={
             <span>
               <span className="font-semibold">{check.title}</span>
@@ -32,7 +33,7 @@ export function ConstraintTiles({ checks, scenarioDependent, scenario, className
             </span>
           }
         >
-          <div tabIndex={0} className="rounded-tile">
+          <div tabIndex={0} className={cn('rounded-tile', scenarioDependent?.has(check.code) && 'animate-highlight')}>
             <StatTile
               label={checkLabel(check)}
               value={formatCheckValue(check)}

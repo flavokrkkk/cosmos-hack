@@ -22,17 +22,23 @@ export const portfolioKeys = {
  * поздний ответ по старому выбору не может перезаписать свежий результат.
  * Расчёт детерминирован, поэтому никогда не протухает: те же входы — те же числа.
  */
-export function useEvaluate(datasetHash: string | undefined, selection: readonly SelectionItem[], enabled = true) {
-  return useQuery({
+export function evaluateQueryOptions(datasetHash: string | undefined, selection: readonly SelectionItem[]) {
+  return queryOptions({
     queryKey: portfolioKeys.evaluate(datasetHash ?? '', selection),
     queryFn: () =>
       portfolioService.evaluate({
         dataset_hash: datasetHash as string,
         selection: [...selection],
       } satisfies EvaluateRequest),
-    enabled: enabled && Boolean(datasetHash) && selection.length > 0,
     staleTime: Infinity,
     meta: { errorMessage: 'Не удалось пересчитать портфель' },
+  })
+}
+
+export function useEvaluate(datasetHash: string | undefined, selection: readonly SelectionItem[], enabled = true) {
+  return useQuery({
+    ...evaluateQueryOptions(datasetHash, selection),
+    enabled: enabled && Boolean(datasetHash) && selection.length > 0,
   })
 }
 

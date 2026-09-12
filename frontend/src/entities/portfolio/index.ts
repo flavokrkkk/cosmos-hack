@@ -1,7 +1,7 @@
 export { portfolioService } from './api'
 export {
-  portfolioKeys, recommendationQueryOptions, useCompare, useComparisonAnalysis, useEvaluate,
-  useRecommendation, useRecommendationExplanations,
+  evaluateQueryOptions, portfolioKeys, recommendationQueryOptions, useCompare, useComparisonAnalysis,
+  useEvaluate, useRecommendation, useRecommendationExplanations,
 } from './hooks'
 export type { RecommendParams } from './hooks'
 export {

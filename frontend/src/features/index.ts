@@ -2,7 +2,8 @@
    страницы грузят их лениво отдельными чанками через прямой путь модуля. */
 export { MAX_VARIANTS, MIN_VARIANTS, buildCandidates } from './compare-portfolios'
 export type { Candidate, CandidateSource } from './compare-portfolios'
-export { useManualSelection } from './edit-portfolio'
+export { useManualSelection, useUniformModeDiagnostics } from './edit-portfolio'
+export type { UniformModeDiagnostic } from './edit-portfolio'
 export { ExportButton } from './export-calculation'
 export {
   SearchSettings, SearchStats, StressSwitch, defaultVariant, explanationFor, useActiveVariant, useAutoRecommendation,

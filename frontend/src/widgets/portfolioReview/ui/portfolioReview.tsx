@@ -3,7 +3,7 @@ import { ArrowLeft } from '@phosphor-icons/react'
 import { useLotDetails } from '@entities/case'
 import {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, METRIC_TILES, MetricTiles, PortfolioLotCard,
-  FinancialBreakdown, scenarioDependentCodes, useWorkspace,
+  FinancialBreakdown, checkLabel, formatCompact, scenarioDependentCodes, useWorkspace,
 } from '@entities/portfolio'
 import { ExportButton } from '@features'
 import type { AccessMode, Calculation, CaseCatalog, Lot, Scenario } from '@shared/api/contracts'
@@ -58,6 +58,16 @@ export function PortfolioReview({
   const complete = calculation?.status === 'complete' && calculation.metrics !== null
   const checks = calculation?.checks[scenario]
   const dependent = calculation ? scenarioDependentCodes(calculation) : undefined
+  /* Что именно меняет сценарий — по данным проверок: показатели портфеля от него не зависят. */
+  const scenarioNote = calculation && dependent
+    ? [...dependent].map((code) => {
+        const base = calculation.checks.BASE?.find((check) => check.code === code)
+        const stress = calculation.checks.STRESS?.find((check) => check.code === code)
+        if (!base || !stress) return null
+        const unit = base.unit && base.unit !== '—' ? ` ${base.unit}` : ''
+        return `лимит ${checkLabel(base).split(',')[0]}: BASE ${formatCompact(base.threshold)} · STRESS ${formatCompact(stress.threshold)}${unit}`
+      }).filter(Boolean).join('; ')
+    : ''
 
   return (
     <div className="rise-in flex flex-col gap-6">
@@ -137,6 +147,11 @@ export function PortfolioReview({
           {complete && calculation.metrics ? (
             <>
               <MetricTiles metrics={calculation.metrics} />
+              {scenarioNote ? (
+                <p className="mt-3 text-[12px] leading-snug text-muted">
+                  Сценарий меняет только {scenarioNote}; показатели портфеля от него не зависят.
+                </p>
+              ) : null}
               <ExtraMetrics metrics={calculation.metrics} shown={METRIC_TILES} className="mt-4" />
               <FinancialBreakdown financial={calculation.financial} />
             </>
