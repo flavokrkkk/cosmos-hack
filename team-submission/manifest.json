@@ -68,7 +68,7 @@
     },
     "config/decision.json": {
       "source": "config/decision.json",
-      "source_sha256": "65086f77e7907ed216af230dad93e37ad62b42e5452431e5952a86f83a021d52"
+      "source_sha256": "7ee08c51df0b63986e432e98c0ebc0be3a7a16ab0a9957d2101a3ed247e3b1cd"
     },
     "results/constraints_BASE.csv": {
       "source": "results/constraints_BASE.csv",
@@ -128,7 +128,7 @@
     },
     "docs/management-note.md": {
       "source": "docs/23-management-note.md",
-      "source_sha256": "c302fe621ac4f2a69308d9bea4484f2cfa34a53c4a3c44a3d414425328090a31"
+      "source_sha256": "e12c0868bb49f2f958aa7ba5ff35fa6e4ccb8deff58b076babdca0c50c15746c"
     },
     "docs/stress-summary.md": {
       "source": "docs/24-stress-summary.md",
@@ -148,7 +148,7 @@
     },
     "docs/management-note.pdf": {
       "source": "docs/management-note.pdf",
-      "source_sha256": "43174d2773b4791f3d250713ceb9fb6ed37cae4e220fd8587a5c29ef8f985d0b"
+      "source_sha256": "ee807786aea616dcae07f611c2261ddd794f0c3b11ce92643df6ab005cf3c564"
     },
     "docs/stress-summary.pdf": {
       "source": "docs/stress-summary.pdf",
@@ -158,7 +158,7 @@
   "files": {
     ".gitignore": "b0b18f5bf7184f205a45032e7a3034fffc852f9c6ad28ae26bb839e2893b5ddd",
     "README.md": "bfa4583c170ef52f555f73ed6d2e5e7cb4acf57a208cea9828660dff5e0dcf3c",
-    "config/decision.json": "65086f77e7907ed216af230dad93e37ad62b42e5452431e5952a86f83a021d52",
+    "config/decision.json": "7ee08c51df0b63986e432e98c0ebc0be3a7a16ab0a9957d2101a3ed247e3b1cd",
     "data/official/README.md": "21776c3e41cb0f1b11f5107e0facc26bc592fe6ba184fcc70ee67ad26b15db07",
     "data/official/case_core.py": "0a6da8b99dbb2e6ff03cb94012f539d8cd0b9c7dd05525bda5b202ebb461e20c",
     "data/official/config/case_config.json": "aae20d265b69fa8ec309ce8dc435fb1ae43ed34510c2746baa5024b472426463",
@@ -166,8 +166,8 @@
     "data/official/data/lots.csv": "8e2b6244178344f9f97050ce5c9f337cd311e9f86bbd96bbbfbdde6999c4ba8b",
     "docs/README.md": "ad8f1028ba708e6dd7cf1b008fc0c85cfeb7a7407ea0c129bfbfba979e621def",
     "docs/algorithm.md": "9aaae74fd1aa065e5293786b9f60d3bada9ce157a1a3f950f3e77c9f8b64cc01",
-    "docs/management-note.md": "ad83ee94cf582321c01df4cad613879b402be55414cda1612fc9efe5cf3bf352",
-    "docs/management-note.pdf": "43174d2773b4791f3d250713ceb9fb6ed37cae4e220fd8587a5c29ef8f985d0b",
+    "docs/management-note.md": "b2200e372913c8b453929387e59e7456169289e7854260b2570ca01e8f82063c",
+    "docs/management-note.pdf": "ee807786aea616dcae07f611c2261ddd794f0c3b11ce92643df6ab005cf3c564",
     "docs/research/README.md": "4af19e1f55d613d325307f4361411d319694b18448ad58f000ee3dd429b97fc8",
     "docs/research/access-mode-d.md": "26cd707c3b3a99907605bb878e6f7bda8b32ad6d5be8c950cbddd2951e3ac034",
     "docs/research/case-literature.md": "f34d5eb041b0a7d061d9aacf34c08082bda0e493b458e33a0e2067392ce5040f",
