@@ -19,7 +19,7 @@ import {
   Alternatives, ExplanationBlock, LotDetailsHost, type AlternativeTarget,
 } from '@widgets'
 
-import { LazyCompareDialog, LazySaveVariantDialog } from './lazyDialogs'
+import { LazyCompareDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
 
 type Props = {
   catalog: CaseCatalog
@@ -246,7 +246,7 @@ export function ManualScreen({ catalog }: Props) {
                   ) : null}
                 </Panel>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3" onMouseEnter={preloadActionDialogs} onFocus={preloadActionDialogs}>
                   <Button
                     onClick={() => {
                       setSaveMounted(true)

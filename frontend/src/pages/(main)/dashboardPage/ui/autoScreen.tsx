@@ -14,7 +14,7 @@ import {
   Alternatives, ExplanationBlock, LotDetailsHost, PortfolioReview, type AlternativeTarget,
 } from '@widgets'
 
-import { LazyCompareDialog, LazySaveVariantDialog } from './lazyDialogs'
+import { LazyCompareDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
 
 type Props = {
   catalog: CaseCatalog
@@ -187,6 +187,7 @@ export function AutoScreen({ catalog }: Props) {
               setCompareMounted(true)
               setCompareOpen(true)
             }}
+            onActionsIntent={preloadActionDialogs}
             onEditManually={() => {
               if (!active.calculation) return
               startManualFrom(active.calculation.selection.map((item) => item.lot_id))

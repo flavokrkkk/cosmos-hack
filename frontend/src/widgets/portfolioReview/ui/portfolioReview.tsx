@@ -31,6 +31,8 @@ type Props = {
   onSave: () => void
   onCompare: () => void
   onEditManually?: () => void
+  /** Намерение открыть диалог (наведение/фокус на кнопки): чанки грузятся заранее. */
+  onActionsIntent?: () => void
 }
 
 const SCENARIO_OPTIONS = SCENARIOS.map((scenario) => ({ value: scenario, label: scenario }))
@@ -44,7 +46,7 @@ const SCENARIO_OPTIONS = SCENARIOS.map((scenario) => ({ value: scenario, label: 
  */
 export function PortfolioReview({
   catalog, calculation, variantKind, variantTitle, isDefault, reason, isLoading, isError, onRetry,
-  onBackToDefault, onSave, onCompare, onEditManually,
+  onBackToDefault, onSave, onCompare, onEditManually, onActionsIntent,
 }: Props) {
   const scenario = useWorkspace((state) => state.scenario)
   const setScenario = useWorkspace((state) => state.setScenario)
@@ -155,7 +157,7 @@ export function PortfolioReview({
           )}
         </Panel>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" onMouseEnter={onActionsIntent} onFocus={onActionsIntent}>
           <Button onClick={onSave} disabled={!complete}>Сохранить вариант</Button>
           <Button variant="secondary" onClick={onCompare} disabled={!complete}>Сравнить</Button>
           {onEditManually ? (

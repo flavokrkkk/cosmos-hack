@@ -38,7 +38,7 @@ export function ConstraintTiles({ checks, scenarioDependent, scenario, className
               value={formatCheckValue(check)}
               hint={
                 scenarioDependent?.has(check.code)
-                  ? `порог ${scenario ?? ''} · ${check.slack !== null && check.slack < 0 ? 'превышение' : 'запас'} ${formatCompact(Math.abs(check.slack ?? 0))}`.trim()
+                  ? `${scenario ?? ''} · ${check.slack !== null && check.slack < 0 ? 'превышение' : 'запас'} ${formatCompact(Math.abs(check.slack ?? 0))}`.trim()
                   : undefined
               }
               tone={check.passed ? 'neutral' : 'fail'}

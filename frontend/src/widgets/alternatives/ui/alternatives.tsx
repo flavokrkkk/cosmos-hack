@@ -66,7 +66,10 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
           const Icon = iconFor(variant.title, isTeam)
           const feasible = variant.calculation.feasible_by_scenario
           return (
-            <li key={variant.calculation.input_hash} className="flex w-full sm:w-[calc(50%-12px)] lg:w-[262px]">
+            <li
+              key={variant.calculation.input_hash}
+              className={cn('flex w-full sm:w-[calc(50%-12px)]', items.length >= 5 ? 'lg:w-[240px]' : 'lg:w-[262px]')}
+            >
               <Card
                 style={{ '--tilt': `${TILTS[index % TILTS.length]}deg` } as CSSProperties}
                 className={cn(

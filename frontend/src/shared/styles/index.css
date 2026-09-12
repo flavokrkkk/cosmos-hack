@@ -149,6 +149,7 @@
     background: transparent;
   }
 
+
   body {
     @apply bg-page font-sans text-ink;
     font-feature-settings: 'cv11', 'ss01', 'tnum';
