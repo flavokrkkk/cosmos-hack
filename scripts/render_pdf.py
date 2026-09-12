@@ -12,6 +12,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Chrome штампует в PDF момент рендера, из-за чего файл меняется при каждом запуске даже без
+# правок текста: в git шумят бинарники, а проверка актуальности комплекта падает на пустом месте.
+# Подменяем штамп фиксированным той же длины — смещения xref при этом не сдвигаются.
+STAMP = rb"(D:19700101000000+00'00')"
+
 ROOT = Path(__file__).resolve().parents[1]
 CHROME = Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
@@ -43,6 +48,14 @@ blockquote { margin: .5em 0; padding: .2em .7em; border-left: 3px solid #bbb; co
 """
 
 
+def normalise(pdf: Path) -> None:
+    """Сделать файл побайтово воспроизводимым: выкинуть дату рендера."""
+    raw = pdf.read_bytes()
+    for key in (b'/CreationDate', b'/ModDate'):
+        raw = re.sub(key + rb"\s*\(D:[^)]*\)", key + b' ' + STAMP, raw)
+    pdf.write_bytes(raw)
+
+
 def page_count(pdf: Path) -> int:
     raw = pdf.read_bytes()
     counts = [int(value) for value in re.findall(rb"/Count\s+(\d+)", raw)]
@@ -54,6 +67,9 @@ def render(source: Path, target: Path, size: str, *, text: str | None = None) ->
 
     html = markdown.markdown(text if text is not None else source.read_text(encoding="utf-8"),
                              extensions=["tables", "fenced_code", "sane_lists"])
+    # Ссылку на файл репозитория Chrome превращает в file:///Users/... — абсолютный путь с машины
+    # автора, мёртвый у любого читателя. Оставляем подпись, ссылку снимаем; внешние URL сохраняем.
+    html = re.sub(r'<a href="(?!https?:|mailto:)[^"]*">(.*?)</a>', r"\1", html, flags=re.S)
     staging = target.with_suffix(".render.html")
     staging.write_text(f'<!doctype html><meta charset="utf-8">'
                        f"<style>{CSS.replace('{size}', size)}</style>{html}", encoding="utf-8")
@@ -63,6 +79,7 @@ def render(source: Path, target: Path, size: str, *, text: str | None = None) ->
                        check=True, capture_output=True)
     finally:
         staging.unlink(missing_ok=True)
+    normalise(target)
     return page_count(target)
 
 

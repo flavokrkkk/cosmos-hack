@@ -70,3 +70,33 @@ def test_bundle_is_not_stale_against_its_sources():
             stale.append((copied, f"источник {origin['source']} изменился"))
     assert not stale, ('комплект устарел, запустите python scripts/build_submission.py: '
                        f'{stale}')
+
+
+def test_committed_pdf_matches_a_fresh_render():
+    """PDF в репозитории собран из текущего markdown, и рендер воспроизводим побайтово.
+
+    Пропускается там, где нет Chrome: эксперт проверяет расчёт, а не вёрстку. На машине
+    команды проверка обязательна — иначе правка текста уезжает в сдачу со старым PDF.
+    """
+    import importlib.util
+    import sys
+
+    sys.path.insert(0, str(ROOT / 'scripts'))
+    import render_pdf
+
+    if not render_pdf.CHROME.exists() or importlib.util.find_spec('markdown') is None:
+        pytest.skip('нет Chrome или markdown — вёрстка PDF недоступна в этой среде')
+
+    scratch = ROOT / 'results/.render-check'
+    scratch.mkdir(exist_ok=True)
+    try:
+        for source, target, size, _, _ in render_pdf.JOBS:
+            fresh = scratch / Path(target).name
+            render_pdf.render(ROOT / source, fresh, size)
+            assert fresh.read_bytes() == (ROOT / target).read_bytes(), (
+                f'{target} не совпадает со свежим рендером {source}: '
+                'запустите python scripts/render_pdf.py')
+    finally:
+        for leftover in scratch.iterdir():
+            leftover.unlink()
+        scratch.rmdir()
