@@ -76,7 +76,7 @@
     },
     "config/decision.json": {
       "source": "config/decision.json",
-      "source_sha256": "92cdd9898fc587dd15793d839c45e266507fc202240a4ae83da7c74f9c3d278b"
+      "source_sha256": "87cbc4c7bf489d1d40746be89b238bbcfac6dad03319add69e91928da562cc7e"
     },
     "notebooks/portfolio_review.ipynb": {
       "source": "notebooks/portfolio_review.ipynb",
@@ -96,7 +96,7 @@
     },
     "results/team_decision_config.json": {
       "source": "results/team_decision_config.json",
-      "source_sha256": "7fb2bb75092ca7ccd3a2177814fde921d0e4b5a86ba825d45a5105f17278cc30"
+      "source_sha256": "cfaed569ae64d12627fd5266529d50106a18fa8ac3da25969c3fcf346e38c249"
     },
     "results/hybrid_analysis.json": {
       "source": "results/hybrid_analysis.json",
@@ -115,67 +115,41 @@
       "source_sha256": "8f3a5052b757474d3865bbb21e0f673a89b47ae32bcd007e7da5009b15095ff3"
     },
     "README.md": {
-      "source": "scripts/submission_readme.md",
-      "source_sha256": "04ca30c67c633031789fea82c25241963fee19e4aa22d14f072a1d13c44ae6ac"
-    },
-    "docs/algorithm.md": {
-      "source": "docs/22-hybrid-selection.md",
-      "source_sha256": "140047dc8c4b8ccd396efbb78e2113c87194cba465f81e732577b6e018c71a58"
-    },
-    "docs/management-note.md": {
-      "source": "docs/23-management-note.md",
-      "source_sha256": "6302b29390115cb4bae017689bccc5336b9ce03e066e17ef6de2f9a4b96c5545"
-    },
-    "docs/stress-summary.md": {
-      "source": "docs/24-stress-summary.md",
-      "source_sha256": "db9de5c37baaf804bac94a895fb528e561b95b423315c65d6e28da870459483c"
-    },
-    "docs/research/case-literature.md": {
-      "source": "docs/research/case-literature.md",
-      "source_sha256": "3d73186ff87cc109c6d043a0acf8a4cb12afeca3e9909c833eb066edf8f87772"
-    },
-    "docs/notes/consultations.md": {
-      "source": "docs/notes/consultations.md",
-      "source_sha256": "66679be5499a7e0aee7e294eeda1e0af7bf457fffaead07a2543d3848e07b7b3"
+      "source": "scripts/build_submission.py",
+      "source_sha256": "35b0faf907f0f68353d21d39268ff70cbe274b892bed2cae49bdf09e1482ac8a"
     },
     "docs/management-note.pdf": {
       "source": "docs/management-note.pdf",
-      "source_sha256": "658ad8fcb829c4fe53f8e44611acf85b8181468657d20b392a59a7b6bbca8e2b"
+      "source_sha256": "1e0378b235d2a2949a8b8f8920114cc2a19830b03eb687a79683094f0729b682"
     },
     "docs/management-note-appendices.pdf": {
       "source": "docs/management-note-appendices.pdf",
-      "source_sha256": "a226ba706cec0d0ad29382e94968785b0f4d8ad670f3cdc76d56bee73bb460e7"
+      "source_sha256": "6474a921fe7d3020c59e87a673d4452a23a83d39188df571b1777e96ce0805c4"
     },
     "docs/stress-summary.pdf": {
       "source": "docs/stress-summary.pdf",
-      "source_sha256": "8eb93dc90123e6fb6b5a6353c0256012abcf205128bfb60d643b326cf91516ce"
+      "source_sha256": "0a71b78d3e5128807d58011a08b82303eae2cb7398642aac2e4b2009da85cbb1"
     }
   },
   "files": {
     ".gitignore": "5bec4c4513cc79654d3cf97a4f12d727701e603b100a53eb7f44841168da028a",
-    "README.md": "04ca30c67c633031789fea82c25241963fee19e4aa22d14f072a1d13c44ae6ac",
-    "config/decision.json": "92cdd9898fc587dd15793d839c45e266507fc202240a4ae83da7c74f9c3d278b",
+    "README.md": "484be6600cb2673260085e80d69081c2245a6cdd3308d8a763f1a09ee053827a",
+    "config/decision.json": "87cbc4c7bf489d1d40746be89b238bbcfac6dad03319add69e91928da562cc7e",
     "data/official/README.md": "21776c3e41cb0f1b11f5107e0facc26bc592fe6ba184fcc70ee67ad26b15db07",
     "data/official/case_core.py": "0a6da8b99dbb2e6ff03cb94012f539d8cd0b9c7dd05525bda5b202ebb461e20c",
     "data/official/config/case_config.json": "aae20d265b69fa8ec309ce8dc435fb1ae43ed34510c2746baa5024b472426463",
     "data/official/data/access_modes.csv": "2669239db6c366c15b13df9d874dc3c8a790ba961bfeddbf9c428fa82fb861c7",
     "data/official/data/lots.csv": "8e2b6244178344f9f97050ce5c9f337cd311e9f86bbd96bbbfbdde6999c4ba8b",
-    "docs/README.md": "22247e8f1cbb4c8d5507cf1800a156b086b23e0fb85dcc38e9a29101f322d839",
-    "docs/algorithm.md": "5d54bc5b00f3992442a3edce2cfca1e40182083bd03511bfc32b654b6d404887",
-    "docs/management-note-appendices.pdf": "a226ba706cec0d0ad29382e94968785b0f4d8ad670f3cdc76d56bee73bb460e7",
-    "docs/management-note.md": "88323687431c4d5e516edfb52c2cad820658364214a2c353fd1de3bed0353362",
-    "docs/management-note.pdf": "658ad8fcb829c4fe53f8e44611acf85b8181468657d20b392a59a7b6bbca8e2b",
-    "docs/notes/consultations.md": "0dbc2a6d52732ada64c3af393101fe34bfeafe507195f09b427314e3c733a7c4",
-    "docs/research/case-literature.md": "122158cd7b735008c13c2689378653b903e9c0b6aeb27e0e620f337855eb0b1b",
-    "docs/stress-summary.md": "667d426575199a0169e7a97408b34a77e44e723fcc7939a621fd1d1874f8c538",
-    "docs/stress-summary.pdf": "8eb93dc90123e6fb6b5a6353c0256012abcf205128bfb60d643b326cf91516ce",
+    "docs/management-note-appendices.pdf": "6474a921fe7d3020c59e87a673d4452a23a83d39188df571b1777e96ce0805c4",
+    "docs/management-note.pdf": "1e0378b235d2a2949a8b8f8920114cc2a19830b03eb687a79683094f0729b682",
+    "docs/stress-summary.pdf": "0a71b78d3e5128807d58011a08b82303eae2cb7398642aac2e4b2009da85cbb1",
     "notebooks/portfolio_review.ipynb": "d5fe3f571c56ed722d23f951caab31a39a1d0c2a43686606e93226b6538fc6a6",
     "notebooks/requirements.txt": "3455c540a7629db2b9748cab0fe66ebeaaaba28f9fcd0fce078dcebe70d002c1",
     "requirements.txt": "6d83ac9c93ec11b7a55f000ec44f32b189bdc20affaf0b9f0744bf890b5be9dc",
     "results/hybrid_analysis.json": "95f4b8cdb548d76f0d29593f30947ea4115c7d3c4563c0e07aaaf656a1b70fd1",
     "results/portfolio_detail.csv": "8996e21299667b4fa4916995864bed234b392852ec04537ca84b8220eb8744c0",
     "results/portfolio_metrics.json": "0b8cf0abe82bb28a184026b420020976b0af69f44fc392a6fff727be32b894c2",
-    "results/team_decision_config.json": "7fb2bb75092ca7ccd3a2177814fde921d0e4b5a86ba825d45a5105f17278cc30",
+    "results/team_decision_config.json": "cfaed569ae64d12627fd5266529d50106a18fa8ac3da25969c3fcf346e38c249",
     "run.py": "17c3d1967620bfe00e7b674d846738f43b61363aaae5b5c1a3800cb8e802a8cc",
     "src/engine/__init__.py": "1eac05947b16964c04391edd6fda45a30f5628c2d271f04a0c917a8286739020",
     "src/engine/__main__.py": "e0930aeba5a3e2e2d94ca6c5fac4f72c0c4eb2be9bba283becf98e909091471c",

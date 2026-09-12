@@ -166,7 +166,7 @@
       "id": "D",
       "origin": "допущение",
       "statement": "D остаётся исследовательской гипотезой до подтверждения коэффициентов и правил доступа. В принятом поиске используются A/B/C; неподтверждённого бонуса синергии нет.",
-      "source": "docs/22-hybrid-selection.md, раздел «Собственный режим D»; docs/research/case-literature.md"
+      "source": "Допущение команды: для режима D не подтверждены смета, лицензионные условия и чистый прирост платного спроса; поэтому в рабочем поиске остаются официальные A/B/C."
     },
     {
       "id": "sensitivity",
@@ -263,7 +263,7 @@
     "format_version": 2,
     "sources": {
       "case_sha256": "1700fdbd1f2d51b7b639304323147dfa592a71d541c9ea723dca32b66fe38f22",
-      "decision_sha256": "92cdd9898fc587dd15793d839c45e266507fc202240a4ae83da7c74f9c3d278b",
+      "decision_sha256": "87cbc4c7bf489d1d40746be89b238bbcfac6dad03319add69e91928da562cc7e",
       "implementation": {
         "__init__.py": "1eac05947b16964c04391edd6fda45a30f5628c2d271f04a0c917a8286739020",
         "__main__.py": "e0930aeba5a3e2e2d94ca6c5fac4f72c0c4eb2be9bba283becf98e909091471c",
@@ -283,7 +283,7 @@
       "portfolio_detail.csv": "8996e21299667b4fa4916995864bed234b392852ec04537ca84b8220eb8744c0",
       "portfolio_metrics.json": "0b8cf0abe82bb28a184026b420020976b0af69f44fc392a6fff727be32b894c2",
       "hybrid_analysis.json": "95f4b8cdb548d76f0d29593f30947ea4115c7d3c4563c0e07aaaf656a1b70fd1",
-      "team_decision_config.json": "abdaaee5088af1b33a27f27d555e52579148269e6dd9b8afc117b58042b09794"
+      "team_decision_config.json": "eb634735695d9f41fc4182876e32c2c821e713609994b2054ef98dbc8c239421"
     }
   }
 }

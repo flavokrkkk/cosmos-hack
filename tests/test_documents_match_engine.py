@@ -14,8 +14,9 @@ def decision():
     return load_decision()
 
 
+@pytest.mark.skipif(not (ROOT/'docs').exists(), reason='Рабочие исходники документов не входят в снимок GitVerse')
 def test_current_document_matches_computed_portfolio(decision):
-    note = (ROOT/'docs/22-hybrid-selection.md').read_text()
+    note = (ROOT/'docs/23-management-note.md').read_text()
     for lot, mode in decision.recommended.selection:
         assert f'{lot}:{mode}' in note
     _, metrics = evaluate(decision.recommended.selection)

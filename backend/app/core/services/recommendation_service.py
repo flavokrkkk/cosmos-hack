@@ -4,7 +4,7 @@ from threading import RLock
 from app.core.dto.portfolio import (
     EvaluateRequest, RecommendRequest, RecommendationResult, RecommendationVariant, SelectionItem,
 )
-from app.core.services.portfolio_engine import space
+from app.core.services.portfolio_engine import canonical, space
 from app.core.services.portfolio_engine.hybrid import MAXIMIZE, MINIMIZE
 from app.core.services.portfolio_ranking_service import METHOD, analyze
 from app.core.services.portfolio_service import ENGINE_VERSION, PortfolioService, input_hash, verify_dataset
@@ -57,6 +57,11 @@ def _recommend_ranked(serialized_request: str) -> RecommendationResult:
 class RecommendationService:
     def recommend(self, request: RecommendRequest) -> RecommendationResult:
         verify_dataset(request.dataset_hash)
+        if request.inputs is not None:
+            try:
+                canonical.validate_inputs(request.inputs.model_dump())
+            except ValueError as error:
+                raise InvalidPortfolio(str(error)) from error
         known_lots = ({lot.lot_id for lot in request.inputs.lots} if request.inputs else
                       {lot.lot_id for lot in PortfolioService().catalog().lots})
         unknown = (set(request.lot_ids or []) | set(request.required_public_lot_ids) | set(request.allowed_modes_by_lot)) - known_lots

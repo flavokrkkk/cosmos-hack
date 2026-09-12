@@ -34,7 +34,7 @@ sys.path.insert(0, str(ROOT))
 from backend.app.core.services.portfolio_engine.canonical import CASE_ROOT
 from backend.app.core.services.portfolio_engine.export_integrity import verify_export, write_export_provenance
 SNAPSHOT = ROOT / 'results/team_decision_config.json'
-NOTE, SUMMARY, ALGORITHM = 'docs/23-management-note.md', 'docs/24-stress-summary.md', 'docs/22-hybrid-selection.md'
+NOTE, SUMMARY = 'docs/23-management-note.md', 'docs/24-stress-summary.md'
 SLIDES = 'docs/25-presentation-skeleton.md'  # содержание слайдов: те же числа, что в записке
 
 # Правило распределения запуска по уровням бюджета — управленческое решение команды, раздел 4
@@ -72,24 +72,24 @@ def collect():
     c0, opex, cash = metrics['c0_mrub'], metrics['opex_mrub_per_year'], metrics['cash_mrub_per_year']
     surplus = cash - opex
     facts = {
-        'Q победителя': (str(analysis['q_max']).replace('.', ','), (NOTE, ALGORITHM, SLIDES)),
-        'Δ, млн ₽/год': (str(analysis['effective_delta_mrub']).replace('.', ','), (NOTE, ALGORITHM, SLIDES)),
-        'максимальный остаток S в допустимой области': (money(analysis['s_max_mrub'], 2), (NOTE, ALGORITHM)),
-        'C0': (money(c0), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
-        'OPEX': (money(opex, 2), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
-        'CASH': (money(cash, 1), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
-        'VPUB': (money(metrics['vpub_mrub_per_year'], 1), (NOTE, SUMMARY, ALGORITHM)),
+        'Q победителя': (str(analysis['q_max']).replace('.', ','), (NOTE, SLIDES)),
+        'Δ, млн ₽/год': (str(analysis['effective_delta_mrub']).replace('.', ','), (NOTE, SLIDES)),
+        'максимальный остаток S в допустимой области': (money(analysis['s_max_mrub'], 2), (NOTE,)),
+        'C0': (money(c0), (NOTE, SUMMARY, SLIDES)),
+        'OPEX': (money(opex, 2), (NOTE, SUMMARY, SLIDES)),
+        'CASH': (money(cash, 1), (NOTE, SUMMARY, SLIDES)),
+        'VPUB': (money(metrics['vpub_mrub_per_year'], 1), (NOTE, SUMMARY)),
         'KCASH': (money(metrics['kcash'], 3), (NOTE, SUMMARY)),
         't_rep': (money(metrics['t_rep'], 3), (NOTE, SUMMARY)),
-        'остаток S': (money(surplus, 2), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'остаток S': (money(surplus, 2), (NOTE, SUMMARY, SLIDES)),
         'остаток S, % к OPEX': (money(surplus / opex * 100, 1), (NOTE, SLIDES)),
-        'запас STRESS': (money(1180 - c0), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'запас STRESS': (money(1180 - c0), (NOTE, SUMMARY, SLIDES)),
         'запас BASE': (money(1300 - c0), (SUMMARY,)),
         'сокращение лимита в стрессе, %': (money((1300 - 1180) / 1300 * 100, 2), (NOTE, SUMMARY, SLIDES)),
         'минимум C0 пространства': (money(summary['min_stress_c0']), (NOTE, SUMMARY, SLIDES)),
-        'конфигураций всего': (str(summary['total_count']), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
-        'проходят BASE': (str(summary['base_count']), (NOTE, ALGORITHM, SLIDES)),
-        'проходят STRESS': (str(summary['stress_count']), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'конфигураций всего': (str(summary['total_count']), (NOTE, SUMMARY, SLIDES)),
+        'проходят BASE': (str(summary['base_count']), (NOTE, SLIDES)),
+        'проходят STRESS': (str(summary['stress_count']), (NOTE, SUMMARY, SLIDES)),
         'конфигураций с максимальным Q': (str(summary['max_q_count']), (NOTE, SLIDES)),
         'наборов проходит STRESS': (str(summary['stress_lot_sets']), (NOTE,)),
         'режимных комбинаций нашего набора': (str(summary['selected_lot_set_stress_count']), (NOTE,)),

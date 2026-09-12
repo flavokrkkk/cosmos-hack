@@ -20,4 +20,5 @@ node_modules/
 dist/
 storage/
 /flowers_store/
+/gitverse-submission/
 .vscode/

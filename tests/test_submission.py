@@ -30,36 +30,56 @@ def test_submission_manifest_and_material_status():
 
 
 def test_bundled_defence_documents_describe_the_computed_portfolio():
-    """Записка и резюме стресса в комплекте — актуальные; исторические черновики не уезжают."""
+    """Результат комплекта совпадает с движком; рабочие тексты проверяются, если сохранены."""
     computed = {f'{lot}:{mode}' for lot, mode in load_decision().recommended.selection}
-    for name in ('docs/management-note.md', 'docs/stress-summary.md'):
+    saved = json.loads((BUNDLE/'results/team_decision_config.json').read_text())
+    assert {f'{lot}:{mode}' for lot, mode in saved['recommended']['selection']} == computed
+    if not (ROOT/'docs').exists():
+        # Финальный снимок содержит PDF; отсутствие рабочих исходников не отменяет проверку JSON.
+        return
+    for name in ('docs/23-management-note.md', 'docs/24-stress-summary.md'):
+        text = (ROOT/name).read_text()
         # Машинная запись состава в документе: порядок изложения наш, множество — движка.
-        written = re.findall(r'`([A-Z]+:[ABC](?:, [A-Z]+:[ABC])*)`', (BUNDLE/name).read_text())
+        written = re.findall(r'`([A-Z]+:[ABC](?:, [A-Z]+:[ABC])*)`', text)
         assert written, name
         assert all(set(line.split(', ')) == computed for line in written), (name, written)
-    # Ни один документ защиты в комплекте не помечен как устаревший и не называет другой состав.
-    for path in (BUNDLE/'docs').glob('*.md'):
-        text = path.read_text()
-        assert 'Историческая версия' not in text, path.name
+        assert 'Историческая версия' not in text, name
         other = {line for line in re.findall(r'`([A-Z]+:[ABCD](?:, [A-Z]+:[ABCD])*)`', text)
                  if set(line.split(', ')) != computed}
-        assert not other, (path.name, other)
+        assert not other, (name, other)
 
 
 def test_bundled_relative_links_resolve():
     # Каноничные материалы организаторов в data/official не правим, их ссылки не наши.
-    for path in [BUNDLE/'README.md', *(BUNDLE/'docs').rglob('*.md')]:
+    for path in [BUNDLE/'README.md']:
         for target in re.findall(r'\]\(([^)]+)\)', path.read_text()):
             local = target.split('#', 1)[0]
             if local and not local.startswith(('http://', 'https://', 'mailto:')):
                 assert (path.parent/local).exists(), f'{path.name} → {target}'
 
 
-def test_glossary_is_in_the_algorithm_not_a_leftover_from_an_old_build():
+def test_bundle_keeps_final_documents_and_explains_result_fields_in_readme():
     manifest = json.loads((BUNDLE/'manifest.json').read_text())
-    assert manifest['source_copies']['docs/algorithm.md']['source'] == 'docs/22-hybrid-selection.md'
-    assert '## Словарь результатов' in (BUNDLE/'docs/algorithm.md').read_text()
-    assert 'docs/23-results-glossary.md' not in manifest['files']
+    assert {str(path.relative_to(BUNDLE)) for path in (BUNDLE/'docs').rglob('*') if path.is_file()} == {
+        'docs/management-note.pdf', 'docs/management-note-appendices.pdf', 'docs/stress-summary.pdf',
+    }
+    for name in (
+        'docs/management-note.md', 'docs/stress-summary.md',
+        'docs/algorithm.md', 'docs/notes/consultations.md',
+        'docs/research/case-literature.md', 'docs/README.md',
+        'docs/research/README.md', 'docs/23-results-glossary.md',
+    ):
+        assert not (BUNDLE/name).exists(), name
+        assert name not in manifest['files'], name
+        assert name not in manifest['source_copies'], name
+    assert manifest['source_copies']['README.md']['source'] == 'scripts/build_submission.py'
+    readme = (BUNDLE/'README.md').read_text()
+    for field in (
+        'hybrid_analysis.json', 'winner', 'checks.BASE', 'checks.STRESS',
+        'search_summary', 'alternatives', 'switching_curve', 'headroom',
+        'sensitivity', 'export_provenance', 'document_values',
+    ):
+        assert f'`{field}`' in readme, field
 
 
 def test_bundle_is_not_stale_against_its_sources():
@@ -74,6 +94,11 @@ def test_bundle_is_not_stale_against_its_sources():
     for copied, origin in manifest['source_copies'].items():
         source = ROOT/origin['source']
         if not source.is_file():
+            if not (ROOT/'docs').exists() and origin['source'] in (
+                'docs/23-management-note.md', 'docs/24-stress-summary.md',
+                'docs/25-presentation-skeleton.md',
+            ):
+                continue
             stale.append((copied, f"источник {origin['source']} отсутствует"))
         elif hashlib.sha256(source.read_bytes()).hexdigest() != origin['source_sha256']:
             stale.append((copied, f"источник {origin['source']} изменился"))
@@ -84,11 +109,14 @@ def test_bundle_is_not_stale_against_its_sources():
 def test_committed_pdf_matches_a_fresh_render():
     """PDF в репозитории собран из текущего markdown, и рендер воспроизводим побайтово.
 
-    Пропускается там, где нет Chrome: эксперт проверяет расчёт, а не вёрстку. На машине
+    Пропускается в финальном снимке без рабочей docs или там, где нет Chrome. На машине
     команды проверка обязательна — иначе правка текста уезжает в сдачу со старым PDF.
     """
     import importlib.util
     import sys
+
+    if not (ROOT/'docs').exists():
+        pytest.skip('финальный снимок содержит готовые PDF без рабочих исходников docs')
 
     sys.path.insert(0, str(ROOT / 'scripts'))
     import render_pdf
