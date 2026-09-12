@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from engine import evaluate, load_decision
+from backend.app.core.services.portfolio_engine import evaluate, load_decision
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -47,12 +47,8 @@ def test_input_config_does_not_prescribe_winner():
     assert all(item.get('origin') and item.get('source') for item in config['assumptions'])
 
 
-def test_superseded_notes_are_not_presented_as_current():
-    """Документы под прежний портфель помечены до первого заголовка и ведут на актуальный."""
+def test_superseded_notes_are_not_bundled():
+    """Исторические черновики не входят в актуальный комплект защиты."""
     for name in ('10-management-note.md','11-stress-summary.md','18-portfolio-selection-algorithm.md',
                  '21-portfolio-balance-and-synergy.md'):
-        text = (ROOT/'docs'/name).read_text()
-        preamble = text.split('\n# ', 1)[0]
-        assert '> Историческая версия' in preamble, name
-        banner = next(line for line in preamble.split('\n') if line.startswith('> Историческая версия'))
-        assert '22-hybrid-selection.md' in banner, name
+        assert not (ROOT/'team-submission/docs'/name).exists(), name

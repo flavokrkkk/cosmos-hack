@@ -7,7 +7,7 @@ import pytest
 from engine.cli import main
 
 
-# В репозитории engine — совместимый импорт, в автономной сборке — сам движок.
+# В автономном комплекте сборщик адаптирует только путь импорта этого же движка.
 cli = importlib.import_module(main.__module__)
 decision = importlib.import_module(f"{cli.__package__}.decision")
 hybrid = importlib.import_module(f"{cli.__package__}.hybrid")

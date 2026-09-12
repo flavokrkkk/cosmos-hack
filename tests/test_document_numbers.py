@@ -5,6 +5,7 @@
 а также утверждения об отношениях величин, которые нельзя заменить автоматически.
 """
 import sys
+import re
 from pathlib import Path
 
 import pytest
@@ -24,11 +25,35 @@ def test_registry_is_not_trivial(facts):
     assert len(facts) >= 40, 'реестр фактов подозрительно мал — проверьте collect()'
 
 
+def test_defence_comparison_facts_are_registered(facts):
+    for name, expected in {
+        'FLOOD-вариант: Q': '0,125',
+        'FLOOD-вариант: прирост VPUB, %': '3,3',
+        'конфигураций с максимальным Q': '11',
+    }.items():
+        value, documents = facts[name]
+        assert value == expected
+        assert documents == (sync_documents.NOTE, sync_documents.SLIDES)
+
+
+def test_presentation_timing_fits_four_minutes():
+    text = (ROOT / sync_documents.SLIDES).read_text(encoding='utf-8')
+    slides = [(int(number), int(seconds)) for number, seconds in
+              re.findall(r'^\|\s*(\d+)\s*\|.*\|\s*(\d+)\s*\|\s*$', text, flags=re.M)]
+    assert 1 <= len(slides) <= 12, 'в таблице должны быть слайды с явным временем'
+    assert [number for number, _ in slides] == list(range(1, len(slides) + 1))
+    total = sum(seconds for _, seconds in slides)
+    assert total <= 240, f'план защиты занимает {total} секунд при лимите 240'
+    declared = re.search(r'Сумма — \*\*(\d+) секунд\*\*, резерв — (\d+) секунд', text)
+    assert declared, 'сумма и резерв должны быть явно указаны рядом с таблицей'
+    assert (int(declared[1]), int(declared[2])) == (total, 240 - total)
+
+
 def test_every_fact_appears_in_its_documents(facts):
     absent = [(name, value, document)
               for name, (value, documents) in facts.items()
               for document in documents
-              if value not in (ROOT / document).read_text(encoding='utf-8')]
+              if not sync_documents.contains_value((ROOT / document).read_text(encoding='utf-8'), value)]
     assert not absent, f'числа разошлись с документами: {absent}'
 
 

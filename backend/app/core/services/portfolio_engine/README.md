@@ -11,11 +11,23 @@
 .venv/bin/python -m app.core.services.portfolio_engine evaluate
 ```
 
-Из корня сохранён `python -m engine ...`. Команды и формулы —
-[engine/README.md](../../../../../engine/README.md); API — [backend/README.md](../../../../README.md).
+Из корня:
+
+```bash
+backend/.venv/bin/python -m backend.app.core.services.portfolio_engine selfcheck
+backend/.venv/bin/python -m backend.app.core.services.portfolio_engine recommend
+backend/.venv/bin/python -m backend.app.core.services.portfolio_engine evaluate --scenario STRESS
+```
+
+`evaluate --portfolio FIRE:A,AGRI:A,TRANS:A,ENV:A` проверяет заданный состав;
+`recommend` подбирает портфель, `compare` сравнивает варианты конфигурации,
+`space` перечисляет пространство, `sensitivity` показывает запас до порогов,
+`export` сохраняет контрольные результаты. Настройки CLI —
+[config/decision.json](../../../../../config/decision.json), API — [backend/README.md](../../../../README.md).
+Автономный комплект запускает копию этого ядра через `python run.py`.
 
 Данные берутся из `case/source` либо `COSMOS_CASE_SOURCE_DIR`. Смена данных требует
 перезапуска процесса. Наружу выдаются копии кешированных структур. Selection сортируется
-до суммирования, метрики не округляются перед сравнением. Официальный `case_core.py` неизменён.
+до суммирования, метрики не округляются перед канонической проверкой ограничений. Официальный `case_core.py` неизменён.
 
-Единственный алгоритм выбора находится в `hybrid.py`. Старые профили удалены. Официальные показатели остаются без округления; для ранжирования используется точное рациональное нормирование после округления агрегатов до 8 знаков. Подробнее: корневой `engine/README.md`.
+Единственный алгоритм выбора находится в `hybrid.py`. Старые профили удалены. Официальные показатели остаются без округления; для ранжирования используется точное рациональное нормирование после округления агрегатов до 8 знаков. Метод, точность и контрольный результат — [принятый алгоритм](../../../../../docs/22-hybrid-selection.md).

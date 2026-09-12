@@ -2,8 +2,8 @@
 
 Из корня:
     python scripts/sync_documents.py            — только проверка, ничего не меняет
-    python scripts/sync_documents.py --fix       — заменить изменившиеся значения в документах
-    python scripts/sync_documents.py --snapshot  — перезаписать слепок без правки документов
+    python scripts/sync_documents.py --fix       — обновить явно помеченные значения фактов
+    python scripts/sync_documents.py --snapshot  — обновить слепок после успешной сверки документов
 
 Зачем. В записке около 170 различных дробных чисел. Если входные данные или метод изменятся,
 вручную их не переписать, а разойдясь с инструментом они стоят баллов: кейс требует, чтобы
@@ -11,8 +11,10 @@
 
 Как. Движок остаётся единственным источником: здесь нет ни одной своей формулы канона.
 Каждый факт получает имя, значение, формат и список документов, где обязан встречаться.
-Слепок предыдущих значений лежит в `results/document_facts.json` — поэтому при `--fix` точно
-известно, какую строку искать и на какую менять, и подмена идёт только по полному совпадению.
+Слепок предыдущих значений лежит в `results/document_facts.json`. Автоправка допустима лишь
+в явной привязке `<!-- fact: C0 -->1129,8<!-- /fact -->`. Непомеченные числа проверяются
+как целые числовые токены, но не заменяются: одинаковое число может означать разные факты.
+Если старое число осталось вне маркеров, слепок не обновляется до проверки автором.
 
 Чего инструмент не делает. Он не переписывает утверждения об отношениях величин («перекрывают
 разрыв двенадцатикратно», «треть ограничений»): такие фразы проверяются отдельно по диапазону
@@ -21,13 +23,17 @@
 """
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))  # пакет engine лежит в корне репозитория
+sys.path.insert(0, str(ROOT))
+from backend.app.core.services.portfolio_engine.canonical import CASE_ROOT
+from backend.app.core.services.portfolio_engine.export_integrity import verify_export
+from backend.app.core.services.portfolio_engine.hybrid import score_frame
 SNAPSHOT = ROOT / 'results/document_facts.json'
 NOTE, SUMMARY, ALGORITHM = 'docs/23-management-note.md', 'docs/24-stress-summary.md', 'docs/22-hybrid-selection.md'
 SLIDES = 'docs/25-presentation-skeleton.md'  # содержание слайдов: те же числа, что в записке
@@ -42,27 +48,36 @@ def money(value, digits=1):
     return f'{value:.{digits}f}'.replace('.', ',')
 
 
+def current_export():
+    """Сверка происхождения готовых результатов без нового перебора портфелей."""
+    verify_export(ROOT / 'results', ROOT / 'config/decision.json')
+    return (
+        json.loads((ROOT / 'results/team_decision_config.json').read_text(encoding='utf-8')),
+        json.loads((ROOT / 'results/portfolio_metrics.json').read_text(encoding='utf-8')),
+        json.loads((ROOT / 'results/hybrid_analysis.json').read_text(encoding='utf-8')),
+    )
+
+
 def collect():
     """Все числа отчётов, выведенные из выгрузок движка. Возвращает имя → (строка, документы)."""
-    from engine import evaluate, load_decision
-
-    decision = load_decision()
-    selection = decision.recommended.selection
-    _, metrics = evaluate(selection)
+    decision, metrics, analysis = current_export()
+    selection = decision['recommended']['selection']
     space = pd.read_csv(ROOT / 'results/portfolio_space.csv')
     detail = pd.read_csv(ROOT / 'results/portfolio_detail.csv')
     sens = pd.read_csv(ROOT / 'results/sensitivity_STRESS.csv')
     ours = space[space.lots.str.split('+').apply(set) == {lot for lot, _ in selection}]
     stress = space[space.STRESS_ok]
-    lots = pd.read_csv(ROOT / 'case/source/data/lots.csv').set_index('lot_id')
-    modes = pd.read_csv(ROOT / 'case/source/data/access_modes.csv').set_index('mode_id')
+    lots = pd.read_csv(CASE_ROOT / 'data/lots.csv').set_index('lot_id')
+    modes = pd.read_csv(CASE_ROOT / 'data/access_modes.csv').set_index('mode_id')
     anchor = sum(lots.at[lot, 'anchor_cash_mrub_per_year'] * modes.at[mode, 'k_anchor'] for lot, mode in selection)
     commercial = sum(lots.at[lot, 'commercial_cash_mrub_per_year'] * modes.at[mode, 'k_commercial']
                      for lot, mode in selection)
     c0, opex, cash = metrics['c0_mrub'], metrics['opex_mrub_per_year'], metrics['cash_mrub_per_year']
     surplus = cash - opex
+    reference = space[space.BASE_ok & (space.STRESS_ok if decision['algorithm_parameters'].get('require_stress', True) else True)]
+    # Только нормировка сохранённых показателей; перебор и новый выбор не запускаются.
+    scored = score_frame(reference.assign(surplus=reference.cash - reference.opex), analysis['bounds'])
 
-    analysis = decision.analysis
     facts = {
         'Q победителя': (str(analysis['q_max']).replace('.', ','), (NOTE, ALGORITHM, SLIDES)),
         'Δ, млн ₽/год': (str(analysis['effective_delta_mrub']).replace('.', ','), (NOTE, ALGORITHM, SLIDES)),
@@ -82,6 +97,7 @@ def collect():
         'конфигураций всего': (str(len(space)), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
         'проходят BASE': (str(int(space.BASE_ok.sum())), (NOTE, ALGORITHM, SLIDES)),
         'проходят STRESS': (str(len(stress)), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'конфигураций с максимальным Q': (str(int((scored.q_exact == scored.q_exact.max()).sum())), (NOTE, SLIDES)),
         'наборов проходит STRESS': (str(stress.lots.nunique()), (NOTE,)),
         'режимных комбинаций нашего набора': (str(int(ours.STRESS_ok.sum())), (NOTE,)),
         'якорные поступления': (money(anchor, 2), (NOTE,)),
@@ -93,6 +109,12 @@ def collect():
     facts['FLOOD-вариант: VPUB'] = (money(flood.vpub, 1), (NOTE,))
     facts['FLOOD-вариант: запас STRESS'] = (money(1180 - flood.c0), (NOTE, SLIDES))
     facts['FLOOD-вариант: прирост остатка, %'] = (money((flood.cash - flood.opex - surplus) / surplus * 100, 1), (NOTE, SLIDES))
+    facts['FLOOD-вариант: прирост VPUB, %'] = (money((flood.vpub / metrics['vpub_mrub_per_year'] - 1) * 100, 1), (NOTE, SLIDES))
+    flood_outcome = next((point['winner'] for point in analysis['switching_curve']
+                          if point['winner']['selection_id'] == 'AGRI:C,ENV:A,FLOOD:A,TRANS:C'), None)
+    if flood_outcome is None:
+        raise ValueError('FLOOD-вариант отсутствует в сохранённой кривой выбора; сравнение в защите требует проверки')
+    facts['FLOOD-вариант: Q'] = (str(flood_outcome['q']).replace('.', ','), (NOTE, SLIDES))
     facts['дефицит ядра'] = (money(abs(sum(b for b in (detail.cash_mrub_per_year - detail.opex_mrub_per_year) if b < 0)), 2), (NOTE,))
     for row in detail.itertuples():
         facts[f'{row.lot_id}: c0'] = (money(row.c0_mrub, 2), (NOTE,))
@@ -112,9 +134,7 @@ def collect():
 
 def relations():
     """Утверждения об отношениях величин: проверяются по диапазону, правятся человеком."""
-    from engine import evaluate, load_decision
-
-    _, metrics = evaluate(load_decision().recommended.selection)
+    _, metrics, _ = current_export()
     space = pd.read_csv(ROOT / 'results/portfolio_space.csv')
     detail = pd.read_csv(ROOT / 'results/portfolio_detail.csv')
     sens = pd.read_csv(ROOT / 'results/sensitivity_STRESS.csv')
@@ -149,42 +169,67 @@ def relations():
     ]
 
 
+FACT_MARKER = re.compile(r'<!--\s*fact:\s*(?P<name>.*?)\s*-->(?P<value>.*?)<!--\s*/fact\s*-->', re.S)
+
+
+def contains_value(text: str, value: str) -> bool:
+    """Не засчитывать 9,5 внутри 99,50, 0,5 внутри 0,50 или 8 внутри 1180."""
+    return re.search(r'(?<![\d.,])' + re.escape(value) + r'(?!\d|[.,]\d)', text) is not None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--fix', action='store_true', help='заменить изменившиеся значения в документах')
-    parser.add_argument('--snapshot', action='store_true', help='перезаписать слепок без правки документов')
+    parser.add_argument('--fix', action='store_true', help='обновить значения в явных fact-маркерах')
+    parser.add_argument('--snapshot', action='store_true', help='обновить слепок после успешной сверки документов')
     args = parser.parse_args()
 
-    facts = collect()
+    try:
+        facts = collect()
+        relation_values = relations()
+    except (ValueError, OSError) as error:
+        print(f'ОШИБКА: {error}')
+        return 1
     previous = json.loads(SNAPSHOT.read_text(encoding='utf-8')) if SNAPSHOT.exists() else {}
-    missing, changed, manual = [], [], []
+    missing, manual = [], []
+    changed = [(name, previous[name], value, documents)
+               for name, (value, documents) in facts.items()
+               if name in previous and previous[name] != value]
+    documents = {document for _, paths in facts.values() for document in paths}
+    originals = {document: (ROOT / document).read_text(encoding='utf-8') for document in documents}
+    texts = dict(originals)
 
-    for name, (value, documents) in sorted(facts.items()):
-        was = previous.get(name)
-        if was is not None and was != value:
-            changed.append((name, was, value, documents))
-            continue
-        for document in documents:
-            if value not in (ROOT / document).read_text(encoding='utf-8'):
+    for document in sorted(documents):
+        def update_marker(match):
+            name, written = match.group('name'), match.group('value').strip()
+            if name not in facts or document not in facts[name][1]:
+                manual.append(f'неизвестный или неверно размещённый fact-маркер {name} в {document}')
+                return match.group(0)
+            value = facts[name][0]
+            if written == value:
+                return match.group(0)
+            if args.fix and written == previous.get(name):
+                return f'<!-- fact: {name} -->{value}<!-- /fact -->'
+            manual.append(f'fact-маркер {name} в {document}: {written} вместо {value}')
+            return match.group(0)
+
+        texts[document] = FACT_MARKER.sub(update_marker, texts[document])
+
+    for name, was, value, paths in changed:
+        print(f'  изменилось {name}: {was} → {value}')
+        for document in paths:
+            unmarked = FACT_MARKER.sub('', texts[document])
+            if contains_value(unmarked, was):
+                manual.append(f'{name}: прежнее {was} осталось без fact-маркера в {document}; '
+                              'автору нужно проверить контекст и явно привязать факт')
+
+    for name, (value, paths) in sorted(facts.items()):
+        for document in paths:
+            # Подпись чужого маркера не заменяет наличие значения данного факта.
+            visible = FACT_MARKER.sub(lambda match: match.group('value'), texts[document])
+            if not contains_value(visible, value):
                 missing.append((name, value, document))
 
-    for name, was, value, documents in changed:
-        # Короткие значения («4», «2») в тексте неотличимы от чужих чисел — их правит человек.
-        distinctive = ',' in was or len(was) >= 4
-        for document in documents:
-            path = ROOT / document
-            text = path.read_text(encoding='utf-8')
-            if was not in text:
-                manual.append(f'{name}: {was} → {value}, в {document} прежнего значения нет')
-            elif not distinctive:
-                manual.append(f'{name}: {was} → {value} в {document} — значение слишком короткое для замены')
-            elif args.fix:
-                path.write_text(text.replace(was, value), encoding='utf-8')
-                print(f'  правка {document}: {name} {was} → {value}')
-            else:
-                print(f'  изменилось {name}: {was} → {value} ({document})')
-
-    for label, value, low, high in relations():
+    for label, value, low, high in relation_values:
         if not low <= value < high:
             manual.append(f'{label}: фактическое отношение {value:.2f} вне диапазона [{low}; {high})')
 
@@ -193,14 +238,21 @@ def main():
     for line in manual:
         print(f'  ЧЕЛОВЕКУ: {line}')
 
-    if args.fix or args.snapshot or not previous:
+    failed = bool(missing or manual or (changed and not (args.fix or args.snapshot)))
+    # Проверка ничего не пишет. --fix применяет подготовленные правки лишь после общей сверки.
+    if not failed and args.fix:
+        for document, text in texts.items():
+            if text != originals[document]:
+                (ROOT / document).write_text(text, encoding='utf-8')
+                print(f'  правка fact-маркеров: {document}')
+    if not failed and (args.fix or args.snapshot):
         SNAPSHOT.write_text(json.dumps({k: v[0] for k, v in facts.items()}, ensure_ascii=False, indent=2) + '\n',
                             encoding='utf-8')
         print(f'Слепок обновлён: {SNAPSHOT.relative_to(ROOT)}')
 
     print(f'Фактов: {len(facts)}; изменилось: {len(changed)}; нет в тексте: {len(missing)}; '
           f'человеку: {len(manual)}')
-    return 1 if (missing or manual) else 0
+    return int(failed)
 
 
 if __name__ == '__main__':

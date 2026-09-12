@@ -97,8 +97,7 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
   }, [active.calculation, auto.query.data])
 
   const complete = selection.isComplete
-  const missingPublic = manualRecommendation.missingPublicLotIds
-  const showResult = complete && missingPublic.length === 0 && result?.status === 'ok' && active.calculation
+  const showResult = complete && result?.status === 'ok' && active.calculation
   const activeTarget: AlternativeTarget | null =
     active.kind === 'team' ? 'team' : active.kind === 'reference' ? (active.alternativeIndex ?? null) : null
 
@@ -181,11 +180,7 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
               {complete ? <StressSwitch compact className="mt-4 justify-between" /> : null}
             </Panel>
 
-            {complete && missingPublic.length > 0 ? <Panel>
-              <p role="alert" className="text-[14px] text-fail">Добавьте обязательные лоты {missingPublic.join(', ')} в кандидаты или измените параметры поиска.</p>
-            </Panel> : null}
-
-            {complete && missingPublic.length === 0 && query.isPending ? (
+            {complete && query.isPending ? (
               <Panel aria-busy role="status">
                 <Collapsible defaultOpen title="Показатели" summary={<Tag tone="brand">подбираем портфель…</Tag>}>
                   <div className="grid grid-cols-2 gap-3">
@@ -200,7 +195,7 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
               </Panel>
             ) : null}
 
-            {complete && missingPublic.length === 0 && query.isError && !query.isPending ? (
+            {complete && query.isError && !query.isPending ? (
               <Panel>
                 <PanelTitle className="text-[20px]">Подбор портфеля не выполнен</PanelTitle>
                 <p className="mt-2 text-[13.5px] text-fail">{query.error.message}</p>
@@ -208,8 +203,7 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
               </Panel>
             ) : null}
 
-            {complete && missingPublic.length === 0 && result?.status === 'no_feasible' ? (
-              <>
+            {complete && result?.status === 'no_feasible' ? (
               <NoFeasibleBlock
                 result={result}
                 diagnostics={uniform.diagnostics}
@@ -217,7 +211,6 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
                 scenario={scenario}
                 onSearchInBase={() => setRequireStress(false)}
               />
-              </>
             ) : null}
 
             {showResult && active.calculation?.metrics ? (

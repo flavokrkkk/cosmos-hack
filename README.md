@@ -2,15 +2,17 @@
 
 ## Принятый гибрид и комплект для проверки — 12.09.2026
 
-Текущая реализация использует единственный `hybrid_maximin_v1`: максимум Q → максимум S; при явно заданном Δ сначала применяется денежное ограничение. Шесть шкал и автоматический Δ раскрыты в [обосновании](docs/22-hybrid-selection.md). По умолчанию алгоритм выбирает FIRE:A, AGRI:C, TRANS:C, ENV:A; S=92,25 млн ₽/год, Q=0,5, Δ=9,5 млн ₽/год. Старые описания ниже сохранены как история разработки.
+Текущая реализация использует единственный `hybrid_maximin_v1`: максимум Q → максимум S; при явно заданном Δ сначала применяется денежное ограничение. Шесть шкал и автоматический Δ раскрыты в [обосновании](docs/22-hybrid-selection.md). По умолчанию алгоритм выбирает FIRE:A, AGRI:C, TRANS:C, ENV:A; S=92,25 млн ₽/год, Q=0,5, Δ=9,5 млн ₽/год.
 
 Автономный расчётный комплект по пункту 13 инструкции: [team-submission/README.md](team-submission/README.md). Он запускается без API, Ollama, регистрации и ключей. Финальная записка и презентация проверяются отдельно по перечню материалов в комплекте.
 
+После подготовки Python-окружения (раздел «Расчётный CLI»):
+
 ```bash
-python -m engine recommend
-python -m engine recommend --delta 5
-python -m engine evaluate --scenario STRESS
-python scripts/build_submission.py
+backend/.venv/bin/python -m backend.app.core.services.portfolio_engine recommend
+backend/.venv/bin/python -m backend.app.core.services.portfolio_engine recommend --delta 5
+backend/.venv/bin/python -m backend.app.core.services.portfolio_engine evaluate --scenario STRESS
+backend/.venv/bin/python scripts/build_submission.py
 ```
 
 
@@ -29,8 +31,8 @@ docker compose up -d --build --wait
 Откройте **http://localhost:5173**. API и Swagger: **http://localhost:8000/docs**.
 По умолчанию запускаются только frontend и backend, **Ollama отключена**.
 Все расчёты, проверки BASE/STRESS, изменение лотов и режимов, сравнение,
-сохранение и экспорт работают без LLM. Пояснения формируются сразу из расчётных
-данных и помечаются как шаблонные. Регистрация, личные API-ключи, PostgreSQL,
+сохранение и экспорт работают без LLM. При включённой Ollama модель объясняет готовый
+расчёт; без неё интерфейс сообщает, что AI-объяснение отключено. Регистрация, личные API-ключи, PostgreSQL,
 Redis и платные сервисы не нужны.
 
 Первой сборке нужен интернет для зависимостей и Docker-образов. Модель не
@@ -78,13 +80,15 @@ volume. [Лимиты GitHub](https://docs.github.com/en/repositories/working-wi
 ### Что проверить в интерфейсе
 
 1. Запустить автоподбор и сверить состав с текущей рекомендацией.
-2. Открыть «Изменить лоты и режимы», изменить A/B/C или лот и пересчитать.
+2. В ручном подборе открыть «Задать лоты и режимы», изменить кандидатов или допустимые A/B/C и пересчитать.
 3. Проверить BASE и STRESS, включая вариант с нарушением: видны порог, факт и PASS/FAIL.
 4. Сопоставить исходный и изменённый варианты, сохранить или выгрузить расчёт.
 
-Поиск среди 4–8 кандидатов сохраняется; итоговый портфель содержит ровно четыре
-лота. Прямой редактор проверяет именно введённый состав, без скрытого подбора
-других режимов. Подробные контракты — [backend/README.md](backend/README.md),
+В автоподборе используются все лоты и стандартные режимы. В ручном подборе можно
+задать 4–8 кандидатов и несколько допустимых режимов каждого лота; пустой выбор
+сбрасывает ограничения. Итоговый портфель всегда содержит ровно четыре лота.
+Для проверки фиксированного состава без подбора есть команда CLI `evaluate --portfolio`.
+Подробные контракты — [backend/README.md](backend/README.md),
 фронтенд — [frontend/README.md](frontend/README.md).
 
 «Исходные данные» открывает редактор всех восьми лотов и коэффициентов режимов
@@ -92,31 +96,34 @@ A/B/C. Изменения действуют как явный сценарий 
 расчёт; официальные файлы кейса не перезаписываются. Кнопка «Вернуть официальные»
 сбрасывает сценарий.
 
-## 🚀 Кейс опубликован: «Космос как инфраструктура»
+## Расчётный CLI
 
 Выбрать 4 из 8 сервисных лотов, назначить режимы доступа, проверить в BASE и STRESS,
 обосновать финансирование и реализацию. Материалы организаторов — в [`case/`](case/)
-(не изменять). **План действий — [docs/07-action-plan.md](docs/07-action-plan.md).**
+(не изменять). Метод описан в [docs/22-hybrid-selection.md](docs/22-hybrid-selection.md).
 
-Расчётное ядро готово:
+Нужен Python 3.12. Из корня репозитория:
 
 ```bash
+python3.12 -m venv backend/.venv
+source backend/.venv/bin/activate
 python -m pip install -r requirements.txt
-python -m engine evaluate     # портфель + PASS/FAIL по ограничениям, BASE и STRESS
-python -m engine space        # полный перебор 5670 конфигураций
-python -m engine sensitivity  # запас по входным данным и где портфель ломается
+python -m backend.app.core.services.portfolio_engine evaluate     # портфель + PASS/FAIL по ограничениям, BASE и STRESS
+python -m backend.app.core.services.portfolio_engine space        # полный перебор 5670 конфигураций
+python -m backend.app.core.services.portfolio_engine sensitivity  # запас по входным данным и где портфель ломается
 python -m pytest tests/ -q    # проверки формул, границ, фронта и сверки документов с расчётом
 ```
 
 Условия поиска задаются **без правки кода** в [`config/decision.json`](config/decision.json), точный состав для проверки —
 флаг `--portfolio FIRE:A,AGRI:A,TRANS:A,ENV:A`. Контракт для backend и что делать нельзя —
-[`engine/README.md`](engine/README.md). Разбор пространства решений —
-[docs/research/portfolio-space.md](docs/research/portfolio-space.md).
+[документация ядра](backend/app/core/services/portfolio_engine/README.md). Сопоставление
+портфелей и разбор пространства решений — раздел 5 [записки](docs/23-management-note.md).
 
 ## Материалы решения и как сверить цифры
 
 Требование кейсодержателя: цифры в записке, на слайдах и в выводе кода **обязаны совпадать**.
-Поэтому источник у них один, и совпадение проверяется тестом, а не на глаз.
+Зарегистрированные показатели Markdown автоматически сверяются с результатами расчёта;
+окончательную дизайнерскую презентацию нужно проверить отдельно.
 
 | Материал | Где |
 |---|---|
@@ -124,15 +131,25 @@ python -m pytest tests/ -q    # проверки формул, границ, ф�
 | **Приложения к записке** А–Г: реестр рисков, матрица ответственности и KPI, расчётные таблицы, источники | [docs/management-note-appendices.pdf](docs/management-note-appendices.pdf) — тот же исходник |
 | **Резюме стресс-сценария**, одна страница | [docs/stress-summary.pdf](docs/stress-summary.pdf), исходник [docs/24-stress-summary.md](docs/24-stress-summary.md) |
 | Как вычислен портфель | [docs/22-hybrid-selection.md](docs/22-hybrid-selection.md) |
+| Скелет презентации | [docs/25-presentation-skeleton.md](docs/25-presentation-skeleton.md) |
+| Обозначения и формулы | [Словарь результатов](docs/22-hybrid-selection.md#словарь-результатов) |
 | Рекомендуемый портфель и результат выбора | [results/hybrid_analysis.json](results/hybrid_analysis.json) |
 | Контрольные выгрузки | [results/](results) |
 | Автономный комплект по п. 13 | [team-submission/](team-submission) |
 
-Записки `docs/10-` и `docs/11-` — историческая версия под прежний портфель, в сдачу не входят.
+Сверка чисел: `python scripts/sync_documents.py` проверяет готовый экспорт и зарегистрированные
+числовые факты. `--fix` обновляет только именованные маркеры `<!-- fact: NAME -->VALUE<!-- /fact -->`;
+неоднозначные вхождения блокируют запись. После изменения исходников выполните один полный цикл:
 
-Сверка чисел автоматизирована: `python scripts/sync_documents.py` сравнивает величины
-в документах с выгрузками движка, `--fix` подставляет новые значения. Вёрстка PDF и контроль
-объёма — `python scripts/render_pdf.py`.
+```bash
+python -m backend.app.core.services.portfolio_engine export
+python scripts/sync_documents.py --fix
+python scripts/render_pdf.py
+python scripts/build_submission.py --skip-export
+```
+
+Хеши в `results/export_manifest.json` связывают входы, код и выгрузки. Сверка и сборка не повторяют
+подбор. `render_pdf.py --check` проверяет объём во временных файлах, сохраняя готовые PDF.
 
 **Версия исходных данных.** Файлы в [`case/source/`](case/source) побайтово совпадают с
 публичным репозиторием кейсодержателя <https://github.com/SpaceEconomyPolicy/test>,
@@ -151,11 +168,11 @@ git hash-object case/source/case_core.py         # 8fd3e053…
 **Как воспроизвести любое число записки:**
 
 ```bash
-python -m engine evaluate --scenario STRESS    # девять проверок, разделы 1 и 7 записки
-python -m engine space                         # 5670 / 1031 / 143, разделы 5.1–5.2
-python -m engine pareto --scenario STRESS      # недоминируемые варианты, раздел 5.3
-python -m engine sensitivity --scenario STRESS # границы слома, раздел 7
-python -m engine export                        # все выгрузки в results/
+python -m backend.app.core.services.portfolio_engine evaluate --scenario STRESS    # девять проверок, разделы 1 и 7 записки
+python -m backend.app.core.services.portfolio_engine space                         # 5670 / 1031 / 143, разделы 5.1–5.2
+python -m backend.app.core.services.portfolio_engine pareto --scenario STRESS      # недоминируемые варианты, раздел 5.3
+python -m backend.app.core.services.portfolio_engine sensitivity --scenario STRESS # границы слома, раздел 7
+python -m backend.app.core.services.portfolio_engine export                        # все выгрузки в results/
 python -m pytest tests/ -q                     # формулы, границы, фронт и сверка с документами
 ```
 
@@ -167,14 +184,15 @@ python -m pytest tests/ -q                     # формулы, границы,
 | Запасы по ограничениям, раздел 7 | `results/constraints_STRESS.csv` |
 | Границы слома входов, раздел 7 | `results/sensitivity_STRESS.csv` |
 
-Отдельный набор тестов сверяет **документы с движком**: если записка и расчёт разойдутся,
-`tests/test_documents_match_engine.py` покажет это до защиты, а не на ней.
+`tests/test_documents_match_engine.py` сверяет опорные показатели и состав с движком;
+`tests/test_document_numbers.py` проверяет реестр фактов и тайминг. Контекст остальных численных
+утверждений и финальный PDF презентации проверяются при редактуре.
 
-## 📌 База знаний → [`docs/`](docs/README.md)
+## Документы и источники
 
-Всё, что мы знаем, по кускам: событие · кейс и расшифровка · гипотезы с вердиктами · стратегия ·
-рубрика/сдача/таймлайн · **дип-ресерч** (кейсодержатель, РФ-механизмы, международные модели,
-экономика лотов, параметры движка). Начать с [docs/README.md](docs/README.md).
+[docs/README.md](docs/README.md) содержит короткую карту финальной записки, стресс-резюме,
+скелета презентации и принятого метода. Там же — подтверждающие исследования и консультации.
+Старые планы, черновики и дубли удалены; сохранены первичные материалы и актуальные результаты.
 
 ## Приложения и настройки
 
@@ -222,7 +240,7 @@ Python 3.12 и зависимости из `backend/requirements-dev.txt`, Node.
 
 ```bash
 backend/.venv/bin/python -m pytest tests/ backend/tests/ -q
-backend/.venv/bin/python -m engine selfcheck
+backend/.venv/bin/python -m backend.app.core.services.portfolio_engine selfcheck
 npm --prefix frontend run lint
 npm --prefix frontend run build
 ```
@@ -230,15 +248,6 @@ npm --prefix frontend run build
 Версии основных Python-зависимостей зафиксированы в `backend/requirements.txt`,
 фронтенда — в `frontend/package-lock.json`. Автономный комплект
 [team-submission/](team-submission/) запускается вообще без Docker и Ollama по своему README.
-
-## Кейсы НН
-
-| | Кейс 01 | **Кейс 02 — наш** |
-|---|---|---|
-| Название | Проектирование устойчивой спутниковой группировки (ИНТЦ «АКИД») | **Сервисная модель космической экономики** (АНО «КЭП») |
-| Суть | моделирование группировки, устойчивость при отказах | выбрать 4 из 8 сервисных лотов; на каждый — режим доступа, закупка/финансирование, риски, дорожная карта |
-
-Подробно — [docs/01-case02-brief.md](docs/01-case02-brief.md).
 
 ## Что где
 

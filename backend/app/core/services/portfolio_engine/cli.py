@@ -6,13 +6,15 @@
 
 Примеры:
 
-    python -m engine evaluate
-    python -m engine evaluate --portfolio FIRE:A,AGRI:A,TRANS:B,ENV:A --scenario STRESS
-    python -m engine compare
-    python -m engine space
-    python -m engine pareto --scenario STRESS --top 15
-    python -m engine sensitivity --scenario STRESS
-    python -m engine export
+    python -m backend.app.core.services.portfolio_engine evaluate
+    python -m backend.app.core.services.portfolio_engine evaluate --portfolio FIRE:A,AGRI:A,TRANS:B,ENV:A --scenario STRESS
+    python -m backend.app.core.services.portfolio_engine compare
+    python -m backend.app.core.services.portfolio_engine space
+    python -m backend.app.core.services.portfolio_engine pareto --scenario STRESS --top 15
+    python -m backend.app.core.services.portfolio_engine sensitivity --scenario STRESS
+    python -m backend.app.core.services.portfolio_engine export
+
+В автономном комплекте: python run.py <команда>.
 """
 
 from __future__ import annotations
@@ -253,6 +255,8 @@ def cmd_recommend(args) -> int:
 
 
 def cmd_export(args) -> int:
+    from .export_integrity import write_export_manifest
+
     decision = load_decision(args.config)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -282,6 +286,10 @@ def cmd_export(args) -> int:
         pd.DataFrame([row.as_dict() for row in headroom]).to_csv(
             RESULTS_DIR / f"sensitivity_{scenario}.csv", index=False, encoding="utf-8"
         )
+
+    # Поиск уже наполнил кэш пространства: здесь только копия и запись того же расчёта.
+    enumerate_space().to_csv(RESULTS_DIR / "portfolio_space.csv", index=False, encoding="utf-8")
+    write_export_manifest(RESULTS_DIR, args.config)
 
     written = sorted(p.name for p in RESULTS_DIR.iterdir() if p.is_file())
     print(f"Записано в {RESULTS_DIR}:")
@@ -341,7 +349,7 @@ def cmd_sensitivity(args) -> int:
 # --------------------------------------------------------------------------- #
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="python -m engine",
+        prog="python run.py" if __package__ == "engine" else f"python -m {__package__}",
         description="Расчётный инструмент кейса «Космос как инфраструктура».",
     )
     parser.add_argument("--config", type=Path, default=None,

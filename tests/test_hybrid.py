@@ -6,8 +6,8 @@ from fractions import Fraction
 import pandas as pd
 import pytest
 
-from engine.hybrid import CRITERIA, Parameters, analyze, exact, score_frame, select
-from engine import evaluate, diagnose
+from backend.app.core.services.portfolio_engine.hybrid import CRITERIA, Parameters, analyze, exact, score_frame, select
+from backend.app.core.services.portfolio_engine import evaluate, diagnose
 
 
 @pytest.fixture(scope="module")

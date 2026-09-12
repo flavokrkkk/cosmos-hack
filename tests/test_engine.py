@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from engine import canonical, constraints, space
+from backend.app.core.services.portfolio_engine import canonical, constraints, space
 
 
 # --------------------------------------------------------------------------- #
@@ -235,7 +235,7 @@ def test_parse_selection_roundtrip():
 
 def test_recommended_variant_from_config_passes_both_scenarios():
     """Портфель из config/decision.json проходит и BASE, и STRESS."""
-    from engine.decision import load_decision
+    from backend.app.core.services.portfolio_engine.decision import load_decision
 
     decision = load_decision()
     _, metrics = canonical.evaluate(decision.recommended.selection)
@@ -251,7 +251,7 @@ def test_recommended_variant_from_config_passes_both_scenarios():
 # --------------------------------------------------------------------------- #
 def test_headroom_is_verified_numerically():
     """Аналитика запаса проверяется численно: на границе PASS, за границей FAIL."""
-    from engine import sensitivity
+    from backend.app.core.services.portfolio_engine import sensitivity
 
     selection = [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
     for scenario in ("BASE", "STRESS"):
@@ -260,7 +260,7 @@ def test_headroom_is_verified_numerically():
 
 def test_c0_is_narrowest_input_under_stress():
     """В стрессе самое узкое место — стартовые затраты, а не OPEX или поступления."""
-    from engine import sensitivity
+    from backend.app.core.services.portfolio_engine import sensitivity
 
     selection = [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
     narrow = sensitivity.binding_first(selection, "STRESS")
@@ -268,7 +268,7 @@ def test_c0_is_narrowest_input_under_stress():
 
 
 def test_c0_breaking_point_matches_portfolio_c0():
-    from engine import sensitivity
+    from backend.app.core.services.portfolio_engine import sensitivity
 
     selection = [("FIRE", "A"), ("AGRI", "A"), ("TRANS", "B"), ("ENV", "A")]
     point = sensitivity.c0_breaking_point(selection)
@@ -346,7 +346,7 @@ def test_pareto_front_does_not_depend_on_rounding():
 
 def test_surplus_headroom_matches_kcash_and_is_marked_as_team_threshold():
     """Запас до нулевого остатка выгружается и помечен как порог команды, а не кейса."""
-    from engine import load_decision, surplus_headroom
+    from backend.app.core.services.portfolio_engine import load_decision, surplus_headroom
 
     selection = load_decision().recommended.selection
     _, metrics = canonical.evaluate(selection)

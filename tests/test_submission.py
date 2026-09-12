@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from engine import load_decision
+from backend.app.core.services.portfolio_engine import load_decision
 
 ROOT = Path(__file__).resolve().parents[1]
 BUNDLE = ROOT / 'team-submission'
@@ -55,9 +55,11 @@ def test_bundled_relative_links_resolve():
                 assert (path.parent/local).exists(), f'{path.name} → {target}'
 
 
-def test_glossary_is_a_declared_source_not_a_leftover_from_an_old_build():
+def test_glossary_is_in_the_algorithm_not_a_leftover_from_an_old_build():
     manifest = json.loads((BUNDLE/'manifest.json').read_text())
-    assert manifest['source_copies']['docs/23-results-glossary.md']['source'] == 'docs/23-results-glossary.md'
+    assert manifest['source_copies']['docs/algorithm.md']['source'] == 'docs/22-hybrid-selection.md'
+    assert '## Словарь результатов' in (BUNDLE/'docs/algorithm.md').read_text()
+    assert 'docs/23-results-glossary.md' not in manifest['files']
 
 
 def test_bundle_is_not_stale_against_its_sources():

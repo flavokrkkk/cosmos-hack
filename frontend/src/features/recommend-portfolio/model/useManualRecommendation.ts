@@ -5,10 +5,11 @@ import {
 import { explanationFor } from './explanations'
 
 /**
- * Подбор портфеля из четырёх–восьми выбранных вручную лотов-кандидатов.
+ * Подбор по всем лотам или по четырём–восьми выбранным вручную кандидатам.
  *
- * Запрос уходит сам, как только выбран четвёртый лот: пользователь режимы не
- * назначает, итоговую четвёрку и её режимы подбирает сервер. Числа приходят первым запросом,
+ * Пустой набор не ограничивает поиск. Для выбранных кандидатов запрос уходит
+ * начиная с четырёх лотов; сервер подбирает четвёрку среди разрешённых режимов.
+ * Числа приходят первым запросом,
  * объяснение — вторым. Изменение состава или условия STRESS меняет ключ
  * запроса — старый ответ не выдаётся за новый.
  */
@@ -17,7 +18,6 @@ export function useManualRecommendation(datasetHash: string | undefined) {
   const requireStress = useWorkspace((state) => state.requireStress)
   const calculationInputs = useWorkspace((state) => state.calculationInputs)
   const allowedModesByLot = useWorkspace((state) => state.manualAllowedModes)
-  const missingPublicLotIds: string[] = []
   const isComplete = manualLotIds.length === 0 || (manualLotIds.length >= PORTFOLIO_SIZE && manualLotIds.length <= MAX_CANDIDATE_LOTS)
 
   const params: RecommendParams = {
@@ -34,6 +34,5 @@ export function useManualRecommendation(datasetHash: string | undefined) {
     isComplete,
     lotIds: manualLotIds,
     requireStress,
-    missingPublicLotIds,
   }
 }

@@ -7,7 +7,7 @@ FastAPI обслуживает каталог, расчёт, подбор и с�
 Запуск всего приложения через Docker описан в [корневом README](../README.md).
 [`scripts/run_local.py`](../scripts/run_local.py) поддерживает `--ollama off`, `on`
 и `host`: без модели, с моделью в контейнере или с установленной Ollama.
-Расчёт без веб-приложения — в [документации CLI](../engine/README.md).
+Расчёт без веб-приложения — в [документации CLI](app/core/services/portfolio_engine/README.md).
 
 ## Локальный запуск API без Docker
 
@@ -128,8 +128,16 @@ COSMOS_OLLAMA_TIMEOUT_SECONDS=45
 ```
 
 Перезапустите API. Веса хранятся средствами Ollama, в контейнерном режиме —
-в именованном Docker volume; они не включаются в Git. Обоснование выбора,
-источники и лицензия модели — в [исследовании Ollama](../docs/research/ollama-model.md).
+в именованном Docker volume; они не включаются в Git.
+
+Модель `qwen3:4b-instruct` выбрана для русскоязычного структурированного объяснения готовых
+фактов. [Каталог Ollama](https://ollama.com/library/qwen3/tags) указывает размер около 2,5 ГБ;
+[карточка Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B) — лицензию Apache-2.0.
+[Qwen3](https://qwenlm.github.io/blog/qwen3/) поддерживает русский язык;
+[JSON Schema Ollama](https://docs.ollama.com/capabilities/structured-outputs)
+ограничивает структуру ответа. Это не гарантия достоверности: backend проверяет факты,
+а модель не получает права менять состав или выполнять расчёт. Модель заменяется через
+`COSMOS_OLLAMA_MODEL` без правки API.
 
 При включении запрос может ждать ответа модели. Ошибка подключения, тайм-аут
 или неприемлемый ответ приводят к пояснению по расчётным данным; числа и рекомендация
@@ -148,8 +156,8 @@ COSMOS_OLLAMA_TIMEOUT_SECONDS=45
 ## Реализация и входные файлы
 
 Чистое ядро — [`app/core/services/portfolio_engine/`](app/core/services/portfolio_engine/).
-Оно не импортирует FastAPI, БД или Ollama. Корневой `engine/` — переходники для CLI
-и прежних импортов, без второй реализации формул. Роутеры вызывают сервисы;
+Оно не импортирует FastAPI, БД или Ollama. CLI запускает этот же пакет напрямую,
+без второй реализации формул и корневых переходников. Роутеры вызывают сервисы;
 HTTP-интеграция модели находится в `OllamaClient`, сборка запросов — в `OllamaService`.
 
 Исходники читаются из `case/source/`, в автономном комплекте — из `data/official/`.
@@ -180,7 +188,7 @@ HTTP-интеграция модели находится в `OllamaClient`, с�
 ```bash
 backend/.venv/bin/python -m pip install -r backend/requirements-dev.txt
 backend/.venv/bin/python -m pytest tests backend/tests -q
-backend/.venv/bin/python -m engine selfcheck
+backend/.venv/bin/python -m backend.app.core.services.portfolio_engine selfcheck
 ```
 
 Проверка импорта и OpenAPI:

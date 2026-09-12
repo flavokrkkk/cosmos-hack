@@ -10,9 +10,13 @@ management-note.pdf, а приложения А–Г — в отдельный m
 с объявленным на первой странице — соответствие проверяется, а не заявляется.
 """
 import argparse
+import os
 import re
+import signal
 import subprocess
 import sys
+import time
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -87,17 +91,83 @@ def render(text: str, target: Path, size: str) -> int:
     # Ссылку на файл репозитория Chrome превращает в file:///Users/... — абсолютный путь с машины
     # автора, мёртвый у любого читателя. Оставляем подпись, ссылку снимаем; внешние URL сохраняем.
     html = re.sub(r'<a href="(?!https?:|mailto:)[^"]*">(.*?)</a>', r"\1", html, flags=re.S)
-    staging = target.with_suffix(".render.html")
-    staging.write_text(f'<!doctype html><meta charset="utf-8">'
-                       f"<style>{CSS.replace('{size}', size)}</style>{html}", encoding="utf-8")
+    with TemporaryDirectory(prefix="cosmos-pdf-chrome-") as scratch:
+        directory = Path(scratch)
+        staging = directory / "document.html"
+        rendered = directory / "document.pdf"
+        log = directory / "chrome.log"
+        staging.write_text(f'<!doctype html><meta charset="utf-8">'
+                           f"<style>{CSS.replace('{size}', size)}</style>{html}", encoding="utf-8")
+        command = [str(CHROME), "--headless", "--disable-gpu", "--no-pdf-header-footer",
+                   "--no-first-run", "--no-default-browser-check", "--disable-background-networking",
+                   "--password-store=basic", "--use-mock-keychain", "--disable-search-engine-choice-screen",
+                   "--disable-extensions", "--disable-component-update", "--disable-sync", "--disable-breakpad",
+                   f"--user-data-dir={directory / 'profile'}",
+                   f"--print-to-pdf={rendered}", staging.resolve().as_uri()]
+        with log.open("wb") as diagnostics:
+            process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=diagnostics,
+                                       start_new_session=True)
+            try:
+                deadline = time.monotonic() + 45
+                while not completed_pdf(rendered, log):
+                    status = process.poll()
+                    if status is not None:
+                        if completed_pdf(rendered, log):
+                            break
+                        raise RuntimeError(f"Chrome завершился ({status}) без готового PDF: "
+                                           f"{log.read_text(errors='replace')[-2000:]}")
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError(f"Chrome не подготовил PDF за 45 секунд: "
+                                           f"{log.read_text(errors='replace')[-2000:]}")
+                    time.sleep(0.05)
+            finally:
+                stop_chrome(process)
+        # В новых версиях Chrome служебные процессы могут оставаться живыми после
+        # успешной печати. Готовность подтверждена самим Chrome, структурой и длиной
+        # уникального временного файла; прежний target не считается результатом.
+        normalise(rendered)
+        pages = page_count(rendered)
+        if pages < 1:
+            raise RuntimeError("Chrome создал PDF без страниц")
+        with NamedTemporaryFile(prefix=".cosmos-pdf-", suffix=".pdf", dir=target.parent, delete=False) as output:
+            prepared = Path(output.name)
+            try:
+                output.write(rendered.read_bytes())
+                output.flush()
+                os.replace(prepared, target)
+            finally:
+                prepared.unlink(missing_ok=True)
+        return pages
+
+
+def completed_pdf(pdf: Path, log: Path) -> bool:
+    """Не принять частичный PDF или файл без подтверждения завершённой печати."""
+    if not pdf.is_file() or not log.is_file():
+        return False
+    data = pdf.read_bytes()
+    if not data.startswith(b"%PDF-") or not data.rstrip().endswith(b"%%EOF"):
+        return False
+    confirmation = re.search(r"(\d+) bytes written to file " + re.escape(str(pdf)) + r"(?=\r?\n|$)",
+                             log.read_text(errors="replace"))
+    return confirmation is not None and int(confirmation[1]) == len(data)
+
+
+def stop_chrome(process: subprocess.Popen) -> None:
+    """Завершить только нашу отдельную process group вместе с дочерними процессами."""
     try:
-        subprocess.run([str(CHROME), "--headless", "--disable-gpu", "--no-pdf-header-footer",
-                        f"--print-to-pdf={target}", staging.resolve().as_uri()],
-                       check=True, capture_output=True)
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    try:
+        process.wait(timeout=2)
+    except subprocess.TimeoutExpired:
+        pass
     finally:
-        staging.unlink(missing_ok=True)
-    normalise(target)
-    return page_count(target)
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait(timeout=2)
 
 
 def render_job(job: dict, target: Path) -> int:
@@ -113,20 +183,20 @@ def main() -> int:
         return 2
 
     failures = []
-    for job in JOBS:
-        path = ROOT / job["target"]
-        pages = render_job(job, path)
-        allowed = job["allowed"]
-        verdict = "ок" if pages in allowed else f"ВНЕ ТРЕБОВАНИЯ {allowed.start}–{allowed.stop - 1}"
-        print(f"{job['target']}: {pages} стр. ({job['size']}) — {verdict}")
-        if pages not in allowed:
-            failures.append(job["target"])
-        # Первая страница записки называет свой объём — заявленное должно совпадать с измеренным.
-        if job["declares"] and f"**{pages} страниц**" not in (ROOT / job["source"]).read_text(encoding="utf-8"):
-            print(f"  ОБЪЯВЛЕННЫЙ ОБЪЁМ НЕ СОВПАДАЕТ: в тексте должно быть «**{pages} страниц**»")
-            failures.append(job["target"])
-        if args.check:
-            path.unlink(missing_ok=True)
+    # --check никогда не пишет поверх готовой сдачи, в том числе при ошибке рендера.
+    with TemporaryDirectory(prefix="cosmos-pdf-check-") as scratch:
+        for job in JOBS:
+            path = Path(scratch) / Path(job["target"]).name if args.check else ROOT / job["target"]
+            pages = render_job(job, path)
+            allowed = job["allowed"]
+            verdict = "ок" if pages in allowed else f"ВНЕ ТРЕБОВАНИЯ {allowed.start}–{allowed.stop - 1}"
+            print(f"{job['target']}: {pages} стр. ({job['size']}) — {verdict}")
+            if pages not in allowed:
+                failures.append(job["target"])
+            # Первая страница записки называет свой объём — сверяем с измеренным.
+            if job["declares"] and f"**{pages} страниц**" not in (ROOT / job["source"]).read_text(encoding="utf-8"):
+                print(f"  ОБЪЯВЛЕННЫЙ ОБЪЁМ НЕ СОВПАДАЕТ: в тексте должно быть «**{pages} страниц**»")
+                failures.append(job["target"])
     return 1 if failures else 0
 
 

@@ -106,7 +106,6 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
       ) : null}
 
       {launched && result?.status === 'no_feasible' && !isDirectVariant ? (
-        <>
         <NoFeasibleBlock
           result={result}
           isRerunning={query.isFetching}
@@ -116,7 +115,6 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
             window.scrollTo({ top: 0, behavior: 'smooth' })
           }}
         />
-        </>
       ) : null}
 
       {showPortfolio && active.calculation ? (

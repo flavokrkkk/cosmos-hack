@@ -113,42 +113,6 @@ class OllamaService:
             raise OllamaResponseError("Ollama returned an unsafe or unsupported narrative")
         return sanitized.model_copy(update={"narrative": narrative})
 
-    @staticmethod
-    def _fallback_narrative(facts: dict[str, dict[str, Any]], selection: EvidenceSelection) -> str:
-        status = facts.get("portfolio_status", {}).get("text", "")
-        if "не проходит" in status:
-            outcome = "Портфель не проходит все обязательные ограничения выбранного сценария."
-        elif "проходит" in status:
-            outcome = "Портфель проходит все обязательные ограничения выбранного сценария."
-        else:
-            outcome = "Расчёт показывает различия между выбранными вариантами."
-
-        strength_id = selection.strength_ids[0] if selection.strength_ids else ""
-        strength = {
-            "budget": "стартовые затраты укладываются в установленный бюджет",
-            "cash_balance": "совокупные поступления покрывают ежегодные расходы",
-            "comparison_c0_mrub": "стартовые затраты выгодно отличаются от показанных альтернатив",
-            "comparison_vpub_mrub_per_year": "общественная ценность выше, чем у показанных альтернатив",
-            "comparison_kcash": "покрытие расходов выше, чем у показанных альтернатив",
-            "comparison_t_rep": "индекс t_rep выше, чем у показанных альтернатив",
-        }.get(strength_id, "у варианта есть подтверждённое расчётом преимущество")
-
-        limitation_id = selection.limitation_ids[0] if selection.limitation_ids else ""
-        if limitation_id == "lot_deficits":
-            limitation = (
-                "у отдельных сервисов поступления ниже ежегодных расходов, "
-                "а способ покрытия дефицита расчёт не задаёт"
-            )
-        elif limitation_id in {"scope", "scope_limit"}:
-            limitation = "расчёт не определяет плательщиков и договорную схему"
-        elif limitation_id.startswith("failed_"):
-            limitation = "одно или несколько обязательных ограничений не выполнено"
-        elif limitation_id.startswith("comparison_") or re.match(r"v\d+_", limitation_id):
-            limitation = "по одному из показателей существует более сильная альтернатива"
-        else:
-            limitation = "у варианта остаётся ограничение, которое нужно учесть перед выбором"
-        return f"{outcome} Его главное преимущество — {strength}. При этом {limitation}."
-
     async def _select_evidence_batch(self, portfolios: list[dict]) -> tuple[EvidenceBatch, OllamaChatResult]:
         result = await self.chat(
             [OllamaMessage(role="system", content=(

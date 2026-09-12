@@ -1,0 +1,31 @@
+{
+  "format_version": 1,
+  "sources": {
+    "case_sha256": "1700fdbd1f2d51b7b639304323147dfa592a71d541c9ea723dca32b66fe38f22",
+    "decision_sha256": "879c5d826041bd40ca5820af2286f132d939c9254566a58b573a6b310e7e5fb6",
+    "implementation": {
+      "__init__.py": "1eac05947b16964c04391edd6fda45a30f5628c2d271f04a0c917a8286739020",
+      "__main__.py": "e0930aeba5a3e2e2d94ca6c5fac4f72c0c4eb2be9bba283becf98e909091471c",
+      "canonical.py": "3294e85b4d499b9bfa0a6d295f7bf311eaa77ef13b2bd3d06296d533fb4739d3",
+      "cli.py": "c82601602d37bc3cd9d0f9e0d9abb732b2750fbdc75c0214b215d537b1dc270e",
+      "constraints.py": "0b1d32733f1a71df6daba2ad8d34cfac59e2417be522795e1aae0bcc989082ec",
+      "decision.py": "e1905d484f0e9d343ed29e07513299068baa32f157c4e940efc9fd64726dd66f",
+      "export_integrity.py": "446f34ffaed55edcae7d975f015dc2e75e0aa4b472b65d9da975053c8d400a69",
+      "hybrid.py": "1a61b8c42374ef048b365e8a968d4398f7ef8c0c01f2d54ef752c749ccd08ea3",
+      "selfcheck.py": "61aeb78e1c2641cbb1b8caac84f436f1b3f9ccf6f8b97f2a89310228630b08d0",
+      "sensitivity.py": "e08543f294ec6d7cc58a756e6a5ab2d27ceaef32b9c21c6cddbd7078ec836849",
+      "space.py": "c448155533aa7464238512d33ca3e05d2216b924cc1bc75bcaaa557106cf74a1"
+    }
+  },
+  "files": {
+    "hybrid_analysis.json": "ed31b59e26a7ba5e7e2230c8db00b971a60175d4b657b3b83818f56e8ccf4588",
+    "portfolio_detail.csv": "8996e21299667b4fa4916995864bed234b392852ec04537ca84b8220eb8744c0",
+    "portfolio_metrics.json": "3085e31c3845cd7275ea6adf3c59fe2656a621402e10c9c3e89b091dff86d4c2",
+    "team_decision_config.json": "c9cb7fbb41b0769723b9292128e04c2c713b2c429f125a5cc186d04dc9e85f29",
+    "portfolio_space.csv": "07eb9e593c8f9471504325fa1668aebbbaf1cac4e2feceb1650b63dbcef18b0f",
+    "constraints_BASE.csv": "81bf6323de4bcb38c015ddc1ac897ebb4ff39bd40002e6acebb771aaaab5785c",
+    "constraints_STRESS.csv": "9e0011c089a29fb541d120a1155740224df1ff73a584e19904c24cd47a56253d",
+    "sensitivity_BASE.csv": "2fa38b677c7f34fccbf0cdd5b5326a3481b3e6b5a89438f6a437ea0d3e267bcf",
+    "sensitivity_STRESS.csv": "6e414f08ef4b16c0657015a1803277b31649ca414f0eef6b282e1ceb070c1c99"
+  }
+}
