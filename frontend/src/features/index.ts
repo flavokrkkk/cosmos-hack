@@ -6,7 +6,7 @@ export { useManualSelection, useUniformModeDiagnostics } from './edit-portfolio'
 export type { UniformModeDiagnostic } from './edit-portfolio'
 export { ExportButton } from './export-calculation'
 export {
-  SearchSettings, SearchStats, StressSwitch, defaultVariant, explanationFor, useActiveVariant, useAutoRecommendation,
+  SearchStats, StressSwitch, defaultVariant, explanationFor, useActiveVariant, useAutoRecommendation,
   useManualRecommendation, usePrefetchRecommendation,
 } from './recommend-portfolio'
 export type { ActiveVariantKind, ActiveVariantView } from './recommend-portfolio'

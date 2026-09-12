@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 
 import type { Scenario } from '@shared/api/contracts'
 
-import { PORTFOLIO_SIZE } from '../lib/selection'
+import { MAX_CANDIDATE_LOTS } from '../lib/selection'
 
 export type WorkspaceMode = 'auto' | 'manual'
 
@@ -18,12 +18,6 @@ export type ActiveVariant =
   | { kind: 'saved'; id: string }
 
 export type ManualOrigin = 'empty' | 'manual' | 'copy'
-export type SearchSettings = {
-  cashLossLimit: number | null
-  budgetCap: number | null
-  vpubFloor: number | null
-  publicLotIds: string[]
-}
 
 type WorkspaceState = {
   /** Версия данных, под которую собрано состояние. Другая версия — состояние сбрасывается. */
@@ -37,14 +31,12 @@ type WorkspaceState = {
   autoSearch: { requireStress: boolean; startedAt: number } | null
   /** Открытый вариант отдельно для каждого режима страницы: у них разные списки альтернатив. */
   activeVariant: Record<WorkspaceMode, ActiveVariant>
-  /** Лоты ручной проверки, 0–4 штуки; режимы к ним назначает сервер. */
+  /** До восьми кандидатов; сервер выбирает четыре лота и назначает им режимы. */
   manualLotIds: string[]
   manualOrigin: ManualOrigin
-  searchSettings: SearchSettings
 }
 
 type WorkspaceActions = {
-  setSearchSettings: (settings: SearchSettings) => void
   bindDataset: (datasetHash: string) => void
   setMode: (mode: WorkspaceMode) => void
   setScenario: (scenario: Scenario) => void
@@ -71,10 +63,35 @@ const INITIAL: WorkspaceState = {
   activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
   manualLotIds: [],
   manualOrigin: 'empty',
-  searchSettings: {
-    cashLossLimit: null,
-    budgetCap: null, vpubFloor: null, publicLotIds: [],
-  },
+}
+
+/** Убираем прежние фильтры, сохраняя выбор пользователя и привязку к данным. */
+function migrateWorkspace(persisted: unknown): WorkspaceState {
+  if (!persisted || typeof persisted !== 'object') return { ...INITIAL }
+  const state = persisted as Partial<WorkspaceState>
+  const manualLotIds = Array.isArray(state.manualLotIds)
+    ? [...new Set(state.manualLotIds.filter((id) => typeof id === 'string'))].slice(0, MAX_CANDIDATE_LOTS)
+    : []
+  const savedAuto = state.activeVariant?.auto
+  return {
+    datasetHash: typeof state.datasetHash === 'string' ? state.datasetHash : null,
+    mode: state.mode === 'manual' ? 'manual' : 'auto',
+    scenario: state.scenario === 'BASE' ? 'BASE' : 'STRESS',
+    requireStress: typeof state.requireStress === 'boolean' ? state.requireStress : INITIAL.requireStress,
+    autoSearch: state.autoSearch && typeof state.autoSearch.requireStress === 'boolean'
+      && typeof state.autoSearch.startedAt === 'number' && Number.isFinite(state.autoSearch.startedAt)
+      ? { requireStress: state.autoSearch.requireStress, startedAt: state.autoSearch.startedAt }
+      : null,
+    // Индексы альтернатив относились к старым фильтрам; сохранённый вариант имеет стабильный id.
+    activeVariant: {
+      auto: savedAuto?.kind === 'saved' && typeof savedAuto.id === 'string'
+        ? { kind: 'saved', id: savedAuto.id }
+        : { kind: 'default' },
+      manual: { kind: 'default' },
+    },
+    manualLotIds,
+    manualOrigin: manualLotIds.length === 0 ? 'empty' : state.manualOrigin === 'copy' ? 'copy' : 'manual',
+  }
 }
 
 /**
@@ -91,9 +108,6 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
   persist(
     (set) => ({
       ...INITIAL,
-      setSearchSettings: (searchSettings) => set({
-        searchSettings, activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
-      }),
 
       bindDataset: (datasetHash) =>
         set((state) =>
@@ -135,7 +149,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
               activeVariant: manualActive,
             }
           }
-          if (state.manualLotIds.length >= PORTFOLIO_SIZE) return state
+          if (state.manualLotIds.length >= MAX_CANDIDATE_LOTS) return state
           return {
             manualLotIds: [...state.manualLotIds, lotId],
             manualOrigin: state.manualOrigin === 'empty' ? 'manual' : state.manualOrigin,
@@ -163,7 +177,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
       startManualFrom: (lotIds) =>
         set((state) => ({
           mode: 'manual',
-          manualLotIds: [...lotIds],
+          manualLotIds: [...new Set(lotIds)].slice(0, MAX_CANDIDATE_LOTS),
           manualOrigin: 'copy',
           activeVariant: { ...state.activeVariant, manual: { kind: 'default' } },
         })),
@@ -171,10 +185,9 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
     }),
     {
       name: 'cosmos-workspace',
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => sessionStorage),
-      /** Несовместимая версия схемы — начинаем заново, а не чиним по кускам. */
-      migrate: () => ({ ...INITIAL }),
+      migrate: migrateWorkspace,
       partialize: (state) => ({
         datasetHash: state.datasetHash,
         mode: state.mode,
@@ -184,7 +197,6 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
         activeVariant: state.activeVariant,
         manualLotIds: state.manualLotIds,
         manualOrigin: state.manualOrigin,
-        searchSettings: state.searchSettings,
       }),
     },
   ),

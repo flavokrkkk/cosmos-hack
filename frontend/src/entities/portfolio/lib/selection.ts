@@ -3,6 +3,9 @@ import type { SelectionItem } from '@shared/api/contracts'
 /** Ровно столько лотов образуют портфель по условию кейса. */
 export const PORTFOLIO_SIZE = 4
 
+/** Пользователь может включить в область поиска все восемь лотов кейса. */
+export const MAX_CANDIDATE_LOTS = 8
+
 /** Устойчивый ключ состава: порядок выбора не важен, режим важен. */
 export function selectionKey(selection: readonly SelectionItem[]): string {
   return [...selection]

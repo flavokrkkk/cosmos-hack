@@ -4,14 +4,14 @@ import { Suspense, useMemo, useState } from 'react'
 import { LotCard, RecommendedLotCard, useLotDetails } from '@entities/case'
 import { formatMoney, selectionKey, useSavedVariants, useWorkspace } from '@entities/portfolio'
 import {
-  SearchSettings, SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
+  SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
   useManualRecommendation, usePrefetchRecommendation,
 } from '@features'
 import { normalizeApiError } from '@shared/api'
 import type { CaseCatalog, RecommendationResult } from '@shared/api/contracts'
 import { Button, Panel, SectionHeading, Skeleton, Tag } from '@shared/ui'
 import {
-  Alternatives, DecisionAnalysis, ExplanationBlock, LotDetailsHost, PortfolioReview, type AlternativeTarget,
+  Alternatives, ExplanationBlock, LotDetailsHost, PortfolioReview, type AlternativeTarget,
 } from '@widgets'
 
 import { LazyCompareDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
@@ -55,7 +55,6 @@ export function AutoScreen({ catalog }: Props) {
   const [saveMounted, setSaveMounted] = useState(false)
   const [compareMounted, setCompareMounted] = useState(false)
 
-  const method = catalog.methods[0]
   const lotById = useMemo(() => new Map(catalog.lots.map((lot) => [lot.lot_id, lot])), [catalog.lots])
 
   const candidates = useMemo(
@@ -80,12 +79,9 @@ export function AutoScreen({ catalog }: Props) {
       <div className="flex flex-col items-center gap-4">
         <SectionHeading
           as="h1"
-          eyebrow="Профиль"
-          title={method?.title ?? 'Подбор портфеля'}
-          description={method?.description}
+          title="Подбор портфеля"
         />
         <StressSwitch />
-        <SearchSettings catalog={catalog} />
       </div>
 
       {!launched ? (
@@ -98,9 +94,6 @@ export function AutoScreen({ catalog }: Props) {
         <Panel className="mx-auto w-full max-w-[720px] text-center">
           <h2 className="text-[20px] font-bold">Подбор не выполнен</h2>
           <p className="mt-2 text-[14px] text-fail">{query.error.message}</p>
-          <p className="mt-2 text-[13px] text-muted">
-            Это сбой запроса, а не результат расчёта: вывод «подходящих вариантов нет» по нему делать нельзя.
-          </p>
           <Button className="mt-5" onClick={launch}>Повторить</Button>
         </Panel>
       ) : null}
@@ -123,7 +116,7 @@ export function AutoScreen({ catalog }: Props) {
             <h2 className="text-[24px] leading-tight font-bold tracking-[-0.015em]">
               {active.title}
             </h2>
-            {active.kind !== 'team' && active.reason ? (
+            {active.kind === 'saved' && active.reason ? (
               <p className="max-w-[560px] text-[13.5px] leading-snug text-muted" title={active.reason}>
                 {firstSentence(active.reason)}
               </p>
@@ -210,7 +203,6 @@ export function AutoScreen({ catalog }: Props) {
         <Alternatives
           className="rise-in"
           title="Альтернативы и сравнение"
-          subtitle="Результаты двух правил выбора и крайние компромиссы на одинаковых условиях. Можно открыть любой вариант и сравнить его показатели."
           result={result}
           active={activeTarget}
           onOpen={(target) => {
@@ -219,8 +211,6 @@ export function AutoScreen({ catalog }: Props) {
           }}
         />
       ) : null}
-
-      {result ? <DecisionAnalysis analysis={result.analysis} /> : null}
 
       <Suspense fallback={null}>
         {saveMounted && active.calculation ? (
@@ -264,9 +254,6 @@ function LaunchBlock({
         <Button onClick={onLaunch} loading={isRunning} className="h-[52px] px-8 text-[16px]">
           Подобрать портфель
         </Button>
-        <p className="text-[13px] text-muted">
-          Сравним варианты из {catalog.lots.length} лотов по выбранному правилу, покажем альтернативы и чувствительность решения.
-        </p>
       </div>
 
       <section className="flex w-full flex-col items-center gap-6">
@@ -288,7 +275,6 @@ function LoadingBlock() {
     <section className="flex flex-col items-center gap-8" role="status" aria-live="polite">
       <div className="text-center">
         <h2 className="text-[24px] font-bold tracking-[-0.015em]">Подбираем портфель…</h2>
-        <p className="mt-2 text-[13.5px] text-muted">Перебираем конфигурации и проверяем ограничения</p>
       </div>
       <ul className="grid w-full max-w-[1180px] gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[0, 1, 2, 3].map((index) => (
@@ -322,12 +308,6 @@ function NoFeasibleBlock({
         Среди проходящих {result.request.require_stress ? 'STRESS' : 'BASE'} допустимых конфигураций не найдено.
       </p>
       <SearchStats result={result} className="mt-4" />
-      {canSearchInBase ? (
-        <p className="mx-auto mt-4 max-w-[520px] text-[13px] leading-snug text-muted">
-          {result.base_count} конфигураций проходят BASE. «Искать в BASE» меняет условие: такой портфель
-          проверку STRESS не проходил.
-        </p>
-      ) : null}
       <div className="mt-5 flex flex-wrap justify-center gap-3">
         {canSearchInBase ? (
           <Button onClick={onSearchInBase} loading={isRerunning}>Искать в BASE</Button>

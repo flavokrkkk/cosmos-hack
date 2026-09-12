@@ -30,7 +30,7 @@ export function SavedVariantsDialog({ open, onOpenChange, datasetHash }: Props) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="md" title="Сохранённые варианты" description="Хранятся в этом браузере. Показатели при открытии считаются заново.">
+      <DialogContent size="md" title="Сохранённые варианты" description="Хранятся в этом браузере.">
         {items.length === 0 ? (
           <p className="rounded-card bg-panel px-6 py-10 text-center text-[13.5px] text-muted">
             Пока ничего не сохранено. Нажмите «Сохранить вариант» под проверкой портфеля.

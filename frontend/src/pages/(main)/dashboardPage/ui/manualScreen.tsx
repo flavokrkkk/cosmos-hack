@@ -3,11 +3,11 @@ import { Suspense, useMemo, useState } from 'react'
 import { LotCard, useLotDetails } from '@entities/case'
 import {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, LotChip, METRIC_TILES, METRIC_TILES_COMPACT,
-  MetricTiles, PortfolioProgress, FinancialBreakdown, checkLabel, formatCheckValue, formatMoney,
+  MetricTiles, PORTFOLIO_SIZE, PortfolioProgress, FinancialBreakdown, checkLabel, formatCheckValue, formatMoney,
   scenarioDependentCodes, selectionKey, useEvaluate, useSavedVariants, useWorkspace,
 } from '@entities/portfolio'
 import {
-  ExportButton, SearchSettings, SearchStats, StressSwitch, buildCandidates, useActiveVariant,
+  ExportButton, SearchStats, StressSwitch, buildCandidates, useActiveVariant,
   useAutoRecommendation, useManualRecommendation, useManualSelection, useUniformModeDiagnostics,
   type UniformModeDiagnostic,
 } from '@features'
@@ -17,7 +17,7 @@ import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Button, Panel, PanelHeader, PanelTitle, Segmented, Skeleton, Tag } from '@shared/ui'
 import {
-  Alternatives, DecisionAnalysis, ExplanationBlock, LotDetailsHost, type AlternativeTarget,
+  Alternatives, ExplanationBlock, LotDetailsHost, type AlternativeTarget,
 } from '@widgets'
 
 import { LazyCompareDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
@@ -31,10 +31,9 @@ const SCENARIO_OPTIONS = SCENARIOS.map((scenario) => ({ value: scenario, label: 
 /**
  * Экран «Ручная проверка».
  *
- * Пользователь выбирает четыре разных лота; режимы A/B/C назначает сервер
- * (план §14): как только выбран четвёртый лот, уходит подбор внутри этих
- * лотов, а справа появляются показатели и девять проверок. Переключатель
- * BASE/STRESS меняет только пороги проверки того же набора.
+ * Пользователь выбирает 4–8 кандидатов; сервер ищет среди них итоговую
+ * четвёрку с режимами A/B/C. Добавление или удаление кандидата обновляет
+ * подбор. BASE/STRESS меняет только пороги проверки открытого портфеля.
  */
 export function ManualScreen({ catalog }: Props) {
   const selection = useManualSelection()
@@ -72,12 +71,10 @@ export function ManualScreen({ catalog }: Props) {
   )
   const partial = useEvaluate(catalog.dataset_hash, partialSelection, selection.count > 0 && !selection.isComplete)
 
-  /* 4/4 без допустимых режимов: диагностика с одним режимом у всех лотов — по разу на A, B и C (Т3). */
+  /* Диагностика одинаковых режимов относится только к одному составу из четырёх лотов. */
   const noFeasible = selection.isComplete && query.data?.status === 'no_feasible'
-  const uniform = useUniformModeDiagnostics(catalog.dataset_hash, selection.lotIds, catalog.modes, noFeasible)
-  const modeByLot = useMemo(
-    () => new Map((active.calculation?.detail ?? []).map((item) => [item.lot_id, item.mode_id])),
-    [active.calculation],
+  const uniform = useUniformModeDiagnostics(
+    catalog.dataset_hash, selection.lotIds, catalog.modes, noFeasible && selection.count === PORTFOLIO_SIZE,
   )
 
   const candidates = useMemo(
@@ -101,10 +98,10 @@ export function ManualScreen({ catalog }: Props) {
     <div className="flex flex-col gap-14">
       <div className="flex flex-col gap-6">
         <header className="grid items-center gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(340px,1fr)]">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-[24px] leading-tight font-bold">Выберите сервисные лоты</h1>
             <Tag size="md" tone="neutral" aria-live="polite">
-              {selection.count} из {selection.size}
+              {selection.count} из {selection.maximum} · минимум {selection.minimum}
             </Tag>
           </div>
           <div className="flex justify-start lg:justify-end">
@@ -117,7 +114,6 @@ export function ManualScreen({ catalog }: Props) {
             />
           </div>
         </header>
-        <SearchSettings catalog={catalog} />
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.68fr)_minmax(340px,1fr)] lg:items-start">
           <ul className="grid content-start gap-4 sm:grid-cols-2">
@@ -138,14 +134,14 @@ export function ManualScreen({ catalog }: Props) {
           <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
             <Panel>
               <PanelHeader className="mb-3">
-                <PanelTitle className="text-[20px]">Текущий портфель</PanelTitle>
+                <PanelTitle className="text-[20px]">Лоты для подбора</PanelTitle>
                 {selection.count > 0 ? (
                   <Button variant="ghost" size="sm" onClick={selection.clear}>Очистить</Button>
                 ) : null}
               </PanelHeader>
 
               {selection.count === 0 ? (
-                <p className="py-10 text-center text-[12px] text-ink/50">Для продолжения выберите 4 лота слева</p>
+                <p className="py-10 text-center text-[12px] text-ink/50">Для продолжения выберите минимум {selection.minimum} лота слева</p>
               ) : (
                 <>
                   <ul className="grid gap-3 sm:grid-cols-2">
@@ -156,7 +152,6 @@ export function ManualScreen({ catalog }: Props) {
                           <LotChip
                             lotId={lotId}
                             title={lot?.title ?? lotId}
-                            modeId={modeByLot.get(lotId)}
                             onRemove={selection.remove}
                             onClick={openDetails}
                           />
@@ -166,7 +161,7 @@ export function ManualScreen({ catalog }: Props) {
                   </ul>
                   {!complete ? (
                     <p className="mt-3 text-[12.5px] text-muted">
-                      Выберите ещё {selection.remaining} — режимы A/B/C подберёт сервер
+                      Выберите ещё {selection.remaining}, чтобы начать подбор
                     </p>
                   ) : null}
                   {complete ? <StressSwitch compact className="mt-4 justify-between" /> : null}
@@ -182,7 +177,7 @@ export function ManualScreen({ catalog }: Props) {
                 <Panel aria-busy role="status">
                   <PanelHeader className="mb-3">
                     <PanelTitle className="text-[20px]">Показатели</PanelTitle>
-                    <Tag tone="brand">подбираем режимы…</Tag>
+                    <Tag tone="brand">подбираем портфель…</Tag>
                   </PanelHeader>
                   <div className="grid grid-cols-2 gap-3">
                     {[0, 1, 2, 3].map((index) => <Skeleton key={index} className="h-[76px]" />)}
@@ -199,14 +194,14 @@ export function ManualScreen({ catalog }: Props) {
 
             {complete && query.isError && !query.isPending ? (
               <Panel>
-                <PanelTitle className="text-[20px]">Подбор режимов не выполнен</PanelTitle>
+                <PanelTitle className="text-[20px]">Подбор портфеля не выполнен</PanelTitle>
                 <p className="mt-2 text-[13.5px] text-fail">{query.error.message}</p>
                 <Button className="mt-4" size="md" onClick={() => void query.refetch()}>Повторить</Button>
               </Panel>
             ) : null}
 
             {complete && result?.status === 'no_feasible' ? (
-              <NoModesBlock
+              <NoFeasibleBlock
                 result={result}
                 diagnostics={uniform.diagnostics}
                 alwaysFailing={uniform.alwaysFailing(scenario)}
@@ -217,6 +212,24 @@ export function ManualScreen({ catalog }: Props) {
 
             {showResult && active.calculation?.metrics ? (
               <div className="rise-in flex flex-col gap-5">
+                <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
+                  <PanelHeader className="mb-3">
+                    <PanelTitle className="text-[20px]">Текущий портфель</PanelTitle>
+                    <Tag tone="brand">{active.calculation.selection.length} из {selection.count}</Tag>
+                  </PanelHeader>
+                  <ul className="grid gap-3 sm:grid-cols-2">
+                    {active.calculation.selection.map((item) => (
+                      <li key={item.lot_id}>
+                        <LotChip
+                          lotId={item.lot_id}
+                          title={lotById.get(item.lot_id)?.title ?? item.lot_id}
+                          modeId={item.mode_id}
+                          onClick={openDetails}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </Panel>
                 <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
                   <PanelHeader className="mb-3">
                     <PanelTitle className="text-[20px]">Показатели</PanelTitle>
@@ -285,8 +298,7 @@ export function ManualScreen({ catalog }: Props) {
             onRetry={() => void explanations.refetch()}
           />
           <Alternatives
-            title="Другие режимы для выбранных лотов"
-            subtitle="Опорные точки фронта внутри выбранных четырёх лотов: те же лоты, другие сочетания режимов A/B/C."
+            title="Другие варианты из выбранных лотов"
             result={result}
             active={activeTarget}
             onOpen={(target) => {
@@ -294,7 +306,6 @@ export function ManualScreen({ catalog }: Props) {
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
           />
-          <DecisionAnalysis analysis={result.analysis} />
         </div>
       ) : null}
 
@@ -327,13 +338,10 @@ export function ManualScreen({ catalog }: Props) {
 }
 
 /**
- * Допустимых режимов нет. Сервер перебрал все сочетания A/B/C для этих лотов —
- * ни одно не проходит девять условий. Чтобы эксперт видел «вариант с нарушением»
- * (Т3) и понимал, что именно мешает, ниже тот же состав считается с одним режимом
- * у всех лотов; режим выбирает сам пользователь, а условия, нарушенные при любом
- * из режимов, названы блокерами набора.
+ * Нет допустимой четвёрки среди кандидатов. Для единственного состава из
+ * четырёх лотов дополнительно показываем диагностику одинаковых режимов.
  */
-function NoModesBlock({
+function NoFeasibleBlock({
   result, diagnostics, alwaysFailing, scenario, onSearchInBase,
 }: {
   result: RecommendationResult
@@ -343,6 +351,7 @@ function NoModesBlock({
   onSearchInBase: () => void
 }) {
   const canSearchInBase = result.request.require_stress && result.base_count > 0
+  const hasSingleComposition = result.request.lot_ids?.length === PORTFOLIO_SIZE
   const [modeId, setModeId] = useState(diagnostics[0]?.mode.mode_id ?? 'A')
   const current = diagnostics.find((item) => item.mode.mode_id === modeId) ?? diagnostics[0]
   const checks = current?.calculation?.checks[scenario]
@@ -361,10 +370,10 @@ function NoModesBlock({
   return (
     <>
       <Panel>
-        <PanelTitle className="text-[20px]">Сочетания режимов нет</PanelTitle>
+        <PanelTitle className="text-[20px]">Допустимого портфеля нет</PanelTitle>
         <p className="mt-2 text-[13.5px] leading-snug text-ink-500">
-          Сервер перебрал все сочетания A/B/C для этих лотов — ни одно не проходит
-          {result.request.require_stress ? ' STRESS' : ' BASE'}. Замените один из лотов.
+          Алгоритм проверил все четвёрки среди выбранных лотов и их режимы A/B/C — ни один вариант не проходит
+          {result.request.require_stress ? ' STRESS' : ' BASE'}. Добавьте кандидатов или измените их состав.
         </p>
         <SearchStats result={result} className="mt-3 justify-start" />
         {canSearchInBase ? (
@@ -372,14 +381,14 @@ function NoModesBlock({
         ) : null}
       </Panel>
 
-      <Panel>
+      {hasSingleComposition ? <Panel>
         <PanelHeader className="mb-2">
           <PanelTitle className="text-[20px]">Что мешает</PanelTitle>
           {current?.calculation ? <FeasibilityBadge calculation={current.calculation} scenario={scenario} size="sm" /> : null}
         </PanelHeader>
         {blockers.length > 0 ? (
           <p className="mb-3 text-[13px] leading-snug text-ink-700">
-            Не проходит ни при одном сочетании режимов; лучший одинаковый режим даёт:{' '}
+            Нарушения, общие для проверенных одинаковых режимов; лучшее значение среди них:{' '}
             {blockers.map((check, index) => (
               <span key={check.code} className="tabular-nums">
                 {index > 0 ? '; ' : ''}
@@ -414,7 +423,7 @@ function NoModesBlock({
             {Array.from({ length: 9 }, (_, index) => <Skeleton key={index} className="h-[76px]" />)}
           </div>
         )}
-      </Panel>
+      </Panel> : null}
     </>
   )
 }

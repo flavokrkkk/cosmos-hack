@@ -48,7 +48,7 @@ def main():
     for path in sorted((ROOT / 'results').glob('*')):
         if path.is_file():
             copy(str(path.relative_to(ROOT)), f'results/{path.name}')
-    for name in ('test_engine.py', 'test_hybrid.py'):
+    for name in ('test_engine.py', 'test_hybrid.py', 'test_cli_config.py'):
         copy(f'tests/{name}', f'tests/{name}')
     copy('scripts/submission_readme.md', 'README.md')
     copy('docs/22-hybrid-selection.md', 'docs/algorithm.md')

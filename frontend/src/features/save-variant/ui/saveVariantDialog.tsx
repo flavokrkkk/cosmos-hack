@@ -68,7 +68,6 @@ export function SaveVariantDialog({
       <DialogContent
         size="sm"
         title="Сохранить вариант"
-        description="Состав, режимы и версия данных; показатели при открытии считаются заново."
       >
         <form noValidate onSubmit={submit} className="flex flex-col gap-4">
           <TextField
@@ -78,8 +77,7 @@ export function SaveVariantDialog({
             {...register('name')}
           />
           <TextField
-            label="Комментарий"
-            hint="Необязательно: зачем этот вариант и чем отличается"
+            label="Комментарий (необязательно)"
             error={errors.comment?.message}
             {...register('comment')}
           />

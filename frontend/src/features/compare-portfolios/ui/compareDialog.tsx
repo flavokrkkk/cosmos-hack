@@ -34,7 +34,7 @@ export function CompareDialog({ open, onOpenChange, datasetHash, candidates, ini
       <DialogContent
         size="xl"
         title="Сравнение вариантов"
-        description={`Отметьте от ${MIN_VARIANTS} до ${MAX_VARIANTS} вариантов. Первый отмеченный — база сравнения: дельты считаются к нему.`}
+        description={`Выберите от ${MIN_VARIANTS} до ${MAX_VARIANTS} вариантов. Показатели остальных сравниваются с первым выбранным.`}
       >
         {/* Содержимое монтируется при каждом открытии — состояние отметок стартует заново. */}
         <CompareBody datasetHash={datasetHash} candidates={candidates} initialIds={initialIds} />
@@ -149,8 +149,7 @@ function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open'
 
         {!result ? (
           <div className="flex h-full min-h-[240px] items-center justify-center rounded-card bg-panel px-6 text-center text-[13.5px] text-muted">
-            Отметьте варианты слева и нажмите «Сравнить». Числа посчитает бэкенд — той же
-            арифметикой, что и одиночные портфели.
+            Выберите варианты слева и нажмите «Сравнить».
           </div>
         ) : (
           <div className={cn(isStale && 'is-stale')}>
@@ -196,19 +195,16 @@ function ComparisonAnalysis({ result }: { result: ComparisonResult }) {
         <Segmented size="sm" value={scenario} onChange={(value: Scenario) => setScenario(value)}
           options={SCENARIOS.map((value) => ({ value, label: value }))} label="Сценарий AI-анализа сравнения" />
       </div>
-      <p className="mt-2 text-[13px] text-muted">
-        Компромиссы относительно первого варианта (колонки слева направо); победителя модель не выбирает.
-      </p>
       <Button className="mt-4" size="md" loading={query.isFetching} onClick={() => {
         if (launched) void query.refetch()
         else setLaunchedKey(requestKey)
       }}>Проанализировать с AI</Button>
-      {query.isFetching ? <p role="status" className="mt-3 text-[13px] text-muted">Модель отвечает — до полутора минут на процессоре.</p> : null}
+      {query.isFetching ? <p role="status" className="mt-3 text-[13px] text-muted">Готовим анализ…</p> : null}
       {launched && query.isError ? <p className="mt-3 text-[13px] text-fail">Анализ не получен: {query.error.message}. Расчёты в таблице доступны.</p> : null}
       {analysis && !query.isFetching ? (
         <div className="mt-4 flex flex-col gap-3">
           <Tag tone={analysis.generated_by === 'ollama' ? 'brand' : 'warn'}>
-            {analysis.generated_by === 'ollama' ? (analysis.composition === 'extractive' ? 'AI выбрал акценты · факты расчёта' : 'Суммаризировано AI') : 'Факты расчёта · без AI'} · {analysis.scenario}
+            {analysis.generated_by === 'ollama' ? 'Анализ AI' : 'Анализ по шаблону'} · {analysis.scenario}
           </Tag>
           <p className="font-semibold">{analysis.explanation.headline}</p>
           <p className="text-[14px]">{analysis.explanation.summary}</p>
@@ -290,11 +286,6 @@ function ComparisonTable({ result, titles }: { result: ComparisonResult; titles:
           ))}
         </tbody>
       </table>
-      <p className="px-3 pt-3 pb-2 text-[11.5px] leading-snug text-muted">
-        Дельты считаются к базе и подписаны по каждому показателю отдельно. Общего балла нет —
-        он потребовал бы весов, а метод команды весов не вводит. Общественная ценность и
-        денежные поступления не складываются: это разные контуры.
-      </p>
     </div>
   )
 }
@@ -304,7 +295,6 @@ function ScenarioRow({ scenario, result }: { scenario: Scenario; result: Compari
     <tr className="bg-card">
       <th scope="row" className="rounded-l-xl px-3 py-2.5 text-left font-medium">
         Проверка {scenario}
-        <span className="block text-[11px] font-normal text-muted">те же лоты и режимы; отличаются пороги</span>
       </th>
       {result.variants.map((variant, index) => {
         const verdict = scenarioVerdict(variant, scenario)

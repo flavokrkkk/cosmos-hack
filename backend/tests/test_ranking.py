@@ -23,7 +23,8 @@ def test_single_method_and_auditable_q():
 
 @pytest.mark.parametrize("extra", [{"method_id":"cash_surplus_v1"},{"method_id":"weighted_mcda_v1"},
                                     {"method_id":"pareto_lexicographic_v1"},{"weights":{"vpub":1}},
-                                    {"quality_epsilon":.01},{"cash_loss_limit_mrub":-1}])
+                                    {"method_id":"leximin"},{"quality_epsilon":.01},{"cash_loss_limit_mrub":-1},
+                                    {"budget_cap_mrub":True},{"vpub_floor_mrub_per_year":False}])
 def test_removed_methods_and_invalid_parameters_rejected(extra):
     with pytest.raises(ValidationError):
         recommend(**extra)

@@ -1,5 +1,6 @@
 """Проверки нового правила выбора; старые наборы данных не переисследуются."""
 import json
+import sys
 from fractions import Fraction
 
 import pandas as pd
@@ -31,7 +32,8 @@ def test_automatic_delta_is_smallest_loss_for_global_q(baseline):
 
 @pytest.mark.parametrize("delta,s,q", [(0,101.75,0),(2.24999999,101.75,0),(2.25,99.5,.125),
                                        (7.24999999,99.5,.125),(7.25,94.5,1072/3690),
-                                       (9.49999999,94.5,1072/3690),(9.5,92.25,.5),(200,92.25,.5)])
+                                       (9.49999999,94.5,1072/3690),(9.499999999,94.5,1072/3690),
+                                       (9.5,92.25,.5),(200,92.25,.5)])
 def test_cash_boundaries_are_inclusive(baseline, delta, s, q):
     _, candidates, report = baseline
     row, stages = select(score_frame(candidates, report["bounds"]), delta)
@@ -106,9 +108,27 @@ def test_shock_is_recalculated_with_frozen_scales(baseline):
             assert (c["minimum"], c["maximum"]) == report["bounds"][c["key"]]
 
 
+@pytest.mark.parametrize("delta", [None, 0])
+def test_diagnostic_assumptions_cannot_change_primary_selection(baseline, monkeypatch, delta):
+    """Даже сценарий, в котором все варианты провалились, не меняет основной ответ."""
+    implementation = sys.modules[analyze.__module__]
+    monkeypatch.setattr(implementation, "candidate_frame", lambda: baseline[0].copy(deep=True))
+    parameters = Parameters(cash_loss_limit_mrub=delta)
+    without = analyze(parameters, include_sensitivity=False)[2]
+    with_default = analyze(parameters)[2]
+    assert {**with_default, "sensitivity": []} == without
+    monkeypatch.setattr(implementation, "sensitivity_scenarios", lambda limits, parameters: [
+        ("no_receipts", "Нулевые поступления", dict(limits, cash_multiplier=0)),
+    ])
+    changed = analyze(parameters)[2]
+    assert changed["sensitivity"][0]["outcome"]["winner"] is None
+    assert {**changed, "sensitivity": []} == without
+
+
 @pytest.mark.parametrize("kwargs", [{"cash_loss_limit_mrub":-1},{"cash_loss_limit_mrub":True},{"require_stress":"false"},{"cash_loss_limit_mrub":float('nan')},
                                     {"cash_loss_limit_mrub":float('inf')},{"quality_epsilon":.001},
-                                    {"budget_cap_mrub":0},{"lot_ids":("FIRE",)*4}])
+                                    {"budget_cap_mrub":0},{"budget_cap_mrub":True},
+                                    {"vpub_floor_mrub_per_year":False},{"lot_ids":("FIRE",)*4}])
 def test_reject_invalid_parameters(kwargs):
     with pytest.raises(ValueError):
         Parameters(**kwargs)

@@ -4,6 +4,8 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 from engine import load_decision
 
 ROOT = Path(__file__).resolve().parents[1]

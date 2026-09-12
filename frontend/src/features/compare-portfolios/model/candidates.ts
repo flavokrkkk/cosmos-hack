@@ -22,7 +22,7 @@ export type Candidate = {
 
 const SOURCE_LABEL: Record<CandidateSource, string> = {
   team: 'портфель команды',
-  reference: 'опорная точка фронта',
+  reference: 'альтернатива',
   manual: 'ручная проверка',
   saved: 'сохранённый вариант',
 }
@@ -55,7 +55,7 @@ export function buildCandidates({ datasetHash, auto, manual, saved }: Input): Ca
 
   if (auto?.recommended) {
     push({
-      title: auto.recommended.title,
+      title: 'Рекомендованный портфель',
       source: 'team',
       reason: auto.recommended.reason,
       selection: auto.recommended.calculation.selection,
@@ -71,13 +71,12 @@ export function buildCandidates({ datasetHash, auto, manual, saved }: Input): Ca
       feasible: variant.calculation.feasible_by_scenario,
     })
   }
-  /* Ручная проверка: портфель команды (если он среди выбранных лотов) и опорные
-     точки внутри выбранных лотов — те же лоты, другие сочетания режимов. */
+  /* Ручная проверка: рекомендованная четвёрка и опорные точки внутри набора кандидатов. */
   if (manual?.recommended) {
     push({
-      title: `Ручная: ${manual.recommended.title}`,
+      title: 'Рекомендация из выбранных лотов',
       source: 'manual',
-      reason: 'Четыре лота выбраны вручную; это портфель команды.',
+      reason: 'Алгоритм выбрал четыре лота и их режимы из вашего набора кандидатов.',
       selection: manual.recommended.calculation.selection,
       feasible: manual.recommended.calculation.feasible_by_scenario,
     })

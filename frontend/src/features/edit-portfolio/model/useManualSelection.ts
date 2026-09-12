@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
-import { PORTFOLIO_SIZE, useWorkspace } from '@entities/portfolio'
+import { MAX_CANDIDATE_LOTS, PORTFOLIO_SIZE, useWorkspace } from '@entities/portfolio'
 import type { LotCardState } from '@entities/case'
 
 /**
- * Ручной выбор лотов: 0–4 уникальных, режимы не назначаются — их подбирает сервер.
- * Пятый лот не добавляется: чтобы взять новый, нужно убрать один из четырёх.
+ * Ручной выбор кандидатов: поиск начинается с четырёх лотов, добавить можно
+ * до восьми. Итоговую четвёрку и режимы назначает сервер.
  */
 export function useManualSelection() {
   const lotIds = useWorkspace((state) => state.manualLotIds)
@@ -14,22 +14,23 @@ export function useManualSelection() {
   const remove = useWorkspace((state) => state.removeManualLot)
   const clear = useWorkspace((state) => state.clearManual)
 
-  const isComplete = lotIds.length === PORTFOLIO_SIZE
+  const isComplete = lotIds.length >= PORTFOLIO_SIZE && lotIds.length <= MAX_CANDIDATE_LOTS
 
   const stateOf = useCallback(
     (lotId: string): LotCardState => {
       if (lotIds.includes(lotId)) return 'selected'
-      return isComplete ? 'dimmed' : 'idle'
+      return 'idle'
     },
-    [lotIds, isComplete],
+    [lotIds],
   )
 
   return {
     lotIds,
     origin,
     count: lotIds.length,
-    size: PORTFOLIO_SIZE,
-    remaining: PORTFOLIO_SIZE - lotIds.length,
+    minimum: PORTFOLIO_SIZE,
+    maximum: MAX_CANDIDATE_LOTS,
+    remaining: Math.max(0, PORTFOLIO_SIZE - lotIds.length),
     isComplete,
     stateOf,
     toggle,

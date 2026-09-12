@@ -20,12 +20,12 @@ export function StressSwitch({ className, compact = false }: Props) {
 
   return (
     <div className={cn('flex items-center gap-4', className)}>
-      <Tooltip content="Портфель должен выдерживать сокращение бюджета (сценарий STRESS) без пересмотра состава. После первого запуска переключение сразу обновляет подбор.">
+      <Tooltip content="Включено: искать портфель для BASE и STRESS. Выключено: достаточно пройти BASE.">
         <label
           htmlFor={id}
           className={cn('cursor-pointer font-medium', compact ? 'text-[13.5px]' : 'text-[15px]')}
         >
-          Искать только проходящие STRESS
+          Учитывать сокращение бюджета · STRESS
         </label>
       </Tooltip>
       <Switch id={id} checked={requireStress} onCheckedChange={setRequireStress} />

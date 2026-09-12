@@ -12,7 +12,7 @@ export type LotCardState = 'idle' | 'selected' | 'dimmed'
 
 type Props = {
   lot: Lot
-  /** `dimmed` — четыре лота уже выбраны, этот не входит: читаем, но приглушён. */
+  /** `dimmed` — лот приглушён в представлении результата; выбор кандидатов его не использует. */
   state?: LotCardState
   /** Кнопка «Выбрать / Выбрано». Без обработчика карточка только показывает лот. */
   onToggle?: (lotId: string) => void

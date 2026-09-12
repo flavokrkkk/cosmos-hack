@@ -73,20 +73,34 @@ class Decision:
         }
 
 
-def load_decision(path: Path = None) -> Decision:
-    """Читает конфигурацию решения команды."""
+def read_decision_config(path: Path | None = None) -> Dict[str, Any]:
+    """Читает входы и проверяет метод, не запуская поиск и не применяя параметры.
+
+    CLI может переопределить параметры до их валидации и единственного расчёта.
+    Идентификатор метода обязателен для всех команд, использующих конфигурацию.
+    """
     config_path = Path(path) if path else DEFAULT_CONFIG_PATH
     if not config_path.exists():
         raise FileNotFoundError(
             f"Не найден конфиг решения: {config_path}. "
-            "Он задаёт портфель и альтернативы; править исходный код для этого не нужно."
+            "Он задаёт параметры алгоритма и альтернативы; править исходный код для этого не нужно."
         )
     with open(config_path, encoding="utf-8") as handle:
         data = json.load(handle)
 
-    from .hybrid import METHOD_ID, Parameters, analyze
+    from .hybrid import METHOD_ID
+    if not isinstance(data, dict):
+        raise ValueError("Конфигурация решения должна быть JSON-объектом")
     if data.get("decision_method") != METHOD_ID:
         raise ValueError(f"Поддерживается только {METHOD_ID}")
+    return data
+
+
+def load_decision(path: Path = None) -> Decision:
+    """Читает конфигурацию и вычисляет решение команды."""
+    from .hybrid import Parameters, analyze
+
+    data = read_decision_config(path)
     parameters = Parameters(**data["algorithm_parameters"])
     _, _, analysis = analyze(parameters)
     winner = analysis["winner"]

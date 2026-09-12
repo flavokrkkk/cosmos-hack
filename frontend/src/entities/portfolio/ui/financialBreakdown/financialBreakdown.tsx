@@ -16,8 +16,8 @@ function formatPercent(value: number | null): string {
 /**
  * «Деньги и операционный запас»: годовой остаток CASH − OPEX, его источники и
  * запас до нулевого остатка. Все числа приходят в `calculation.financial`;
- * в браузере ничего не считается. Остаток — не прибыль: оговорка сервера
- * печатается под плитками.
+ * в браузере ничего не считается. Остаток не учитывает возврат C0,
+ * налоги и стоимость капитала.
  */
 export function FinancialBreakdown({ financial, className }: Props) {
   if (!financial) return null
@@ -40,42 +40,36 @@ export function FinancialBreakdown({ financial, className }: Props) {
           className="h-full"
         />
         <StatTile
-          label="Не хватает на эксплуатацию"
+          label="Не хватает на эксплуатацию / год"
           value={formatMoney(gap)}
-          hint="в год"
           tone={gap > 0 ? 'fail' : 'neutral'}
           className="h-full"
         />
         <StatTile
-          label="Якорные поступления"
+          label="Якорные поступления / год"
           value={formatMoney(financial.anchor_cash_mrub_per_year)}
-          hint="в год"
           className="h-full"
         />
         <StatTile
-          label="Коммерческие поступления"
+          label="Коммерческие поступления / год"
           value={formatMoney(financial.commercial_cash_mrub_per_year)}
-          hint="в год"
           className="h-full"
         />
         <StatTile
           label="Запас: падение поступлений до нулевого остатка"
           value={formatPercent(financial.cash_drop_break_even_pct)}
-          hint={financial.cash_drop_break_even_pct === null ? 'порог не определён' : 'при прочих равных'}
+          hint={financial.cash_drop_break_even_pct === null ? 'порог не определён' : undefined}
           tone={financial.cash_drop_break_even_pct === null ? 'fail' : 'neutral'}
           className="h-full"
         />
         <StatTile
           label="Запас: рост расходов до нулевого остатка"
           value={formatPercent(financial.opex_growth_break_even_pct)}
-          hint={financial.opex_growth_break_even_pct === null ? 'порог не определён' : 'при прочих равных'}
+          hint={financial.opex_growth_break_even_pct === null ? 'порог не определён' : undefined}
           tone={financial.opex_growth_break_even_pct === null ? 'fail' : 'neutral'}
           className="h-full"
         />
       </div>
-      <p className="mt-3 text-[12px] leading-snug text-muted">
-        {financial.limitation} Оба порога проверяются по отдельности.
-      </p>
     </Collapsible>
   )
 }

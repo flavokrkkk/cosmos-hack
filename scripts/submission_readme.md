@@ -24,6 +24,8 @@ python3.12 -m venv .venv
 
 ## Файлы и изменение входов
 
+[Расшифровки обозначений, столбцов CSV и единиц измерения](docs/23-results-glossary.md).
+
 - `src/engine/hybrid.py` — единственная логика выбора, ровно та же, что вызывается API основного приложения.
 - `src/engine/canonical.py` — адаптер формул; `constraints.py` — диагностика границ.
 - `data/official/` — неизменная копия входов организаторов, включая `case_core.py`, два CSV и `config/case_config.json`.

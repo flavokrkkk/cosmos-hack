@@ -14,7 +14,6 @@ export type AlternativeTarget = 'team' | number
 
 type Props = {
   title: ReactNode
-  subtitle?: ReactNode
   result: RecommendationResult
   /** Что открыто сейчас: портфель команды, индекс опорной точки или ничего из списка. */
   active: AlternativeTarget | null
@@ -36,19 +35,13 @@ function iconFor(title: string, isTeam: boolean): Icon {
   return Shuffle
 }
 
-/** Первое предложение — карточке хватает сути, полный текст остаётся в подсказке. */
-function firstSentence(text: string): string {
-  const match = text.match(/^[^.!?]+[.!?]/)
-  return match ? match[0] : text
-}
-
 /**
  * «Альтернативы и сравнение»: портфель команды и опорные точки фронта — крайние
  * значения по каждому показателю среди недоминируемых. Карточка держит только
  * суть: название, состав, допустимость и действие; числа — в проверке и сравнении.
  * «Открыть этот вариант» меняет просмотр, но НЕ принимает вариант решением команды.
  */
-export function Alternatives({ title, subtitle, result, active, onOpen, className }: Props) {
+export function Alternatives({ title, result, active, onOpen, className }: Props) {
   const scenario = useWorkspace((state) => state.scenario)
   const items: { target: AlternativeTarget; variant: RecommendationVariant }[] = [
     ...(result.recommended ? [{ target: 'team' as const, variant: result.recommended }] : []),
@@ -58,7 +51,7 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
 
   return (
     <section className={cn('flex flex-col items-center gap-8', className)}>
-      <SectionHeading title={title} description={subtitle} />
+      <SectionHeading title={title} />
 
       <ul className="flex w-full flex-wrap justify-center gap-6">
         {items.map(({ target, variant }, index) => {
@@ -83,12 +76,9 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
               >
                 <div className="flex items-start justify-between gap-2">
                   <Icon className="size-7 text-brand" aria-hidden weight="regular" />
-                  {isTeam ? <Tag tone="brand">основной вариант</Tag> : <Tag tone="muted">опорная точка</Tag>}
+                  {isTeam ? <Tag tone="brand">основной вариант</Tag> : <Tag tone="muted">альтернатива</Tag>}
                 </div>
-                <h3 className="mt-7 text-[17px] leading-tight font-bold tracking-[-0.01em]">{variant.title}</h3>
-                <p className="mt-1.5 line-clamp-2 text-[13px] leading-snug text-muted" title={variant.reason}>
-                  {firstSentence(variant.reason)}
-                </p>
+                <h3 className="mt-7 text-[17px] leading-tight font-bold tracking-[-0.01em]">{isTeam ? 'Рекомендованный портфель' : variant.title}</h3>
                 <p className="mt-3 text-[12px] text-ink-500 tabular-nums">
                   {selectionLabel(variant.calculation.selection)}
                 </p>

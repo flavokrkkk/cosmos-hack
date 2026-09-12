@@ -33,8 +33,8 @@ class RecommendRequest(PortfolioSchema):
     method_id: Literal["hybrid_maximin_v1"] = "hybrid_maximin_v1"
     cash_loss_limit_mrub: float | None = Field(default=None, ge=0, strict=True, description="Δ, млн ₽/год. null — минимальная потеря S для достижения глобального максимума Q.")
     quality_epsilon: Literal[0] = 0
-    budget_cap_mrub: float | None = Field(default=None, gt=0)
-    vpub_floor_mrub_per_year: float | None = Field(default=None, ge=0)
+    budget_cap_mrub: float | None = Field(default=None, gt=0, strict=True)
+    vpub_floor_mrub_per_year: float | None = Field(default=None, ge=0, strict=True)
     required_public_lot_ids: list[str] = Field(default_factory=list, max_length=4)
     lot_ids: list[Annotated[str, Field(min_length=1, max_length=32)]] | None = Field(
         default=None, min_length=4, max_length=8,

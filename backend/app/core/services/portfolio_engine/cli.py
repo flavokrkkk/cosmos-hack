@@ -24,7 +24,7 @@ from typing import List, Sequence, Tuple
 
 from .canonical import REPO_ROOT, evaluate, scenarios
 from .constraints import diagnose, failed
-from .decision import Variant, load_decision
+from .decision import Variant, load_decision, read_decision_config
 from .sensitivity import (binding_first, c0_breaking_point, input_headroom,
                           surplus_headroom)
 from .selfcheck import run_selfcheck
@@ -220,8 +220,7 @@ def cmd_pareto(args) -> int:
 def cmd_recommend(args) -> int:
     from .hybrid import Parameters, analyze
     # Читаем только входы: --delta переопределяет конфигурацию до единственного поиска.
-    path = args.config or REPO_ROOT / "config" / "decision.json"
-    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    data = read_decision_config(args.config)
     parameters = dict(data["algorithm_parameters"])
     if args.delta is not None:
         parameters["cash_loss_limit_mrub"] = args.delta

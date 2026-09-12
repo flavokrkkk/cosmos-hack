@@ -5,8 +5,7 @@ import type {
 } from '@shared/api/contracts'
 
 import { portfolioService } from '../api'
-import { selectionKey, sortedLotIds } from '../lib/selection'
-import { useWorkspace, type SearchSettings } from '../model/workspace'
+import { MAX_CANDIDATE_LOTS, PORTFOLIO_SIZE, selectionKey, sortedLotIds } from '../lib/selection'
 
 export const portfolioKeys = {
   evaluate: (datasetHash: string, selection: readonly SelectionItem[]) =>
@@ -48,27 +47,26 @@ export type RecommendParams = {
   /** Четыре–восемь лотов-кандидатов; `null` — полный автоподбор. */
   lotIds: readonly string[] | null
   enabled: boolean
-  settings?: SearchSettings
 }
 
 function recommendRequest(params: RecommendParams, withExplanations: boolean): RecommendRequest {
-  const settings = params.settings ?? useWorkspace.getState().searchSettings
   return {
     dataset_hash: params.datasetHash as string,
     require_stress: params.requireStress,
     method_id: 'hybrid_maximin_v1',
-    cash_loss_limit_mrub: settings.cashLossLimit,
+    cash_loss_limit_mrub: null,
     quality_epsilon: 0,
-    budget_cap_mrub: settings.budgetCap,
-    vpub_floor_mrub_per_year: settings.vpubFloor,
-    required_public_lot_ids: sortedLotIds(settings.publicLotIds),
+    budget_cap_mrub: null,
+    vpub_floor_mrub_per_year: null,
+    required_public_lot_ids: [],
     lot_ids: params.lotIds ? sortedLotIds(params.lotIds) : null,
     with_explanations: withExplanations,
   }
 }
 
 function recommendEnabled({ datasetHash, lotIds, enabled }: RecommendParams): boolean {
-  return enabled && Boolean(datasetHash) && (lotIds === null || (lotIds.length >= 4 && lotIds.length <= 8))
+  return enabled && Boolean(datasetHash)
+    && (lotIds === null || (lotIds.length >= PORTFOLIO_SIZE && lotIds.length <= MAX_CANDIDATE_LOTS))
 }
 
 /**
@@ -92,9 +90,8 @@ export function recommendationQueryOptions(params: RecommendParams) {
 
 /** Подбор в два шага: числа видны сразу; «Подобрать заново» — `refetch()`. */
 export function useRecommendation(params: RecommendParams) {
-  const settings = useWorkspace((state) => state.searchSettings)
   return useQuery({
-    ...recommendationQueryOptions({ ...params, settings: params.settings ?? settings }),
+    ...recommendationQueryOptions(params),
     enabled: recommendEnabled(params),
   })
 }
@@ -107,8 +104,7 @@ export function useRecommendation(params: RecommendParams) {
  * пережить перезагрузку.
  */
 export function useRecommendationExplanations(params: RecommendParams) {
-  const settings = useWorkspace((state) => state.searchSettings)
-  const request = recommendRequest({ ...params, settings: params.settings ?? settings }, true)
+  const request = recommendRequest(params, true)
   return useQuery({
     queryKey: [...portfolioKeys.recommend(params.datasetHash ?? '', params.requireStress, params.lotIds, true), request],
     queryFn: ({ signal }) => portfolioService.recommend(request, signal, 150_000),

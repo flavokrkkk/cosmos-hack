@@ -13,7 +13,7 @@ from app.core.services.portfolio_ranking_service import CRITERIA, METHODS
 from app.infrastructure.errors.portfolio_errors import DatasetMismatch, InvalidPortfolio
 
 
-ENGINE_VERSION = "2.0.0"
+ENGINE_VERSION = "2.0.1"
 LOT_TITLES = {
     "FIRE": ("Мониторинг лесных пожаров", "Сибирь"),
     "FLOOD": ("Паводки и оползни", "Дальний Восток"),

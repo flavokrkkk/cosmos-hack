@@ -47,7 +47,7 @@ export function ExplanationBlock({ result, isLoading, errorMessage, onRetry, cla
 
         {isLoading && !result ? (
           <div className="flex flex-col gap-3" role="status" aria-live="polite">
-            <p className="text-[13px] text-muted">Модель формирует объяснение — до полутора минут на процессоре. Числа выше уже готовы.</p>
+            <p className="text-[13px] text-muted">Готовим объяснение…</p>
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
@@ -73,13 +73,12 @@ function StatusLabel({ isLoading, result }: { isLoading?: boolean; result: Recom
   if (result?.generated_by === 'ollama') {
     return (
       <span className="text-[14px] font-medium text-brand">
-        {result.composition === 'extractive' ? 'AI выбрал акценты · факты расчёта' : 'Суммаризировано AI'}
-        {result.model ? <span className="text-muted"> · {result.model}</span> : null}
+        Объяснение AI
       </span>
     )
   }
-  if (result) return <Tag tone="warn" size="md">Факты расчёта · без AI</Tag>
-  if (isLoading) return <Tag tone="brand" size="md">модель отвечает…</Tag>
+  if (result) return <Tag tone="warn" size="md">Объяснение по шаблону</Tag>
+  if (isLoading) return <Tag tone="brand" size="md">Готовим объяснение…</Tag>
   return <span className="text-[14px] font-medium text-brand">Объяснение AI</span>
 }
 
@@ -102,13 +101,13 @@ function ExplanationText({
       {result.warning ? <p className="text-[12px] text-warn">{result.warning}</p> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[11.5px] text-muted">
-          Сценарий {result.scenario} · составлено по проверенным фактам расчёта
+          Сценарий {result.scenario}
         </p>
         {/* Шаблон — не приговор: когда модель поднимется, можно запросить текст заново. */}
         {result.generated_by === 'template' && onRetry ? (
           <Button size="sm" variant="secondary" onClick={onRetry} loading={isLoading}>
             <Sparkle className="size-3.5" weight="fill" aria-hidden />
-            Запросить у модели снова
+            Повторить с AI
           </Button>
         ) : null}
       </div>

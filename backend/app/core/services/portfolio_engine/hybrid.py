@@ -1,8 +1,10 @@
-"""Единственный метод выбора: денежное ограничение → maximin → денежный tie-break.
+"""Единственный метод выбора: maximin → денежный остаток, с явным пределом Δ.
 
 Шкалы фиксируются по всей официально допустимой области выбранного сценария,
 до фильтра состава, дополнительных требований и Δ. ε качества равен нулю.
-Округление до 8 знаков убирает шум агрегирования; сравнения далее точные.
+Автоматический Δ описывает цену достижения Qmax, ручной ограничивает поиск.
+Округление агрегатов до 8 знаков убирает машинный шум; ручной Δ не округляется.
+Дополнительные сценарии считаются после выбора и не меняют основную рекомендацию.
 """
 from dataclasses import dataclass
 from fractions import Fraction
@@ -30,9 +32,12 @@ NORMALIZATION = (
     "При равенстве Q выбирается максимум S, затем сумма оценок, затем стабильный ID."
 )
 CAVEAT = (
-    "Шкалы, Δ, дополнительные условия и шоки — допущения команды. Δ задаёт допустимую "
-    "потерю денежного остатка, а не вероятность. Min–max усиливает небольшие различия "
-    "индексов; равноправие шкал тоже является предпочтением. Шоки не заменяют официальный STRESS. "
+    "Шкалы и порядок выбора — предпочтения команды. Автоматический Δ — вычисленная цена "
+    "достижения максимума Q, а не независимый денежный лимит. Ручной Δ ограничивает потерю S. "
+    "Q — относительная оценка слабейшего критерия, не процент выполнения общественной задачи; "
+    "равный Q не означает равенства остальных показателей. Min–max усиливает небольшие различия "
+    "индексов. Дополнительные сценарии — иллюстрации, не вероятности; они не влияют на основного "
+    "победителя и не заменяют официальный STRESS. "
     "S не учитывает возврат C0, налоги и стоимость капитала и не является чистой прибылью."
 )
 
@@ -61,7 +66,7 @@ class Parameters:
         if self.quality_epsilon != 0:
             raise ValueError("В принятой версии ε качества равен 0")
         for value, positive in ((self.budget_cap_mrub, True), (self.vpub_floor_mrub_per_year, False)):
-            if value is not None and (not math.isfinite(value) or value < 0 or (positive and value == 0)):
+            if value is not None and (isinstance(value, bool) or not math.isfinite(value) or value < 0 or (positive and value == 0)):
                 raise ValueError("Некорректный дополнительный порог")
         known = set(canonical.lot_ids())
         for ids in (self.lot_ids, self.required_public_lot_ids):
@@ -125,19 +130,24 @@ def score_frame(frame: pd.DataFrame, bounds: dict) -> pd.DataFrame:
 
 
 def select(scored: pd.DataFrame, delta: float | None) -> tuple[pd.Series | None, dict]:
+    """Выбор по принятому правилу. Вход не содержит результатов чувствительности."""
     if scored.empty:
         return None, dict(s_max_mrub=None, cash_floor_mrub=None, cash_eligible_count=0, q_max=None, effective_delta_mrub=None)
     s_max = max(scored.surplus_exact)
+    priorities = ["q_exact", "surplus_exact", "sum_exact", "stable_id"]
+    ascending = [False, False, False, True]
     if delta is None:
-        best_q = max(scored.q_exact)
-        delta_exact = s_max - max(scored.loc[scored.q_exact == best_q, "surplus_exact"])
+        # Сначала Q → S. Автоматический Δ — следствие этого выбора, не новая гипотеза.
+        row = scored.sort_values(priorities, ascending=ascending, kind="stable").iloc[0]
+        cash_floor = row.surplus_exact
+        delta_exact = s_max - cash_floor
+        eligible = scored[scored.surplus_exact >= cash_floor]
     else:
-        delta_exact = exact(delta)
-    cash_floor = s_max - delta_exact
-    eligible = scored[scored.surplus_exact >= cash_floor]
-    # No approximate Q equality: epsilon=0, Fraction comparisons are exact.
-    row = eligible.sort_values(["q_exact", "surplus_exact", "sum_exact", "stable_id"],
-                               ascending=[False, False, False, True], kind="stable").iloc[0]
+        # Округляется шум агрегатов, но не явный предел пользователя: 9.499999999 < 9.5.
+        delta_exact = Fraction(str(delta))
+        cash_floor = s_max - delta_exact
+        eligible = scored[scored.surplus_exact >= cash_floor]
+        row = eligible.sort_values(priorities, ascending=ascending, kind="stable").iloc[0]
     return row, dict(s_max_mrub=float(s_max), cash_floor_mrub=float(cash_floor),
                      cash_eligible_count=len(eligible), q_max=float(row.q_exact), effective_delta_mrub=float(delta_exact))
 
@@ -171,6 +181,38 @@ def switching_curve(scored: pd.DataFrame, bounds: dict) -> list[dict]:
     return switches
 
 
+def sensitivity_scenarios(limits: dict, parameters: Parameters) -> list[tuple[str, str, dict]]:
+    """Иллюстративные условия для отдельных проверок; не входы основного поиска."""
+    cases = []
+    for pct in (1, 5, 10):
+        cases.append((f"budget_{pct}", f"Лимит запуска ниже на {pct}%", dict(limits, budget_cap_mrub=limits["budget_cap_mrub"] * (1-pct/100))))
+    for pct in (10, 20):
+        cases.append((f"vpub_{pct}", f"Минимум общественной ценности выше на {pct}%", dict(limits, vpub_floor_mrub_per_year=limits["vpub_floor_mrub_per_year"] * (1+pct/100))))
+    for lot in parameters.lot_ids or canonical.lot_ids():
+        if lot not in parameters.required_public_lot_ids and len(parameters.required_public_lot_ids) < 4:
+            cases.append((f"public_{lot}", f"Сохранить {lot} в общественном ядре", dict(limits, required_public_lot_ids=sorted((*parameters.required_public_lot_ids, lot)))))
+    for name, title, cash, opex in (("cash_drop", "Поступления ниже на 10%", .9, 1),
+                                   ("opex_growth", "Расходы выше на 5%", 1, 1.05),
+                                   ("combined", "Поступления −10%, расходы +5%", .9, 1.05)):
+        cases.append((name, title, dict(limits, cash_multiplier=cash, opex_multiplier=opex)))
+    return cases
+
+
+def analyze_sensitivity(official: pd.DataFrame, limits: dict, parameters: Parameters,
+                        bounds: dict, original: pd.Series) -> list[dict]:
+    """Сравнивает отдельные сценарии с уже выбранным портфелем, сохраняя его входы."""
+    results = []
+    for name, title, changed in sensitivity_scenarios(limits, parameters):
+        pool = apply_conditions(official, changed)
+        selected, stage = select(score_frame(pool, bounds), parameters.cash_loss_limit_mrub)
+        results.append(dict(id=name, title=title, origin="допущение", **changed, **stage,
+            feasible_count=len(pool), outcome=dict(winner=outcome(selected, bounds),
+            winner_changed=selected is None or selected.stable_id != original.stable_id,
+            original_still_feasible=bool((pool.stable_id == original.stable_id).any()),
+            original_adjusted_surplus_mrub=float(original.cash * changed["cash_multiplier"] - original.opex * changed["opex_multiplier"]))))
+    return results
+
+
 def analyze(parameters: Parameters, *, include_sensitivity: bool = True) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     all_rows = candidate_frame()
     reference = all_rows[all_rows.BASE_ok & (all_rows.STRESS_ok if parameters.require_stress else True)]
@@ -187,26 +229,7 @@ def analyze(parameters: Parameters, *, include_sensitivity: bool = True) -> tupl
                     quality_epsilon=0, reference_count=len(reference), bounds=bounds, sensitivity=[],
                     switching_curve=switching_curve(scored, bounds), pareto_objectives=[*MAXIMIZE, *MINIMIZE],
                     normalization=NORMALIZATION, caveat=CAVEAT)
-    if row is None or not include_sensitivity:
-        return frame, candidates, analysis
-    cases = []
-    for pct in (1, 5, 10):
-        cases.append((f"budget_{pct}", f"Лимит запуска ниже на {pct}%", dict(limits, budget_cap_mrub=limits["budget_cap_mrub"] * (1-pct/100))))
-    for pct in (10, 20):
-        cases.append((f"vpub_{pct}", f"Минимум общественной ценности выше на {pct}%", dict(limits, vpub_floor_mrub_per_year=limits["vpub_floor_mrub_per_year"] * (1+pct/100))))
-    for lot in parameters.lot_ids or canonical.lot_ids():
-        if lot not in parameters.required_public_lot_ids and len(parameters.required_public_lot_ids) < 4:
-            cases.append((f"public_{lot}", f"Сохранить {lot} в общественном ядре", dict(limits, required_public_lot_ids=sorted((*parameters.required_public_lot_ids, lot)))))
-    for name, title, cash, opex in (("cash_drop", "Поступления ниже на 10%", .9, 1),
-                                   ("opex_growth", "Расходы выше на 5%", 1, 1.05),
-                                   ("combined", "Поступления −10%, расходы +5%", .9, 1.05)):
-        cases.append((name, title, dict(limits, cash_multiplier=cash, opex_multiplier=opex)))
-    for name, title, changed in cases:
-        pool = apply_conditions(official, changed)
-        selected, stage = select(score_frame(pool, bounds), parameters.cash_loss_limit_mrub)
-        analysis["sensitivity"].append(dict(id=name, title=title, origin="допущение", **changed, **stage,
-            feasible_count=len(pool), outcome=dict(winner=outcome(selected, bounds),
-            winner_changed=selected is None or selected.stable_id != row.stable_id,
-            original_still_feasible=bool((pool.stable_id == row.stable_id).any()),
-            original_adjusted_surplus_mrub=float(row.cash * changed["cash_multiplier"] - row.opex * changed["opex_multiplier"]))))
+    # Диагностика выполняется после основного решения и записывает только свой раздел.
+    if row is not None and include_sensitivity:
+        analysis["sensitivity"] = analyze_sensitivity(official, limits, parameters, bounds, row)
     return frame, candidates, analysis

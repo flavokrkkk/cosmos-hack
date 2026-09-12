@@ -79,7 +79,7 @@ function defaultView(result: RecommendationResult | undefined): ActiveVariantVie
   if (!fallback) {
     return {
       kind: 'team',
-      title: 'Портфель команды',
+      title: 'Рекомендованный портфель',
       reason: '',
       calculation: undefined,
       isDefault: true,
@@ -91,7 +91,7 @@ function defaultView(result: RecommendationResult | undefined): ActiveVariantVie
   if (fallback.kind === 'reference') return referenceView(fallback.variant, fallback.index ?? 0, true)
   return {
     kind: 'team',
-    title: fallback.variant.title,
+    title: 'Рекомендованный портфель',
     reason: fallback.variant.reason,
     calculation: fallback.variant.calculation,
     isDefault: true,

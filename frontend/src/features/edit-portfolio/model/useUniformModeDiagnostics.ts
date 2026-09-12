@@ -1,6 +1,6 @@
 import { useQueries } from '@tanstack/react-query'
 
-import { evaluateQueryOptions } from '@entities/portfolio'
+import { PORTFOLIO_SIZE, evaluateQueryOptions } from '@entities/portfolio'
 import type { AccessMode, Calculation, Scenario } from '@shared/api/contracts'
 
 export type UniformModeDiagnostic = {
@@ -24,7 +24,7 @@ export function useUniformModeDiagnostics(
   const results = useQueries({
     queries: modes.map((mode) => ({
       ...evaluateQueryOptions(datasetHash, lotIds.map((lotId) => ({ lot_id: lotId, mode_id: mode.mode_id }))),
-      enabled: enabled && Boolean(datasetHash) && lotIds.length > 0,
+      enabled: enabled && Boolean(datasetHash) && lotIds.length === PORTFOLIO_SIZE,
     })),
   })
 

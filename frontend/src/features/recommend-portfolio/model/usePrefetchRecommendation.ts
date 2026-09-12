@@ -12,12 +12,11 @@ import { recommendationQueryOptions, useWorkspace } from '@entities/portfolio'
 export function usePrefetchRecommendation(datasetHash: string | undefined) {
   const queryClient = useQueryClient()
   const requireStress = useWorkspace((state) => state.requireStress)
-  const settings = useWorkspace((state) => state.searchSettings)
 
   useEffect(() => {
     if (!datasetHash) return
     void queryClient.prefetchQuery(
-      recommendationQueryOptions({ datasetHash, requireStress, lotIds: null, enabled: true, settings }),
+      recommendationQueryOptions({ datasetHash, requireStress, lotIds: null, enabled: true }),
     )
-  }, [queryClient, datasetHash, requireStress, settings])
+  }, [queryClient, datasetHash, requireStress])
 }

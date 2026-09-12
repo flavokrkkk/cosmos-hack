@@ -7,6 +7,6 @@ export {
   formatCompact, formatMoney, formatMoneyPerYear, formatNumber, formatSlack, formatThreshold,
 } from './format'
 export type { MetricTileDefinition } from './format'
-export { PORTFOLIO_SIZE, lotIdsKey, selectionKey, selectionLabel, sortedLotIds } from './selection'
+export { MAX_CANDIDATE_LOTS, PORTFOLIO_SIZE, lotIdsKey, selectionKey, selectionLabel, sortedLotIds } from './selection'
 export { comparisonCsv, constraintsCsv, decisionJson, detailCsv, metricsJson, snapshotFiles } from './snapshot'
 export type { ExportFile } from './snapshot'
