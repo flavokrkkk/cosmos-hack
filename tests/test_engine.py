@@ -309,3 +309,53 @@ def test_surplus_headroom_matches_kcash_and_is_marked_as_team_threshold():
         assert 'порог команды' in row.binding
         # Официальные ограничения на этой границе ещё проходят: порог действительно наш.
         assert row.change_pct > 0
+
+
+# Учебно-справочный материал кейсодержателя от 12.09.2026 содержит два проверенных примера
+# с числами. Это независимые векторы: если наш слой разойдётся с каноном, тест упадёт здесь,
+# а не на защите. Источник — docs/notes/2026-09-12-reference-material.md.
+REFERENCE_FIRE_MODES = {
+    'A': dict(c0_mrub=336.0, opex_mrub_per_year=89.25, cash_mrub_per_year=83.75,
+              vpub_mrub_per_year=560.0, kcash=0.938),
+    'B': dict(c0_mrub=320.0, opex_mrub_per_year=85.0, cash_mrub_per_year=84.50,
+              vpub_mrub_per_year=459.2, kcash=0.994),
+    'C': dict(c0_mrub=313.6, opex_mrub_per_year=80.75, cash_mrub_per_year=67.00,
+              vpub_mrub_per_year=347.2, kcash=0.830),
+}
+
+
+@pytest.mark.parametrize('mode', sorted(REFERENCE_FIRE_MODES))
+def test_reference_example_fire_in_three_modes(mode):
+    """Раздел 4.4 справочного материала: FIRE в режимах A, B, C."""
+    expected = REFERENCE_FIRE_MODES[mode]
+    _, metrics = canonical.evaluate([('FIRE', mode)])
+    for key, value in expected.items():
+        digits = 3 if key == 'kcash' else 10
+        assert round(metrics[key], digits) == value, (mode, key, metrics[key])
+
+
+def test_reference_example_portfolio_fails_stress_on_c0_only():
+    """Раздел 6 справочного материала: FIRE(A)+FLOOD(A)+AGRI(C)+TRANS(C) проходит BASE и валит STRESS.
+
+    Кейсодержатель приводит этот портфель как образец правильного входа в стресс: сначала
+    честный пересчёт, потом управленческое решение. Сумма исходных c0 без коэффициентов — 1170,
+    то есть лимит 1180 нарушается именно из-за коэффициентов режима, а не из-за данных.
+    """
+    selection = [('FIRE', 'A'), ('FLOOD', 'A'), ('AGRI', 'C'), ('TRANS', 'C')]
+    _, metrics = canonical.evaluate(selection)
+    assert metrics['c0_mrub'] == 1192.8
+    assert metrics['opex_mrub_per_year'] == 321.5
+    assert metrics['cash_mrub_per_year'] == 418.0
+    assert metrics['vpub_mrub_per_year'] == 1439.0
+    assert metrics['t_rep'] == 0.7025
+    assert round(metrics['kcash'], 2) == 1.30
+    assert (metrics['territorial_archetypes'], metrics['capability_groups'],
+            metrics['public_core_lots']) == (4, 2, 2)
+
+    assert all(row.passed for row in constraints.diagnose(metrics, 'BASE'))
+    failed = [row.code for row in constraints.diagnose(metrics, 'STRESS') if not row.passed]
+    assert failed == ['c0_limit'], failed
+
+    lots = canonical.load_case()[0]
+    raw = sum(float(lots.loc[lots.lot_id == lot, 'c0_mrub'].iloc[0]) for lot, _ in selection)
+    assert raw == 1170, 'сумма исходных c0 без коэффициентов режима'

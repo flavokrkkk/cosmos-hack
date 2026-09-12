@@ -112,7 +112,7 @@
     },
     "tests/test_engine.py": {
       "source": "tests/test_engine.py",
-      "source_sha256": "8bfcd50431320a735e3120bdc4fdacc20afa34b52c8137ee22c27583c9125172"
+      "source_sha256": "189af0eac60d1c0292182f33301aa19a07f8a2d98be745b3faf43b294cf2dc0f"
     },
     "tests/test_hybrid.py": {
       "source": "tests/test_hybrid.py",
@@ -128,7 +128,7 @@
     },
     "docs/management-note.md": {
       "source": "docs/23-management-note.md",
-      "source_sha256": "632bf23972c1d8292a8bbb77622ebd4840dc534863414b34338d406ca125424f"
+      "source_sha256": "c302fe621ac4f2a69308d9bea4484f2cfa34a53c4a3c44a3d414425328090a31"
     },
     "docs/stress-summary.md": {
       "source": "docs/24-stress-summary.md",
@@ -148,7 +148,7 @@
     },
     "docs/management-note.pdf": {
       "source": "docs/management-note.pdf",
-      "source_sha256": "835120b216ba932fea265b404d8e42dbb68ef652ed0a7fe7c498f6ec69920b9b"
+      "source_sha256": "43174d2773b4791f3d250713ceb9fb6ed37cae4e220fd8587a5c29ef8f985d0b"
     },
     "docs/stress-summary.pdf": {
       "source": "docs/stress-summary.pdf",
@@ -166,8 +166,8 @@
     "data/official/data/lots.csv": "8e2b6244178344f9f97050ce5c9f337cd311e9f86bbd96bbbfbdde6999c4ba8b",
     "docs/README.md": "ad8f1028ba708e6dd7cf1b008fc0c85cfeb7a7407ea0c129bfbfba979e621def",
     "docs/algorithm.md": "9aaae74fd1aa065e5293786b9f60d3bada9ce157a1a3f950f3e77c9f8b64cc01",
-    "docs/management-note.md": "38dd41aa58040b11efb6463d089d98145d18fb0298e5e1399b7b86a2ccf1b614",
-    "docs/management-note.pdf": "835120b216ba932fea265b404d8e42dbb68ef652ed0a7fe7c498f6ec69920b9b",
+    "docs/management-note.md": "ad83ee94cf582321c01df4cad613879b402be55414cda1612fc9efe5cf3bf352",
+    "docs/management-note.pdf": "43174d2773b4791f3d250713ceb9fb6ed37cae4e220fd8587a5c29ef8f985d0b",
     "docs/research/README.md": "4af19e1f55d613d325307f4361411d319694b18448ad58f000ee3dd429b97fc8",
     "docs/research/access-mode-d.md": "26cd707c3b3a99907605bb878e6f7bda8b32ad6d5be8c950cbddd2951e3ac034",
     "docs/research/case-literature.md": "f34d5eb041b0a7d061d9aacf34c08082bda0e493b458e33a0e2067392ce5040f",
@@ -197,7 +197,7 @@
     "src/engine/sensitivity.py": "e08543f294ec6d7cc58a756e6a5ab2d27ceaef32b9c21c6cddbd7078ec836849",
     "src/engine/space.py": "a679ad962402a6c5160b321ee6ec5f4f74a43d114e0f64d7ec23a3e554cf8989",
     "tests/conftest.py": "a7310cb1e9bfc92d590ee5bace4c5f88ee5b2c8d8f059815b6cf82d1b0f347b5",
-    "tests/test_engine.py": "8bfcd50431320a735e3120bdc4fdacc20afa34b52c8137ee22c27583c9125172",
+    "tests/test_engine.py": "189af0eac60d1c0292182f33301aa19a07f8a2d98be745b3faf43b294cf2dc0f",
     "tests/test_hybrid.py": "cdad9d9b377c4208573edcdd5114657d21405da664ff17fc4e692da4698a11f6"
   }
 }
