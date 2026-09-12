@@ -28,6 +28,7 @@
   --color-page: #edf0f5;
   --color-panel: rgb(255 255 255 / 0.35);
   --color-card: rgb(255 255 255 / 0.5);
+  --color-lifted: rgb(255 255 255 / 0.7);
   --color-sunken: rgb(255 255 255 / 0.28);
 
   /* Текст */
@@ -131,6 +132,48 @@
     scroll-behavior: smooth;
   }
 
+  html[data-theme='dark'] {
+    color-scheme: dark;
+
+    /* Apple Human Interface Guidelines, Dark Mode: системные серые поверхности
+       и повышенный контраст текста без смены композиции интерфейса. */
+    --color-brand: #0a84ff;
+    --color-brand-600: #409cff;
+    --color-brand-700: #64adff;
+    --color-brand-100: rgb(10 132 255 / 0.24);
+    --color-brand-50: rgb(10 132 255 / 0.14);
+
+    --color-page: #1c1c1e;
+    --color-panel: rgb(44 44 46 / 0.54);
+    --color-card: rgb(58 58 60 / 0.56);
+    --color-lifted: rgb(72 72 74 / 0.68);
+    --color-sunken: rgb(72 72 74 / 0.42);
+
+    --color-ink: #f5f5f7;
+    --color-ink-700: rgb(235 235 245 / 0.86);
+    --color-ink-500: rgb(235 235 245 / 0.68);
+    --color-muted: rgb(235 235 245 / 0.58);
+    --color-muted-300: rgb(235 235 245 / 0.32);
+
+    --color-line: rgb(84 84 88 / 0.48);
+    --color-line-strong: rgb(99 99 102 / 0.62);
+
+    --color-fail: #ff453a;
+    --color-fail-bg: rgb(255 69 58 / 0.14);
+    --color-pass: #30d158;
+    --color-pass-bg: rgb(48 209 88 / 0.14);
+    --color-warn: #ffd60a;
+    --color-warn-bg: rgb(255 214 10 / 0.14);
+
+    --shadow-panel: 0 18px 52px rgb(0 0 0 / 0.36);
+    --shadow-card: 0 14px 42px rgb(0 0 0 / 0.32);
+    --shadow-card-hover: 0 18px 48px rgb(0 0 0 / 0.42);
+    --shadow-tile: 0 12px 34px rgb(0 0 0 / 0.28);
+    --shadow-chip: 0 8px 24px rgb(0 0 0 / 0.26);
+    --shadow-brand: 0 10px 24px rgb(10 132 255 / 0.26);
+    --shadow-inset: inset 0 1px 2px rgb(0 0 0 / 0.34);
+  }
+
   /* Тонкий скролл в цветах системы: прозрачная дорожка, мягкая круглая ручка. */
   * {
     scrollbar-width: thin;
@@ -202,7 +245,7 @@
   /* Скелет загрузки: мерцающий градиент на приглушённой подложке. */
   .skeleton {
     @apply rounded-tile bg-sunken;
-    background-image: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 0.7) 50%, transparent 100%);
+    background-image: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--color-card) 70%, white 30%) 50%, transparent 100%);
     background-size: 200% 100%;
     animation: var(--animate-shimmer);
   }

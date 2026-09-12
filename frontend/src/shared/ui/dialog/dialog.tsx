@@ -48,7 +48,7 @@ export function DialogContent({
           'fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col',
           /* Непрозрачный фон страницы: стеклянные плитки внутри выглядят как на странице,
              а содержимое за окном не просвечивает. */
-          'rounded-[24px] border border-white bg-page shadow-panel outline-none',
+          'rounded-[24px] border border-line bg-page shadow-panel outline-none',
           'data-[state=open]:animate-pop-in data-[state=closed]:animate-pop-out',
           SIZE[size],
           className,

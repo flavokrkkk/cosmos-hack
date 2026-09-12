@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react'
 import { cn } from '@shared/lib/cn'
 
 const tagVariants = cva(
-  'inline-flex h-[22px] items-center rounded-full border border-white px-2.5 text-[10px] font-bold tracking-[0.02em] whitespace-nowrap backdrop-blur-[8px]',
+  'inline-flex h-[22px] items-center rounded-full border border-line px-2.5 text-[10px] font-bold tracking-[0.02em] whitespace-nowrap backdrop-blur-[8px]',
   {
     variants: {
       tone: {

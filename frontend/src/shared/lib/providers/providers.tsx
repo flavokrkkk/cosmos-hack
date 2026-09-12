@@ -1,5 +1,6 @@
 import { routes } from '@pages/routes'
 import { persistOptions, queryClient } from '@shared/api'
+import { ThemeProvider } from '@shared/lib/theme'
 import { AppToaster, TooltipProvider } from '@shared/ui'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
@@ -20,11 +21,13 @@ function QueryProvider({ children }: { children: ReactNode }) {
 
 export function Providers() {
   return (
-    <QueryProvider>
-      <TooltipProvider delayDuration={250} skipDelayDuration={400}>
-        <RouterProvider router={routes} />
-      </TooltipProvider>
-      <AppToaster />
-    </QueryProvider>
+    <ThemeProvider>
+      <QueryProvider>
+        <TooltipProvider delayDuration={250} skipDelayDuration={400}>
+          <RouterProvider router={routes} />
+        </TooltipProvider>
+        <AppToaster />
+      </QueryProvider>
+    </ThemeProvider>
   )
 }

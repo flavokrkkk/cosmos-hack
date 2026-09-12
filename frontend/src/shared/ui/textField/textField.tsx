@@ -29,7 +29,7 @@ export function TextField({ label, error, hint, id, name, className, ...inputPro
         aria-invalid={Boolean(error)}
         className={cn(
           'h-11 rounded-2xl border border-line bg-card px-4 text-[15px] text-ink shadow-inset',
-          'placeholder:text-muted-300 focus:border-white focus:bg-white/70 focus:outline-none',
+          'placeholder:text-muted-300 focus:border-line-strong focus:bg-lifted focus:outline-none',
           'aria-[invalid=true]:border-fail',
         )}
         id={fieldId}

@@ -19,7 +19,7 @@ export function LotChip({ lotId, title, modeId, onRemove, onClick, className }: 
   return (
     <div
       className={cn(
-        'relative flex min-h-[96px] min-w-[132px] flex-col gap-2 rounded-card border border-white bg-card px-3 pt-3 pb-2.5 shadow-tile backdrop-blur-[8px]',
+        'relative flex min-h-[96px] min-w-[132px] flex-col gap-2 rounded-card border border-line bg-card px-3 pt-3 pb-2.5 shadow-tile backdrop-blur-[8px]',
         className,
       )}
     >

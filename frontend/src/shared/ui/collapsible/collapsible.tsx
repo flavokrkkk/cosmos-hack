@@ -20,7 +20,7 @@ export function Collapsible({ title, summary, defaultOpen = false, children, cla
       <RadixCollapsible.Trigger
         className={cn(
           'flex w-full items-center justify-between gap-4 rounded-2xl px-2 py-2 text-left',
-          'transition-colors duration-200 hover:bg-white/60',
+          'transition-colors duration-200 hover:bg-lifted',
         )}
       >
         <span className="text-[18px] font-bold tracking-[-0.01em]">{title}</span>

@@ -6,7 +6,7 @@ import { cn } from '@shared/lib/cn'
 export function Panel({ className, ...props }: ComponentProps<'section'>) {
   return (
     <section
-      className={cn('rounded-panel border border-white bg-panel p-4 shadow-panel backdrop-blur-[8px]', className)}
+      className={cn('rounded-panel border border-line bg-panel p-4 shadow-panel backdrop-blur-[8px]', className)}
       {...props}
     />
   )
@@ -16,7 +16,7 @@ export function Panel({ className, ...props }: ComponentProps<'section'>) {
 export function Card({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
-      className={cn('rounded-card border border-white bg-card shadow-card backdrop-blur-[8px]', className)}
+      className={cn('rounded-card border border-line bg-card shadow-card backdrop-blur-[8px]', className)}
       {...props}
     />
   )
@@ -24,7 +24,7 @@ export function Card({ className, ...props }: ComponentProps<'div'>) {
 
 /** Плитка показателя — самый мелкий уровень поверхности. */
 export function Tile({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={cn('rounded-tile border border-white bg-card shadow-tile backdrop-blur-[8px]', className)} {...props} />
+  return <div className={cn('rounded-tile border border-line bg-card shadow-tile backdrop-blur-[8px]', className)} {...props} />
 }
 
 /** Заголовок панели: слева название, справа действия/переключатель. */

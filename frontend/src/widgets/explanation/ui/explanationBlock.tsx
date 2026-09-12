@@ -30,7 +30,7 @@ export function ExplanationBlock({ result, isLoading, errorMessage, onRetry, cla
           наклон и вынос влево — только на широких экранах. */}
       <Card
         className={cn(
-          'relative z-10 mb-4 flex w-full max-w-[300px] flex-col gap-4 bg-white/45 px-6 pt-5 pb-6 backdrop-blur-[18px]',
+          'relative z-10 mb-4 flex w-full max-w-[300px] flex-col gap-4 bg-card px-6 pt-5 pb-6 backdrop-blur-[18px]',
           'lg:absolute lg:top-0 lg:left-[-84px] lg:mb-0 lg:-rotate-[8deg] lg:shadow-card-hover',
         )}
       >
@@ -40,7 +40,7 @@ export function ExplanationBlock({ result, isLoading, errorMessage, onRetry, cla
         </h2>
       </Card>
 
-      <Panel className="relative min-h-[190px] bg-white/30 px-7 pt-6 pb-7 backdrop-blur-[18px] lg:pt-[104px]" aria-busy={isLoading}>
+      <Panel className="relative min-h-[190px] bg-panel px-7 pt-6 pb-7 backdrop-blur-[18px] lg:pt-[104px]" aria-busy={isLoading}>
         <div className="mb-3 flex items-center justify-end gap-2 lg:absolute lg:top-6 lg:right-8 lg:mb-0">
           <StatusLabel isLoading={isLoading} result={result} />
         </div>
@@ -60,7 +60,7 @@ export function ExplanationBlock({ result, isLoading, errorMessage, onRetry, cla
         ) : result ? (
           <ExplanationText result={result} onRetry={onRetry} isLoading={isLoading} />
         ) : (
-          <div className="flex min-h-[92px] items-center justify-center rounded-card bg-white/20 px-5 text-center backdrop-blur-[18px]">
+          <div className="flex min-h-[92px] items-center justify-center rounded-card bg-sunken px-5 text-center backdrop-blur-[18px]">
             <p className="text-[18px] leading-snug text-muted">Объяснение появится после подбора.</p>
           </div>
         )}

@@ -45,7 +45,7 @@ export function Segmented<T extends string>({
           value={option.value}
           disabled={option.disabled}
           className={cn(
-            'rounded-full border border-white font-medium whitespace-nowrap shadow-card backdrop-blur-[8px] transition-[background-color,color,box-shadow,opacity] duration-200 ease-(--ease-soft)',
+            'rounded-full border border-line font-medium whitespace-nowrap shadow-card backdrop-blur-[8px] transition-[background-color,color,box-shadow,opacity] duration-200 ease-(--ease-soft)',
             'bg-card text-ink-500 hover:text-ink data-[state=on]:bg-brand data-[state=on]:text-white data-[state=on]:shadow-brand data-[state=off]:opacity-55',
             'disabled:opacity-40',
             size === 'lg' ? 'h-[34px] px-4 text-[14px]' : 'h-[34px] px-4 text-[13px]',

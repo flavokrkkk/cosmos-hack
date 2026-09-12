@@ -38,7 +38,7 @@ export function LotCard({
       className={cn(
         'flex min-h-[183px] flex-col p-4 transition-[opacity,box-shadow,transform] duration-300 ease-(--ease-soft)',
         state === 'dimmed' && 'opacity-45 shadow-tile',
-        selected && 'bg-white/70 shadow-card-hover',
+        selected && 'bg-lifted shadow-card-hover',
         className,
       )}
     >
