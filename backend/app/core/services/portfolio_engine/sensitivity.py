@@ -88,6 +88,30 @@ def input_headroom(selection, scenario: str = "BASE") -> List[Headroom]:
     return rows
 
 
+def surplus_headroom(selection) -> List[Headroom]:
+    """Запас до нулевого остатка: это порог команды, а не ограничение кейса.
+
+    Бездефицитность эксплуатации (`cash >= opex`) официальными ограничениями не требуется —
+    канон допускает `kcash` вплоть до 0,6, то есть дотируемую эксплуатацию. Но управленческий
+    тезис портфеля состоит именно в том, что эксплуатация окупает себя, поэтому запас до
+    потери этого свойства считается и выгружается отдельно, с явной пометкой происхождения
+    порога. Иначе числа записки нечем проверить.
+    """
+    _, metrics = evaluate(selection)
+    opex = float(metrics["opex_mrub_per_year"])
+    cash = float(metrics["cash_mrub_per_year"])
+    binding = "zero_surplus (порог команды — не ограничение кейса)"
+
+    factor_opex = cash / opex if opex else float("inf")
+    factor_cash = opex / cash if cash else 0.0
+    return [
+        Headroom("opex (годовые расходы)", "рост", factor_opex,
+                 (factor_opex - 1) * 100, binding),
+        Headroom("cash (денежные поступления)", "падение", factor_cash,
+                 (1 - factor_cash) * 100, binding),
+    ]
+
+
 def c0_breaking_point(selection) -> Dict[str, Any]:
     """При каком лимите стартовых затрат портфель перестаёт проходить.
 

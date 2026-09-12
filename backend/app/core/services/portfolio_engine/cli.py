@@ -25,7 +25,8 @@ from typing import List, Sequence, Tuple
 from .canonical import REPO_ROOT, evaluate, scenarios
 from .constraints import diagnose, failed
 from .decision import Variant, load_decision
-from .sensitivity import binding_first, c0_breaking_point, input_headroom
+from .sensitivity import (binding_first, c0_breaking_point, input_headroom,
+                          surplus_headroom)
 from .selfcheck import run_selfcheck
 from .space import (
     binding_analysis,
@@ -255,9 +256,12 @@ def cmd_export(args) -> int:
     import pandas as pd
 
     for scenario in scenarios():
-        pd.DataFrame(
-            [row.as_dict() for row in input_headroom(decision.recommended.selection, scenario)]
-        ).to_csv(RESULTS_DIR / f"sensitivity_{scenario}.csv", index=False, encoding="utf-8")
+        selection = decision.recommended.selection
+        # Официальные ограничения и отдельно порог команды «остаток >= 0» — он помечен в строке.
+        headroom = input_headroom(selection, scenario) + surplus_headroom(selection)
+        pd.DataFrame([row.as_dict() for row in headroom]).to_csv(
+            RESULTS_DIR / f"sensitivity_{scenario}.csv", index=False, encoding="utf-8"
+        )
 
     written = sorted(p.name for p in RESULTS_DIR.iterdir() if p.is_file())
     print(f"Записано в {RESULTS_DIR}:")
@@ -285,6 +289,14 @@ def cmd_sensitivity(args) -> int:
     narrow = binding_first(selection, scenario)
     print(f"  Самое узкое место: {narrow.input_name} — "
           f"{narrow.direction} на {narrow.change_pct:.1f}% упирается в {narrow.binding}.")
+
+    print()
+    print("=== Запас до нулевого остатка (порог команды, не ограничение кейса) ===")
+    print(_table(
+        ["Вход", "Направление", "Предельный множитель", "Запас", "Упирается в"],
+        [[r.input_name, r.direction, f"{r.limit_factor:.4f}",
+          f"{r.change_pct:.1f}%", r.binding] for r in surplus_headroom(selection)],
+    ))
 
     print()
     print("=== Граница по лимиту стартовых затрат ===")

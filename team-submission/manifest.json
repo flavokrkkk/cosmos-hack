@@ -10,7 +10,7 @@
   "source_copies": {
     "src/engine/__init__.py": {
       "source": "backend/app/core/services/portfolio_engine/__init__.py",
-      "source_sha256": "c218b55954abfaebe23163b0cbd400b7c14f995306229451066f745e48fbc8ce"
+      "source_sha256": "1eac05947b16964c04391edd6fda45a30f5628c2d271f04a0c917a8286739020"
     },
     "src/engine/__main__.py": {
       "source": "backend/app/core/services/portfolio_engine/__main__.py",
@@ -22,7 +22,7 @@
     },
     "src/engine/cli.py": {
       "source": "backend/app/core/services/portfolio_engine/cli.py",
-      "source_sha256": "2ab9ef03dd55b50abd7e88f205944797ffd079ba282ae26e3f6040a487a85fde"
+      "source_sha256": "c6e26fff0fedb5639d1aee4e6e70be3a3ca1302bb0194df01c0b224ea9e9097d"
     },
     "src/engine/constraints.py": {
       "source": "backend/app/core/services/portfolio_engine/constraints.py",
@@ -42,7 +42,7 @@
     },
     "src/engine/sensitivity.py": {
       "source": "backend/app/core/services/portfolio_engine/sensitivity.py",
-      "source_sha256": "c3cc0072dc1b48fc4d705e0382c4f13c8b92d3acdffa3b4510fda365500a3d5c"
+      "source_sha256": "e08543f294ec6d7cc58a756e6a5ab2d27ceaef32b9c21c6cddbd7078ec836849"
     },
     "src/engine/space.py": {
       "source": "backend/app/core/services/portfolio_engine/space.py",
@@ -70,7 +70,7 @@
     },
     "config/decision.json": {
       "source": "config/decision.json",
-      "source_sha256": "1a7193ca3dcb94257d4db1d12ea4ddf75bd6509a03b1b366e4805bf6582d8af7"
+      "source_sha256": "65086f77e7907ed216af230dad93e37ad62b42e5452431e5952a86f83a021d52"
     },
     "results/constraints_BASE.csv": {
       "source": "results/constraints_BASE.csv",
@@ -98,19 +98,19 @@
     },
     "results/sensitivity_BASE.csv": {
       "source": "results/sensitivity_BASE.csv",
-      "source_sha256": "c56c634d7d6af5b4366376b45eece8fc0305b95a860672180049a9e7baef7c6e"
+      "source_sha256": "2fa38b677c7f34fccbf0cdd5b5326a3481b3e6b5a89438f6a437ea0d3e267bcf"
     },
     "results/sensitivity_STRESS.csv": {
       "source": "results/sensitivity_STRESS.csv",
-      "source_sha256": "c84683e8e7a211745a32e0dfefb75f4b067f98ba83d46692704aa27095fc5f26"
+      "source_sha256": "6e414f08ef4b16c0657015a1803277b31649ca414f0eef6b282e1ceb070c1c99"
     },
     "results/team_decision_config.json": {
       "source": "results/team_decision_config.json",
-      "source_sha256": "e947e1175c88a55ca966119593b2f3d7efdc3a37d8326c2d29bec63453cc2098"
+      "source_sha256": "5c7ae90c89aedfdd3a0860685e255a6ce56457942141513ff8e3d51ca0e58860"
     },
     "tests/test_engine.py": {
       "source": "tests/test_engine.py",
-      "source_sha256": "2644dd4c831ce6ab3b05ef0ba6fb58c70e5f1d666c71c16ae0f90f76fe96b98e"
+      "source_sha256": "8bfcd50431320a735e3120bdc4fdacc20afa34b52c8137ee22c27583c9125172"
     },
     "tests/test_hybrid.py": {
       "source": "tests/test_hybrid.py",
@@ -126,11 +126,11 @@
     },
     "docs/management-note.md": {
       "source": "docs/23-management-note.md",
-      "source_sha256": "ee4bb2687630c6ba692b297a84af3f6c1e920e38528a99ec64748c87610dace5"
+      "source_sha256": "6d7957ef94a97136d251c15496d2e7246accdffed8fbf64b0241fc340debca7e"
     },
     "docs/stress-summary.md": {
       "source": "docs/24-stress-summary.md",
-      "source_sha256": "9674a23a1627ff1877d50e756bfa6341971b62ea1ee32cf0a4daa28fcd21a4c5"
+      "source_sha256": "7cb8c970a5088485e7e491e54777512213bbe0438bea24a77dce3b030b665c77"
     },
     "docs/research/access-mode-d.md": {
       "source": "docs/research/access-mode-d.md",
@@ -148,7 +148,7 @@
   "files": {
     ".gitignore": "b0b18f5bf7184f205a45032e7a3034fffc852f9c6ad28ae26bb839e2893b5ddd",
     "README.md": "bfa4583c170ef52f555f73ed6d2e5e7cb4acf57a208cea9828660dff5e0dcf3c",
-    "config/decision.json": "1a7193ca3dcb94257d4db1d12ea4ddf75bd6509a03b1b366e4805bf6582d8af7",
+    "config/decision.json": "65086f77e7907ed216af230dad93e37ad62b42e5452431e5952a86f83a021d52",
     "data/official/README.md": "21776c3e41cb0f1b11f5107e0facc26bc592fe6ba184fcc70ee67ad26b15db07",
     "data/official/case_core.py": "0a6da8b99dbb2e6ff03cb94012f539d8cd0b9c7dd05525bda5b202ebb461e20c",
     "data/official/config/case_config.json": "aae20d265b69fa8ec309ce8dc435fb1ae43ed34510c2746baa5024b472426463",
@@ -156,12 +156,12 @@
     "data/official/data/lots.csv": "8e2b6244178344f9f97050ce5c9f337cd311e9f86bbd96bbbfbdde6999c4ba8b",
     "docs/README.md": "ad8f1028ba708e6dd7cf1b008fc0c85cfeb7a7407ea0c129bfbfba979e621def",
     "docs/algorithm.md": "9aaae74fd1aa065e5293786b9f60d3bada9ce157a1a3f950f3e77c9f8b64cc01",
-    "docs/management-note.md": "55c67686b13da0e6bba79b2fa8e1af9ec9e8811c3b25fc283df75793fc34eb77",
+    "docs/management-note.md": "e9e8101cab8d053ec0da202c934e1f704c7d699d1d663b28b01fd529b565379a",
     "docs/research/README.md": "4af19e1f55d613d325307f4361411d319694b18448ad58f000ee3dd429b97fc8",
     "docs/research/access-mode-d.md": "26cd707c3b3a99907605bb878e6f7bda8b32ad6d5be8c950cbddd2951e3ac034",
     "docs/research/case-literature.md": "f34d5eb041b0a7d061d9aacf34c08082bda0e493b458e33a0e2067392ce5040f",
     "docs/research/portfolio-audit-results.json": "95c871e9f0c44abadc839432b6ac844e54b9ce1d37677511312888483dea7ba4",
-    "docs/stress-summary.md": "195a4b6f392149d9bd1b8b41af43c09eb5ac85b6f11f8fe678cdf7a2020a89e4",
+    "docs/stress-summary.md": "308a22844d3c8eca3f196232fc286ba3a1789cc27f9490455a023d9ae584d0de",
     "requirements.txt": "6d83ac9c93ec11b7a55f000ec44f32b189bdc20affaf0b9f0744bf890b5be9dc",
     "results/constraints_BASE.csv": "81bf6323de4bcb38c015ddc1ac897ebb4ff39bd40002e6acebb771aaaab5785c",
     "results/constraints_STRESS.csv": "9e0011c089a29fb541d120a1155740224df1ff73a584e19904c24cd47a56253d",
@@ -169,22 +169,22 @@
     "results/portfolio_detail.csv": "8996e21299667b4fa4916995864bed234b392852ec04537ca84b8220eb8744c0",
     "results/portfolio_metrics.json": "3085e31c3845cd7275ea6adf3c59fe2656a621402e10c9c3e89b091dff86d4c2",
     "results/portfolio_space.csv": "6f848c9619feedc7351c97b74847e9c4472b06d17ded5665e95a39189c9f3cd2",
-    "results/sensitivity_BASE.csv": "c56c634d7d6af5b4366376b45eece8fc0305b95a860672180049a9e7baef7c6e",
-    "results/sensitivity_STRESS.csv": "c84683e8e7a211745a32e0dfefb75f4b067f98ba83d46692704aa27095fc5f26",
-    "results/team_decision_config.json": "e947e1175c88a55ca966119593b2f3d7efdc3a37d8326c2d29bec63453cc2098",
+    "results/sensitivity_BASE.csv": "2fa38b677c7f34fccbf0cdd5b5326a3481b3e6b5a89438f6a437ea0d3e267bcf",
+    "results/sensitivity_STRESS.csv": "6e414f08ef4b16c0657015a1803277b31649ca414f0eef6b282e1ceb070c1c99",
+    "results/team_decision_config.json": "5c7ae90c89aedfdd3a0860685e255a6ce56457942141513ff8e3d51ca0e58860",
     "run.py": "17c3d1967620bfe00e7b674d846738f43b61363aaae5b5c1a3800cb8e802a8cc",
-    "src/engine/__init__.py": "c218b55954abfaebe23163b0cbd400b7c14f995306229451066f745e48fbc8ce",
+    "src/engine/__init__.py": "1eac05947b16964c04391edd6fda45a30f5628c2d271f04a0c917a8286739020",
     "src/engine/__main__.py": "e0930aeba5a3e2e2d94ca6c5fac4f72c0c4eb2be9bba283becf98e909091471c",
     "src/engine/canonical.py": "8d5545ce957164f736816d19c60259e0c684ca8ded8b22781b7929e167af6e66",
-    "src/engine/cli.py": "2ab9ef03dd55b50abd7e88f205944797ffd079ba282ae26e3f6040a487a85fde",
+    "src/engine/cli.py": "c6e26fff0fedb5639d1aee4e6e70be3a3ca1302bb0194df01c0b224ea9e9097d",
     "src/engine/constraints.py": "0b1d32733f1a71df6daba2ad8d34cfac59e2417be522795e1aae0bcc989082ec",
     "src/engine/decision.py": "28090aafc09268e6ba913e8d1b7ff2be1fa3829aea9d085f45fea66a628f01a6",
     "src/engine/hybrid.py": "5200067464ef2916116b2f7d73c08e0d1f35fe4ff6370c2117a70f650341e0bd",
     "src/engine/selfcheck.py": "61aeb78e1c2641cbb1b8caac84f436f1b3f9ccf6f8b97f2a89310228630b08d0",
-    "src/engine/sensitivity.py": "c3cc0072dc1b48fc4d705e0382c4f13c8b92d3acdffa3b4510fda365500a3d5c",
+    "src/engine/sensitivity.py": "e08543f294ec6d7cc58a756e6a5ab2d27ceaef32b9c21c6cddbd7078ec836849",
     "src/engine/space.py": "a679ad962402a6c5160b321ee6ec5f4f74a43d114e0f64d7ec23a3e554cf8989",
     "tests/conftest.py": "a7310cb1e9bfc92d590ee5bace4c5f88ee5b2c8d8f059815b6cf82d1b0f347b5",
-    "tests/test_engine.py": "2644dd4c831ce6ab3b05ef0ba6fb58c70e5f1d666c71c16ae0f90f76fe96b98e",
+    "tests/test_engine.py": "8bfcd50431320a735e3120bdc4fdacc20afa34b52c8137ee22c27583c9125172",
     "tests/test_hybrid.py": "cdad9d9b377c4208573edcdd5114657d21405da664ff17fc4e692da4698a11f6"
   }
 }

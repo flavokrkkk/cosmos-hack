@@ -8,7 +8,8 @@
 from .canonical import evaluate, load_case, lot_ids, mode_ids, scenarios
 from .constraints import ConstraintRow, all_passed, diagnose, failed
 from .decision import Decision, Variant, load_decision
-from .sensitivity import Headroom, binding_first, c0_breaking_point, input_headroom
+from .sensitivity import (Headroom, binding_first, c0_breaking_point, input_headroom,
+                          surplus_headroom)
 from .space import binding_analysis, enumerate_space, feasible, pareto_front
 
 __all__ = [
@@ -16,5 +17,5 @@ __all__ = [
     "ConstraintRow", "diagnose", "all_passed", "failed",
     "Decision", "Variant", "load_decision",
     "enumerate_space", "feasible", "pareto_front", "binding_analysis",
-    "Headroom", "input_headroom", "binding_first", "c0_breaking_point",
+    "Headroom", "input_headroom", "surplus_headroom", "binding_first", "c0_breaking_point",
 ]

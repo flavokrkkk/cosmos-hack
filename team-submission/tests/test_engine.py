@@ -293,3 +293,19 @@ def test_pareto_front_does_not_depend_on_rounding():
         if not _dominated_by_any(highs, lows, i)
     }
     assert exact_front == rounded, f"округление меняет состав фронта: {exact_front ^ rounded}"
+
+
+def test_surplus_headroom_matches_kcash_and_is_marked_as_team_threshold():
+    """Запас до нулевого остатка выгружается и помечен как порог команды, а не кейса."""
+    from engine import load_decision, surplus_headroom
+
+    selection = load_decision().recommended.selection
+    _, metrics = canonical.evaluate(selection)
+    kcash = metrics['kcash']
+    rows = {row.direction: row for row in surplus_headroom(selection)}
+    assert rows['рост'].limit_factor == pytest.approx(kcash)
+    assert rows['падение'].limit_factor == pytest.approx(1 / kcash)
+    for row in rows.values():
+        assert 'порог команды' in row.binding
+        # Официальные ограничения на этой границе ещё проходят: порог действительно наш.
+        assert row.change_pct > 0
