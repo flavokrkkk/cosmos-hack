@@ -14,6 +14,7 @@ export function SearchStats({ result, className }: Props) {
     { label: 'рассмотрено', value: result.considered_count },
     { label: 'проходят BASE', value: result.base_count },
     { label: 'проходят STRESS', value: result.stress_count },
+    { label: 'после ваших условий', value: result.feasible_count },
     { label: 'недоминируемых', value: result.pareto_count },
   ]
   return (

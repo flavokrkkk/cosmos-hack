@@ -5,7 +5,7 @@ export type { Candidate, CandidateSource } from './compare-portfolios'
 export { useManualSelection } from './edit-portfolio'
 export { ExportButton } from './export-calculation'
 export {
-  SearchStats, StressSwitch, defaultVariant, explanationFor, useActiveVariant, useAutoRecommendation,
+  SearchSettings, SearchStats, StressSwitch, defaultVariant, explanationFor, useActiveVariant, useAutoRecommendation,
   useManualRecommendation, usePrefetchRecommendation,
 } from './recommend-portfolio'
 export type { ActiveVariantKind, ActiveVariantView } from './recommend-portfolio'

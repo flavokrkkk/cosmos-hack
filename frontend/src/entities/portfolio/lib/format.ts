@@ -6,8 +6,8 @@ const decimal = new Intl.NumberFormat('ru-RU', {
 })
 
 /** Округление только для отображения: проверки и сравнение идут по сырым числам. */
-export function formatNumber(value: number): string {
-  return decimal.format(value)
+export function formatNumber(value: number, precision?: number): string {
+  return precision === undefined ? decimal.format(value) : value.toLocaleString('ru-RU', { maximumFractionDigits: precision })
 }
 
 /** «1 081 млн ₽» — деньги единовременно. */

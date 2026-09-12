@@ -4,14 +4,14 @@ import { Suspense, useMemo, useState } from 'react'
 import { LotCard, RecommendedLotCard, useLotDetails } from '@entities/case'
 import { formatMoney, selectionKey, useSavedVariants, useWorkspace } from '@entities/portfolio'
 import {
-  SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
+  SearchSettings, SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
   useManualRecommendation, usePrefetchRecommendation,
 } from '@features'
 import { normalizeApiError } from '@shared/api'
 import type { CaseCatalog, RecommendationResult } from '@shared/api/contracts'
 import { Button, Panel, SectionHeading, Skeleton, Tag } from '@shared/ui'
 import {
-  Alternatives, ExplanationBlock, LotDetailsHost, PortfolioReview, type AlternativeTarget,
+  Alternatives, DecisionAnalysis, ExplanationBlock, LotDetailsHost, PortfolioReview, type AlternativeTarget,
 } from '@widgets'
 
 import { LazyCompareDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
@@ -55,7 +55,8 @@ export function AutoScreen({ catalog }: Props) {
   const [saveMounted, setSaveMounted] = useState(false)
   const [compareMounted, setCompareMounted] = useState(false)
 
-  const method = catalog.methods[0]
+  const settings = useWorkspace((state) => state.searchSettings)
+  const method = catalog.methods.find((item) => item.id === settings.methodId)
   const lotById = useMemo(() => new Map(catalog.lots.map((lot) => [lot.lot_id, lot])), [catalog.lots])
 
   const candidates = useMemo(
@@ -82,9 +83,10 @@ export function AutoScreen({ catalog }: Props) {
           as="h1"
           eyebrow="Профиль"
           title={method?.title ?? 'Подбор портфеля'}
-          description="Перебор четвёрок лотов и режимов A/B/C, отсев по ограничениям, фронт недоминируемых. Выбор точки фронта — решение команды."
+          description={method?.description}
         />
         <StressSwitch />
+        <SearchSettings catalog={catalog} />
       </div>
 
       {!launched ? (
@@ -120,7 +122,7 @@ export function AutoScreen({ catalog }: Props) {
         <section id="active-portfolio" className="rise-in flex scroll-mt-6 flex-col items-center gap-8" aria-busy={query.isFetching}>
           <div className="flex flex-col items-center gap-3 text-center">
             <h2 className="text-[24px] leading-tight font-bold tracking-[-0.015em]">
-              {active.kind === 'team' ? 'Портфель команды' : active.title}
+              {active.title}
             </h2>
             {active.kind !== 'team' && active.reason ? (
               <p className="max-w-[560px] text-[13.5px] leading-snug text-muted" title={active.reason}>
@@ -145,7 +147,7 @@ export function AutoScreen({ catalog }: Props) {
                     lot={lot}
                     detail={detail}
                     modeId={detail.mode_id}
-                    modeLabel={active.kind === 'team' ? 'Выбран командой · режим' : 'Режим'}
+                    modeLabel="Подобранный режим"
                     onDetails={openDetails}
                     formatMoney={formatMoney}
                     tilt={TILTS[index] ?? 0}
@@ -208,7 +210,7 @@ export function AutoScreen({ catalog }: Props) {
         <Alternatives
           className="rise-in"
           title="Альтернативы и сравнение"
-          subtitle="Опорные точки фронта — границы возможного, а не готовый выбор."
+          subtitle="Результаты двух правил выбора и крайние компромиссы на одинаковых условиях. Можно открыть любой вариант и сравнить его показатели."
           result={result}
           active={activeTarget}
           onOpen={(target) => {
@@ -217,6 +219,8 @@ export function AutoScreen({ catalog }: Props) {
           }}
         />
       ) : null}
+
+      {result ? <DecisionAnalysis analysis={result.analysis} catalog={catalog} /> : null}
 
       <Suspense fallback={null}>
         {saveMounted && active.calculation ? (
@@ -256,9 +260,14 @@ function LaunchBlock({
 }) {
   return (
     <div className="flex flex-col items-center gap-10">
-      <Button onClick={onLaunch} loading={isRunning} className="h-[52px] px-8 text-[16px]">
-        Подобрать портфель
-      </Button>
+      <div className="flex flex-col items-center gap-3">
+        <Button onClick={onLaunch} loading={isRunning} className="h-[52px] px-8 text-[16px]">
+          Подобрать портфель
+        </Button>
+        <p className="text-[13px] text-muted">
+          Сравним варианты из {catalog.lots.length} лотов по выбранному правилу, покажем альтернативы и чувствительность решения.
+        </p>
+      </div>
 
       <section className="flex w-full flex-col items-center gap-6">
         <SectionHeading title="Восемь лотов кейса" />

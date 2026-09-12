@@ -14,7 +14,7 @@ from app.infrastructure.logging.logger import get_logger
 
 
 logger = get_logger(__name__)
-PROMPT_VERSION = "recommend-narrative-v5"
+PROMPT_VERSION = "recommend-narrative-v6"
 
 
 class RecommendationSummaryService:
@@ -56,7 +56,8 @@ class RecommendationSummaryService:
             facts_by_key = {}
             for index, variant in enumerate(variants):
                 facts = portfolio_evidence(variant.calculation, scenario)
-                for metric, label in (("c0_mrub", "Стартовые затраты"), ("vpub_mrub_per_year", "Общественная ценность"), ("kcash", "Покрытие расходов"), ("t_rep", "Тиражируемость")):
+                facts.append(ExplanationFact(id="selection_rule", source="system", text=f"Основание показа варианта: {variant.title}. {variant.reason}"))
+                for metric, label in (("c0_mrub", "Стартовые затраты"), ("vpub_mrub_per_year", "Общественная ценность"), ("kcash", "Покрытие расходов"), ("t_rep", "Индекс t_rep")):
                     value = getattr(variant.calculation.metrics, metric)
                     others = [getattr(v.calculation.metrics, metric) for v in variants]
                     if min(others) == max(others):

@@ -7,6 +7,37 @@
  */
 
 export type Scenario = 'BASE' | 'STRESS'
+export type RankingMethod = 'cash_surplus_v1' | 'weighted_mcda_v1'
+export type RankingKey = 'vpub' | 'c0' | 'opex' | 'kcash' | 't_rep' | 'readiness' | 'resilience' | 'scale'
+export type RankingWeights = Record<RankingKey, number>
+export type RankingCriterion = { key: RankingKey; title: string; direction: 'max' | 'min' }
+export type ScoreComponent = RankingCriterion & {
+  raw: number; minimum: number; maximum: number; normalized: number; weight: number; contribution: number
+}
+export type MethodOutcome = {
+  method_id: RankingMethod; selection_id: string; selection: SelectionItem[]
+  c0_mrub: number; vpub_mrub_per_year: number; annual_surplus_mrub: number; kcash: number
+  score: number | null; components: ScoreComponent[]
+}
+export type SensitivityCase = {
+  id: string; title: string; origin: 'допущение'; feasible_count: number
+  budget_cap_mrub: number; vpub_floor_mrub_per_year: number; required_public_lot_ids: string[]
+  cash_multiplier: number; opex_multiplier: number; weights: RankingWeights
+  outcomes: Record<RankingMethod, {
+    winner: MethodOutcome | null; winner_changed: boolean; original_still_feasible: boolean
+    original_adjusted_surplus_mrub: number | null
+  }>
+}
+export type DecisionAnalysis = {
+  normalized_weights: RankingWeights; methods: MethodOutcome[]; sensitivity: SensitivityCase[]
+  pareto_objectives: string[]; normalization: string; caveat: string
+}
+export type FinancialSummary = {
+  annual_surplus_mrub: number; annual_funding_gap_mrub: number; operating_self_financed: boolean
+  anchor_cash_mrub_per_year: number; commercial_cash_mrub_per_year: number
+  cash_drop_break_even_pct: number | null; opex_growth_break_even_pct: number | null
+  startup_headroom_mrub: Record<Scenario, number>; public_lot_ids: string[]; limitation: string
+}
 
 export type ComparisonAnalysisRequest = CompareRequest & { scenario: Scenario }
 export type ComparisonAnalysisResult = RecommendationExplanation & { comparison: ComparisonResult }
@@ -78,6 +109,7 @@ export type CaseCatalog = {
   modes: AccessMode[]
   constraints: Record<Scenario, ConstraintDefinition[]>
   methods: MethodDefinition[]
+  ranking_criteria: RankingCriterion[]
   source_refs: string[]
   origin: 'постановка'
 }
@@ -143,6 +175,7 @@ export type Calculation = {
   /** Пустой объект `{}` при пустом выборе: `checks[scenario]` тогда `undefined`. */
   checks: Partial<Record<Scenario, ConstraintCheck[]>>
   feasible_by_scenario: Record<Scenario, boolean>
+  financial: FinancialSummary | null
 }
 
 // ────────────────────────────── рекомендация ────────────────────────────────
@@ -178,6 +211,7 @@ export type RecommendationResult = {
   method: MethodDefinition
   recommended: RecommendationVariant | null
   alternatives: RecommendationVariant[]
+  analysis: DecisionAnalysis | null
 }
 
 export type ComparisonResult = {
@@ -198,7 +232,11 @@ export type RecommendRequest = {
   dataset_hash: string
   /** Искать только среди проходящих STRESS без пересмотра состава. */
   require_stress: boolean
-  method_id: 'pareto_lexicographic_v1'
+  method_id: 'pareto_lexicographic_v1' | RankingMethod
+  weights?: RankingWeights
+  budget_cap_mrub?: number | null
+  vpub_floor_mrub_per_year?: number | null
+  required_public_lot_ids?: string[]
   /**
    * От четырёх до восьми лотов-кандидатов. Алгоритм перебирает все четвёрки
    * и режимы внутри этого списка; `null` — полный автоподбор по всем восьми.

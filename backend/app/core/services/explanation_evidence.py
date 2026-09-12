@@ -32,6 +32,13 @@ def portfolio_evidence(calculation: Calculation, scenario: Scenario) -> list[Exp
             f"Портфель {'проходит' if calculation.feasible_by_scenario[scenario] else 'не проходит'} все обязательные ограничения {scenario}."
         )),
     ]
+    financial = calculation.financial
+    if financial and financial.operating_self_financed:
+        facts.append(ExplanationFact(id="operating_headroom", source="calculation", kind="context", text=(
+            f"При неизменных остальных условиях поступления могут снизиться на {number(financial.cash_drop_break_even_pct)}%, "
+            f"либо расходы вырасти на {number(financial.opex_growth_break_even_pct)}%, прежде чем годовой остаток станет отрицательным. "
+            "Это два отдельных порога, не одновременный стресс и не гарантия устойчивости."
+        )))
     for check in calculation.checks[scenario]:
         if not check.passed:
             facts.append(ExplanationFact(id=f"failed_{check.code}", source="calculation", kind="limitation", text=(

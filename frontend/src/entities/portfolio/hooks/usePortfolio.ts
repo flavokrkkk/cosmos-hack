@@ -6,6 +6,7 @@ import type {
 
 import { portfolioService } from '../api'
 import { selectionKey, sortedLotIds } from '../lib/selection'
+import { useWorkspace, type SearchSettings } from '../model/workspace'
 
 export const portfolioKeys = {
   evaluate: (datasetHash: string, selection: readonly SelectionItem[]) =>
@@ -41,13 +42,19 @@ export type RecommendParams = {
   /** Четыре–восемь лотов-кандидатов; `null` — полный автоподбор. */
   lotIds: readonly string[] | null
   enabled: boolean
+  settings?: SearchSettings
 }
 
 function recommendRequest(params: RecommendParams, withExplanations: boolean): RecommendRequest {
+  const settings = params.settings ?? useWorkspace.getState().searchSettings
   return {
     dataset_hash: params.datasetHash as string,
     require_stress: params.requireStress,
-    method_id: 'pareto_lexicographic_v1',
+    method_id: settings.methodId,
+    weights: settings.weights,
+    budget_cap_mrub: settings.budgetCap,
+    vpub_floor_mrub_per_year: settings.vpubFloor,
+    required_public_lot_ids: sortedLotIds(settings.publicLotIds),
     lot_ids: params.lotIds ? sortedLotIds(params.lotIds) : null,
     with_explanations: withExplanations,
   }
@@ -63,10 +70,13 @@ function recommendEnabled({ datasetHash, lotIds, enabled }: RecommendParams): bo
  * предзагрузке: результат детерминирован, поэтому не протухает.
  */
 export function recommendationQueryOptions(params: RecommendParams) {
+  const request = recommendRequest(params, false)
   return queryOptions({
-    queryKey: portfolioKeys.recommend(params.datasetHash ?? '', params.requireStress, params.lotIds, false),
-    queryFn: ({ signal }) => portfolioService.recommend(recommendRequest(params, false), signal, 30_000),
+    queryKey: [...portfolioKeys.recommend(params.datasetHash ?? '', params.requireStress, params.lotIds, false), request],
+    queryFn: ({ signal }) => portfolioService.recommend(request, signal, 30_000),
     staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     retry: false,
     /* Ошибку показываем на странице рядом с кнопкой «Повторить», тост был бы дублем. */
     meta: { skipErrorToast: true },
@@ -75,7 +85,11 @@ export function recommendationQueryOptions(params: RecommendParams) {
 
 /** Подбор в два шага: числа видны сразу; «Подобрать заново» — `refetch()`. */
 export function useRecommendation(params: RecommendParams) {
-  return useQuery({ ...recommendationQueryOptions(params), enabled: recommendEnabled(params) })
+  const settings = useWorkspace((state) => state.searchSettings)
+  return useQuery({
+    ...recommendationQueryOptions({ ...params, settings: params.settings ?? settings }),
+    enabled: recommendEnabled(params),
+  })
 }
 
 /**
@@ -86,9 +100,11 @@ export function useRecommendation(params: RecommendParams) {
  * пережить перезагрузку.
  */
 export function useRecommendationExplanations(params: RecommendParams) {
+  const settings = useWorkspace((state) => state.searchSettings)
+  const request = recommendRequest({ ...params, settings: params.settings ?? settings }, true)
   return useQuery({
-    queryKey: portfolioKeys.recommend(params.datasetHash ?? '', params.requireStress, params.lotIds, true),
-    queryFn: ({ signal }) => portfolioService.recommend(recommendRequest(params, true), signal, 150_000),
+    queryKey: [...portfolioKeys.recommend(params.datasetHash ?? '', params.requireStress, params.lotIds, true), request],
+    queryFn: ({ signal }) => portfolioService.recommend(request, signal, 150_000),
     enabled: recommendEnabled(params),
     staleTime: Infinity,
     retry: false,

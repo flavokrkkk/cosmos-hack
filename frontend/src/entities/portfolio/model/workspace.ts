@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
-import type { Scenario } from '@shared/api/contracts'
+import type { RankingMethod, RankingWeights, Scenario } from '@shared/api/contracts'
 
 import { PORTFOLIO_SIZE } from '../lib/selection'
 
@@ -18,6 +18,13 @@ export type ActiveVariant =
   | { kind: 'saved'; id: string }
 
 export type ManualOrigin = 'empty' | 'manual' | 'copy'
+export type SearchSettings = {
+  methodId: RankingMethod
+  weights: RankingWeights
+  budgetCap: number | null
+  vpubFloor: number | null
+  publicLotIds: string[]
+}
 
 type WorkspaceState = {
   /** Версия данных, под которую собрано состояние. Другая версия — состояние сбрасывается. */
@@ -34,9 +41,11 @@ type WorkspaceState = {
   /** Лоты ручной проверки, 0–4 штуки; режимы к ним назначает сервер. */
   manualLotIds: string[]
   manualOrigin: ManualOrigin
+  searchSettings: SearchSettings
 }
 
 type WorkspaceActions = {
+  setSearchSettings: (settings: SearchSettings) => void
   bindDataset: (datasetHash: string) => void
   setMode: (mode: WorkspaceMode) => void
   setScenario: (scenario: Scenario) => void
@@ -63,6 +72,11 @@ const INITIAL: WorkspaceState = {
   activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
   manualLotIds: [],
   manualOrigin: 'empty',
+  searchSettings: {
+    methodId: 'cash_surplus_v1',
+    weights: { vpub: 1, c0: 1, opex: 1, kcash: 1, t_rep: 1, readiness: 1, resilience: 1, scale: 1 },
+    budgetCap: null, vpubFloor: null, publicLotIds: [],
+  },
 }
 
 /**
@@ -79,6 +93,9 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
   persist(
     (set) => ({
       ...INITIAL,
+      setSearchSettings: (searchSettings) => set({
+        searchSettings, activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
+      }),
 
       bindDataset: (datasetHash) =>
         set((state) =>
@@ -169,6 +186,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
         activeVariant: state.activeVariant,
         manualLotIds: state.manualLotIds,
         manualOrigin: state.manualOrigin,
+        searchSettings: state.searchSettings,
       }),
     },
   ),

@@ -64,11 +64,14 @@ services:
   tuna:
     profiles: ["tunnel"]
     image: yuccastream/tuna:latest
-    command: http frontend:80 --inspect=false --domain=${TUNA_DOMAIN:-} --location=${TUNA_LOCATION:-nl}
+    command: http frontend:80 --inspect=true --domain=${TUNA_DOMAIN:-} --location=${TUNA_LOCATION:-nl}
     environment:
       TUNA_TOKEN: ${TUNA_TOKEN:-}
       TUNA_LOG: stdout
       TUNA_LOG_LEVEL: info
+      TUNA_INSPECT_ADDR: 0.0.0.0:4040
+    ports:
+      - "127.0.0.1:4040:4040"
     depends_on:
       - frontend
     restart: unless-stopped

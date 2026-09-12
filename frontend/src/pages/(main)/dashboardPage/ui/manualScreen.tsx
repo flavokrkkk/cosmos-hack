@@ -3,12 +3,12 @@ import { Suspense, useMemo, useState } from 'react'
 import { LotCard, useLotDetails } from '@entities/case'
 import {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, LotChip, METRIC_TILES, METRIC_TILES_COMPACT,
-  MetricTiles, PortfolioProgress, formatMoney, scenarioDependentCodes, selectionKey, useEvaluate,
-  useSavedVariants, useWorkspace,
+  MetricTiles, PortfolioProgress, FinancialBreakdown, formatMoney, scenarioDependentCodes,
+  selectionKey, useEvaluate, useSavedVariants, useWorkspace,
 } from '@entities/portfolio'
 import {
-  ExportButton, SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
-  useManualRecommendation, useManualSelection,
+  ExportButton, SearchSettings, SearchStats, StressSwitch, buildCandidates,
+  useActiveVariant, useAutoRecommendation, useManualRecommendation, useManualSelection,
 } from '@features'
 import { normalizeApiError } from '@shared/api'
 import type { Calculation, CaseCatalog, RecommendationResult, Scenario } from '@shared/api/contracts'
@@ -16,7 +16,7 @@ import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Button, Panel, PanelHeader, PanelTitle, Segmented, Skeleton, Tag } from '@shared/ui'
 import {
-  Alternatives, ExplanationBlock, LotDetailsHost, type AlternativeTarget,
+  Alternatives, DecisionAnalysis, ExplanationBlock, LotDetailsHost, type AlternativeTarget,
 } from '@widgets'
 
 import { LazyCompareDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
@@ -116,6 +116,7 @@ export function ManualScreen({ catalog }: Props) {
             label="Сценарий проверки: меняет только пороги"
           />
         </header>
+        <SearchSettings catalog={catalog} />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(340px,1fr)] lg:items-start">
           <ul className="grid content-start gap-5 sm:grid-cols-2">
@@ -222,17 +223,16 @@ export function ManualScreen({ catalog }: Props) {
                   </PanelHeader>
                   {active.kind === 'reference' || active.kind === 'team' ? (
                     <p className="mb-3 text-[12.5px] text-muted">
-                      {active.kind === 'team' ? 'Портфель команды' : active.title}
+                      {active.kind === 'team' ? 'Портфель команды' : `Опорная точка: ${active.title}`} · сценарий {scenario}
                     </p>
                   ) : null}
                   <MetricTiles metrics={active.calculation.metrics} tiles={METRIC_TILES_COMPACT} columns={2} />
-                  <div className="mt-4">
-                    <ExtraMetrics
-                      metrics={active.calculation.metrics}
-                      shown={METRIC_TILES_COMPACT}
-                      rest={METRIC_TILES.filter((tile) => !METRIC_TILES_COMPACT.includes(tile))}
-                    />
-                  </div>
+                  <FinancialBreakdown financial={active.calculation.financial} />
+                  <ExtraMetrics
+                    metrics={active.calculation.metrics}
+                    shown={METRIC_TILES_COMPACT}
+                    rest={METRIC_TILES.filter((tile) => !METRIC_TILES_COMPACT.includes(tile))}
+                  />
                 </Panel>
 
                 <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
@@ -284,7 +284,7 @@ export function ManualScreen({ catalog }: Props) {
           />
           <Alternatives
             title="Другие режимы для выбранных лотов"
-            subtitle="Те же четыре лота, другие сочетания режимов A/B/C."
+            subtitle="Опорные точки фронта внутри выбранных четырёх лотов: те же лоты, другие сочетания режимов A/B/C."
             result={result}
             active={activeTarget}
             onOpen={(target) => {
@@ -292,6 +292,7 @@ export function ManualScreen({ catalog }: Props) {
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
           />
+          <DecisionAnalysis analysis={result.analysis} catalog={catalog} />
         </div>
       ) : null}
 

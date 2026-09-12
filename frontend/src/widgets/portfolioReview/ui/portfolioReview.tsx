@@ -3,7 +3,7 @@ import { ArrowLeft } from '@phosphor-icons/react'
 import { useLotDetails } from '@entities/case'
 import {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, METRIC_TILES, MetricTiles, PortfolioLotCard,
-  scenarioDependentCodes, useWorkspace,
+  FinancialBreakdown, scenarioDependentCodes, useWorkspace,
 } from '@entities/portfolio'
 import { ExportButton } from '@features'
 import type { AccessMode, Calculation, CaseCatalog, Lot, Scenario } from '@shared/api/contracts'
@@ -70,15 +70,15 @@ export function PortfolioReview({
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Tag tone={variantKind === 'team' ? 'brand' : 'muted'} size="md">
                 {variantKind === 'team'
-                  ? 'Выбран командой'
+                  ? variantTitle
                   : variantKind === 'saved'
                     ? `Сохранённый вариант: ${variantTitle}`
-                    : `Опорная точка фронта: ${variantTitle}`}
+                    : variantTitle}
               </Tag>
               {!isDefault && onBackToDefault ? (
                 <Button variant="link" size="sm" onClick={onBackToDefault}>
-                  <ArrowLeft className="size-3.5" weight="bold" aria-hidden />
-                  К портфелю команды
+                  <ArrowLeft className="size-3.5" aria-hidden />
+                  К основному варианту
                 </Button>
               ) : null}
             </div>
@@ -135,7 +135,10 @@ export function PortfolioReview({
             />
           </PanelHeader>
           {complete && calculation.metrics ? (
-            <MetricTiles metrics={calculation.metrics} />
+            <>
+              <MetricTiles metrics={calculation.metrics} />
+              <FinancialBreakdown financial={calculation.financial} />
+            </>
           ) : (
             <div className="grid gap-3 sm:grid-cols-3">
               {[0, 1, 2, 3, 4, 5].map((index) => <Skeleton key={index} className="h-[76px]" />)}

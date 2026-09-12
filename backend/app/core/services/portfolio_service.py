@@ -8,10 +8,12 @@ from app.core.dto.portfolio import (
     PortfolioMetrics,
 )
 from app.core.services.portfolio_engine import canonical, constraints
+from app.core.services.portfolio_finance_service import financial_summary
+from app.core.services.portfolio_ranking_service import CRITERIA, METHODS
 from app.infrastructure.errors.portfolio_errors import DatasetMismatch, InvalidPortfolio
 
 
-ENGINE_VERSION = "1.0.0"
+ENGINE_VERSION = "1.1.0"
 # ПРАВКА 12.09.2026: описание метода приведено в соответствие с тем, что
 # алгоритм действительно делает. Раньше он назывался «Общественный эффект
 # в заданных условиях» и объявлял восемь приоритетов, из которых срабатывал
@@ -74,7 +76,7 @@ def _catalog() -> CaseCatalog:
         case_id=config["case_id"], case_version=config["case_version"],
         dataset_hash=canonical.source_version(), engine_version=ENGINE_VERSION,
         lots=records, modes=[AccessMode(**row) for row in modes.to_dict("records")],
-        constraints=definitions, methods=[METHOD],
+        constraints=definitions, methods=[*METHODS, METHOD], ranking_criteria=CRITERIA,
         source_refs=[f"case/source/{name}" for name in canonical.SOURCE_FILES],
     )
 
@@ -107,6 +109,7 @@ class PortfolioService:
             engine_version=ENGINE_VERSION, selection=selection,
             status="complete" if len(selection) == 4 else "incomplete",
             detail=detail.to_dict("records"), metrics=PortfolioMetrics(**metrics) if selection else None,
+            financial=financial_summary(selection, metrics),
             checks=checks,
             feasible_by_scenario={scenario: bool(selection) and all(row.passed for row in checks[scenario])
                                   for scenario in canonical.scenarios()},

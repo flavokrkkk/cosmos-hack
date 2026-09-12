@@ -16,5 +16,5 @@ export { useComparison, useSavedVariants, useWorkspace } from './model'
 export type { ActiveVariant, ManualOrigin, SavedSource, SavedVariant, WorkspaceMode } from './model'
 export {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, LotChip, MetricTiles, PortfolioLotCard,
-  PortfolioProgress,
+  PortfolioProgress, FinancialBreakdown,
 } from './ui'
