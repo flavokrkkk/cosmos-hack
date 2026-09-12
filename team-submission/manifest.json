@@ -3,8 +3,6 @@
   "method": "hybrid_maximin_v1",
   "status": "calculation_ready_materials_pending",
   "missing_materials": [
-    "docs/management-note.pdf",
-    "docs/stress-summary.pdf",
     "presentation.pdf"
   ],
   "source_copies": {
@@ -126,11 +124,11 @@
     },
     "docs/management-note.md": {
       "source": "docs/23-management-note.md",
-      "source_sha256": "c48b7b5e6841cfa8680055d7cfc4b2995bbc94540c6e0c9161dc052bbd579d60"
+      "source_sha256": "57efbae22e5e6bdce10d084095050ec693c77ee777bfe3fcd9bfe0b1397b67da"
     },
     "docs/stress-summary.md": {
       "source": "docs/24-stress-summary.md",
-      "source_sha256": "7cb8c970a5088485e7e491e54777512213bbe0438bea24a77dce3b030b665c77"
+      "source_sha256": "9b785c35e0db7e86a018ee207c16d4c0207d9e389cecc5015923059d78d72f2f"
     },
     "docs/research/access-mode-d.md": {
       "source": "docs/research/access-mode-d.md",
@@ -143,6 +141,14 @@
     "docs/research/portfolio-audit-results.json": {
       "source": "docs/research/portfolio-audit-results.json",
       "source_sha256": "95c871e9f0c44abadc839432b6ac844e54b9ce1d37677511312888483dea7ba4"
+    },
+    "docs/management-note.pdf": {
+      "source": "docs/management-note.pdf",
+      "source_sha256": "d803412528066d1155a7e22603aeddab64a72e60a18dbe5b6a84696ad437e041"
+    },
+    "docs/stress-summary.pdf": {
+      "source": "docs/stress-summary.pdf",
+      "source_sha256": "d6ca5ecd6bd6c64c84876a4f4e6b061de617782bb091080b623204176753ea11"
     }
   },
   "files": {
@@ -156,12 +162,14 @@
     "data/official/data/lots.csv": "8e2b6244178344f9f97050ce5c9f337cd311e9f86bbd96bbbfbdde6999c4ba8b",
     "docs/README.md": "ad8f1028ba708e6dd7cf1b008fc0c85cfeb7a7407ea0c129bfbfba979e621def",
     "docs/algorithm.md": "9aaae74fd1aa065e5293786b9f60d3bada9ce157a1a3f950f3e77c9f8b64cc01",
-    "docs/management-note.md": "a4a246dfb768706e77685f3f856021fb9094413c2ce72c48be44706b4f7494f1",
+    "docs/management-note.md": "4b59a853b8f97928d12efc0e04e4c817c1cac1acd9ea8b546156f4506fcf14f1",
+    "docs/management-note.pdf": "d803412528066d1155a7e22603aeddab64a72e60a18dbe5b6a84696ad437e041",
     "docs/research/README.md": "4af19e1f55d613d325307f4361411d319694b18448ad58f000ee3dd429b97fc8",
     "docs/research/access-mode-d.md": "26cd707c3b3a99907605bb878e6f7bda8b32ad6d5be8c950cbddd2951e3ac034",
     "docs/research/case-literature.md": "f34d5eb041b0a7d061d9aacf34c08082bda0e493b458e33a0e2067392ce5040f",
     "docs/research/portfolio-audit-results.json": "95c871e9f0c44abadc839432b6ac844e54b9ce1d37677511312888483dea7ba4",
-    "docs/stress-summary.md": "308a22844d3c8eca3f196232fc286ba3a1789cc27f9490455a023d9ae584d0de",
+    "docs/stress-summary.md": "12185ad8958d0e3cb89bcee9f7a2e179958d35c2c103a7055400e3a7f136c239",
+    "docs/stress-summary.pdf": "d6ca5ecd6bd6c64c84876a4f4e6b061de617782bb091080b623204176753ea11",
     "requirements.txt": "6d83ac9c93ec11b7a55f000ec44f32b189bdc20affaf0b9f0744bf890b5be9dc",
     "results/constraints_BASE.csv": "81bf6323de4bcb38c015ddc1ac897ebb4ff39bd40002e6acebb771aaaab5785c",
     "results/constraints_STRESS.csv": "9e0011c089a29fb541d120a1155740224df1ff73a584e19904c24cd47a56253d",

@@ -1,3 +1,5 @@
 -r requirements.txt
 pytest==8.4.2
 httpx>=0.28,<1
+# вёрстка PDF материалов защиты: scripts/render_pdf.py (число страниц скрипт считает сам)
+markdown==3.10.3
