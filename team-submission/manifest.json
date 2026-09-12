@@ -148,11 +148,11 @@
     },
     "docs/management-note.pdf": {
       "source": "docs/management-note.pdf",
-      "source_sha256": "c7f6e521d162b0ee59d9dc97e521a76855a381b339a8c15d507ed116cd7d8fa5"
+      "source_sha256": "d1d86b9f420e2cf9cac1625679c6f9d9ad81149da19501a384c97783e8549291"
     },
     "docs/stress-summary.pdf": {
       "source": "docs/stress-summary.pdf",
-      "source_sha256": "c10e5fb256413239c4313aa73c8f7dcb9812837e9032fff7a1406be4f2c0b4b0"
+      "source_sha256": "bbed11e48acf4c1e1870c0767e31218408023624657675de31163593c49fe6ef"
     }
   },
   "files": {
@@ -167,13 +167,13 @@
     "docs/README.md": "ad8f1028ba708e6dd7cf1b008fc0c85cfeb7a7407ea0c129bfbfba979e621def",
     "docs/algorithm.md": "9aaae74fd1aa065e5293786b9f60d3bada9ce157a1a3f950f3e77c9f8b64cc01",
     "docs/management-note.md": "38dd41aa58040b11efb6463d089d98145d18fb0298e5e1399b7b86a2ccf1b614",
-    "docs/management-note.pdf": "c7f6e521d162b0ee59d9dc97e521a76855a381b339a8c15d507ed116cd7d8fa5",
+    "docs/management-note.pdf": "d1d86b9f420e2cf9cac1625679c6f9d9ad81149da19501a384c97783e8549291",
     "docs/research/README.md": "4af19e1f55d613d325307f4361411d319694b18448ad58f000ee3dd429b97fc8",
     "docs/research/access-mode-d.md": "26cd707c3b3a99907605bb878e6f7bda8b32ad6d5be8c950cbddd2951e3ac034",
     "docs/research/case-literature.md": "f34d5eb041b0a7d061d9aacf34c08082bda0e493b458e33a0e2067392ce5040f",
     "docs/research/portfolio-audit-results.json": "95c871e9f0c44abadc839432b6ac844e54b9ce1d37677511312888483dea7ba4",
     "docs/stress-summary.md": "3cc4890d1f7ab0e8c5dca85782f803769f7d09c1bef2aa9cb2b544139e757363",
-    "docs/stress-summary.pdf": "c10e5fb256413239c4313aa73c8f7dcb9812837e9032fff7a1406be4f2c0b4b0",
+    "docs/stress-summary.pdf": "bbed11e48acf4c1e1870c0767e31218408023624657675de31163593c49fe6ef",
     "requirements.txt": "6d83ac9c93ec11b7a55f000ec44f32b189bdc20affaf0b9f0744bf890b5be9dc",
     "results/constraints_BASE.csv": "81bf6323de4bcb38c015ddc1ac897ebb4ff39bd40002e6acebb771aaaab5785c",
     "results/constraints_STRESS.csv": "9e0011c089a29fb541d120a1155740224df1ff73a584e19904c24cd47a56253d",

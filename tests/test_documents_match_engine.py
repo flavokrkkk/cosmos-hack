@@ -48,7 +48,11 @@ def test_input_config_does_not_prescribe_winner():
 
 
 def test_superseded_notes_are_not_presented_as_current():
-    for name in ('10-management-note.md','11-stress-summary.md','18-portfolio-selection-algorithm.md'):
+    """Документы под прежний портфель помечены до первого заголовка и ведут на актуальный."""
+    for name in ('10-management-note.md','11-stress-summary.md','18-portfolio-selection-algorithm.md',
+                 '21-portfolio-balance-and-synergy.md'):
         text = (ROOT/'docs'/name).read_text()
-        assert text.startswith('> Историческая версия')
-        assert '22-hybrid-selection.md' in text.split('\n\n')[0]
+        preamble = text.split('\n# ', 1)[0]
+        assert '> Историческая версия' in preamble, name
+        banner = next(line for line in preamble.split('\n') if line.startswith('> Историческая версия'))
+        assert '22-hybrid-selection.md' in banner, name

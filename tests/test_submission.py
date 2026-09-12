@@ -51,3 +51,22 @@ def test_bundled_relative_links_resolve():
             local = target.split('#', 1)[0]
             if local and not local.startswith(('http://', 'https://', 'mailto:')):
                 assert (path.parent/local).exists(), f'{path.name} → {target}'
+
+
+def test_bundle_is_not_stale_against_its_sources():
+    """Каждый файл комплекта совпадает с тем, из чего собран.
+
+    Манифест хранит sha256 источника для каждой копии. Если источник изменился, а
+    `scripts/build_submission.py` не перезапускали, в сдачу уедет прежняя версия — именно так
+    в комплект один раз попал PDF от предыдущего рендера записки.
+    """
+    manifest = json.loads((BUNDLE/'manifest.json').read_text())
+    stale = []
+    for copied, origin in manifest['source_copies'].items():
+        source = ROOT/origin['source']
+        if not source.is_file():
+            stale.append((copied, f"источник {origin['source']} отсутствует"))
+        elif hashlib.sha256(source.read_bytes()).hexdigest() != origin['source_sha256']:
+            stale.append((copied, f"источник {origin['source']} изменился"))
+    assert not stale, ('комплект устарел, запустите python scripts/build_submission.py: '
+                       f'{stale}')
