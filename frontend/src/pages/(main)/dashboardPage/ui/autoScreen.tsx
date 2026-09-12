@@ -220,7 +220,7 @@ export function AutoScreen({ catalog }: Props) {
         />
       ) : null}
 
-      {result ? <DecisionAnalysis analysis={result.analysis} catalog={catalog} /> : null}
+      {result ? <DecisionAnalysis analysis={result.analysis} /> : null}
 
       <Suspense fallback={null}>
         {saveMounted && active.calculation ? (

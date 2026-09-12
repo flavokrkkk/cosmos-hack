@@ -28,7 +28,7 @@ const SIZE: Record<NonNullable<ContentProps['size']>, string> = {
 }
 
 /**
- * Модальное окно дизайн-системы: тёмная подложка, белая карточка со скруглением 24px,
+ * Модальное окно дизайн-системы: тёмная подложка, непрозрачная карточка со скруглением 24px,
  * крестик в правом верхнем углу. Фокус, Esc и клик по подложке — от Radix.
  */
 export function DialogContent({
@@ -45,7 +45,9 @@ export function DialogContent({
       <RadixDialog.Content
         className={cn(
           'fixed top-1/2 left-1/2 z-50 flex max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col',
-          'rounded-[24px] bg-card shadow-panel outline-none',
+          /* Непрозрачный фон страницы: стеклянные плитки внутри выглядят как на странице,
+             а содержимое за окном не просвечивает. */
+          'rounded-[24px] border border-white bg-page shadow-panel outline-none',
           'data-[state=open]:animate-pop-in data-[state=closed]:animate-pop-out',
           SIZE[size],
           className,

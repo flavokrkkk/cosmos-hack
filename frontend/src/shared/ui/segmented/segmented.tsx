@@ -20,7 +20,7 @@ type Props<T extends string> = {
 }
 
 /**
- * Сегментированный переключатель: пилюля-контейнер и активный синий сегмент.
+ * Сегментированный переключатель: отдельные стеклянные пилюли, активная — синяя.
  * Всегда есть выбранное значение — снять выбор кликом по активному нельзя.
  */
 export function Segmented<T extends string>({
@@ -36,7 +36,6 @@ export function Segmented<T extends string>({
       aria-label={label}
       className={cn(
         'inline-flex items-center gap-2 rounded-full bg-transparent',
-        size === 'lg' ? 'p-0' : 'p-0',
         className,
       )}
     >

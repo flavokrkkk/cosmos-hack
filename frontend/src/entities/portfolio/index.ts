@@ -13,8 +13,8 @@ export {
 } from './lib'
 export type { DeltaKey, DeltaVerdict, ExportFile, MetricTileDefinition, ScenarioVerdict } from './lib'
 export { useComparison, useSavedVariants, useWorkspace } from './model'
-export type { ActiveVariant, ManualOrigin, SavedSource, SavedVariant, WorkspaceMode } from './model'
+export type { ActiveVariant, ManualOrigin, SavedSource, SavedVariant, SearchSettings, WorkspaceMode } from './model'
 export {
-  ConstraintTiles, ExtraMetrics, FeasibilityBadge, LotChip, MetricTiles, PortfolioLotCard,
-  PortfolioProgress, FinancialBreakdown,
+  ConstraintTiles, ExtraMetrics, FeasibilityBadge, FinancialBreakdown, LotChip, MetricTiles, PortfolioLotCard,
+  PortfolioProgress,
 } from './ui'

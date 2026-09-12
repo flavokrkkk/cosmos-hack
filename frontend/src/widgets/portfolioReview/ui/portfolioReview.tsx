@@ -71,9 +71,8 @@ export function PortfolioReview({
     : ''
 
   return (
-    <div className="rise-in flex flex-col gap-4">
-    {/* Две колонки одной высоты, как на макете: панель тянется, карточки внутри — нет. */}
-    <div className="grid items-start gap-4 lg:grid-cols-2">
+    /* Две колонки независимой высоты: панель не тянется за соседней, карточки внутри — тем более. */
+    <div className="rise-in grid items-start gap-4 lg:grid-cols-2">
       <Panel aria-busy={isLoading} className={cn('flex flex-col', isLoading && 'is-stale')}>
         <PanelHeader className="mb-2 items-start">
           <div>
@@ -187,16 +186,11 @@ export function PortfolioReview({
           ) : null}
         </div>
 
-        <div className="-mt-3">
+        {/* Выгрузка — тихой строкой под кнопками действий: колонки независимой высоты. */}
+        <div className="-mt-2 flex justify-end">
           <ExportButton calculation={calculation} catalog={catalog} recommendation={recommendation} />
         </div>
       </div>
-    </div>
-
-    {/* Выгрузка — тихой строкой под обеими колонками, чтобы не ломать их общую высоту. */}
-    <div className="-mt-2 flex justify-end">
-      <ExportButton calculation={calculation} catalog={catalog} />
-    </div>
     </div>
   )
 }

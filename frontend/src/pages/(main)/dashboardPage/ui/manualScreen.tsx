@@ -228,12 +228,13 @@ export function ManualScreen({ catalog }: Props) {
                     </p>
                   ) : null}
                   <MetricTiles metrics={active.calculation.metrics} tiles={METRIC_TILES_COMPACT} columns={2} />
-                  <FinancialBreakdown financial={active.calculation.financial} />
                   <ExtraMetrics
                     metrics={active.calculation.metrics}
                     shown={METRIC_TILES_COMPACT}
                     rest={METRIC_TILES.filter((tile) => !METRIC_TILES_COMPACT.includes(tile))}
+                    className="mt-4"
                   />
+                  <FinancialBreakdown financial={active.calculation.financial} />
                 </Panel>
 
                 <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
@@ -293,7 +294,7 @@ export function ManualScreen({ catalog }: Props) {
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
           />
-          <DecisionAnalysis analysis={result.analysis} catalog={catalog} />
+          <DecisionAnalysis analysis={result.analysis} />
         </div>
       ) : null}
 
