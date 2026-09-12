@@ -25,10 +25,10 @@
   --color-brand-50: #e9f4ff;
 
   /* Поверхности */
-  --color-page: #eef1f8;
-  --color-panel: #f5f7fb;
-  --color-card: #ffffff;
-  --color-sunken: #eef1f7;
+  --color-page: #edf0f5;
+  --color-panel: rgb(255 255 255 / 0.35);
+  --color-card: rgb(255 255 255 / 0.5);
+  --color-sunken: rgb(255 255 255 / 0.28);
 
   /* Текст */
   --color-ink: #111318;
@@ -50,18 +50,18 @@
   --color-warn-bg: #fff4de;
 
   /* Радиусы */
-  --radius-panel: 28px;
-  --radius-card: 22px;
+  --radius-panel: 24px;
+  --radius-card: 24px;
   --radius-tile: 16px;
-  --radius-chip: 14px;
+  --radius-chip: 24px;
 
   /* Тени как на макете: широкие, мягкие, малоконтрастные — карточка лежит на странице */
-  --shadow-panel: 0 18px 44px -24px rgb(21 40 82 / 0.16), 0 1px 2px rgb(21 40 82 / 0.03);
-  --shadow-card: 0 12px 30px -14px rgb(21 40 82 / 0.16), 0 1px 2px rgb(21 40 82 / 0.03);
-  --shadow-card-hover: 0 18px 40px -16px rgb(21 40 82 / 0.22), 0 1px 3px rgb(21 40 82 / 0.04);
-  --shadow-tile: 0 6px 18px -10px rgb(21 40 82 / 0.14), 0 1px 1px rgb(21 40 82 / 0.03);
-  --shadow-chip: 0 2px 6px -2px rgb(21 40 82 / 0.14), 0 1px 1px rgb(21 40 82 / 0.03);
-  --shadow-brand: 0 10px 22px -8px rgb(0 145 255 / 0.45);
+  --shadow-panel: 0 8px 40px rgb(0 0 0 / 0.08);
+  --shadow-card: 0 8px 40px rgb(0 0 0 / 0.08);
+  --shadow-card-hover: 0 12px 44px rgb(0 0 0 / 0.12);
+  --shadow-tile: 0 8px 40px rgb(0 0 0 / 0.06);
+  --shadow-chip: 0 8px 40px rgb(0 0 0 / 0.08);
+  --shadow-brand: 0 8px 20px rgb(0 0 0 / 0.08);
   --shadow-inset: inset 0 1px 2px rgb(21 40 82 / 0.06);
 
   /* Единая кривая движения: быстрый старт, мягкое торможение, без перелёта */
@@ -164,9 +164,13 @@
     margin: 0;
   }
 
+  #root {
+    min-height: 100dvh;
+  }
+
   /* Видимый фокус только с клавиатуры, один стиль на всё приложение. */
   :focus-visible {
-    outline: 2px solid var(--color-brand);
+    outline: 2px solid rgb(255 255 255 / 0.9);
     outline-offset: 3px;
     border-radius: 6px;
   }

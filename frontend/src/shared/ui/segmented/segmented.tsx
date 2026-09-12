@@ -35,8 +35,8 @@ export function Segmented<T extends string>({
       }}
       aria-label={label}
       className={cn(
-        'inline-flex items-center rounded-full bg-card shadow-card',
-        size === 'lg' ? 'p-1' : 'p-[3px]',
+        'inline-flex items-center gap-2 rounded-full bg-transparent',
+        size === 'lg' ? 'p-0' : 'p-0',
         className,
       )}
     >
@@ -46,10 +46,10 @@ export function Segmented<T extends string>({
           value={option.value}
           disabled={option.disabled}
           className={cn(
-            'rounded-full font-medium whitespace-nowrap transition-[background-color,color,box-shadow] duration-200 ease-(--ease-soft)',
-            'text-ink-500 hover:text-ink data-[state=on]:bg-brand data-[state=on]:text-white data-[state=on]:shadow-brand',
+            'rounded-full border border-white font-medium whitespace-nowrap shadow-card backdrop-blur-[8px] transition-[background-color,color,box-shadow,opacity] duration-200 ease-(--ease-soft)',
+            'bg-card text-ink-500 hover:text-ink data-[state=on]:bg-brand data-[state=on]:text-white data-[state=on]:shadow-brand data-[state=off]:opacity-55',
             'disabled:opacity-40',
-            size === 'lg' ? 'h-10 px-6 text-[15px]' : 'h-8 px-4 text-[13px]',
+            size === 'lg' ? 'h-[34px] px-4 text-[14px]' : 'h-[34px] px-4 text-[13px]',
           )}
         >
           {option.label}

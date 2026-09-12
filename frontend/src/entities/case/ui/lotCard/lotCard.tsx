@@ -36,9 +36,9 @@ export function LotCard({
     <Card
       data-state={state}
       className={cn(
-        'flex flex-col p-[18px] transition-[opacity,box-shadow,transform] duration-300 ease-(--ease-soft)',
+        'flex min-h-[183px] flex-col p-4 transition-[opacity,box-shadow,transform] duration-300 ease-(--ease-soft)',
         state === 'dimmed' && 'opacity-45 shadow-tile',
-        selected && 'ring-2 ring-brand/15',
+        selected && 'bg-white/70 shadow-card-hover',
         className,
       )}
     >
@@ -53,19 +53,19 @@ export function LotCard({
       </div>
 
       <div className="mt-7">
-        <h3 className="text-[17px] leading-tight font-bold tracking-[-0.01em]">{lot.title}</h3>
-        <p className="mt-1 text-[13px] text-muted">{lotSubtitle(lot)}</p>
+        <h3 className="text-[16px] leading-tight font-bold">{lot.title}</h3>
+        <p className="mt-1 text-[12px] font-semibold text-ink/50">{lotSubtitle(lot)}</p>
       </div>
 
-      <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-3.5">
-        <dl className="flex items-end gap-5">
+      <div className="mt-auto flex items-end justify-between gap-2 border-t border-line/70 pt-3">
+        <dl className="flex min-w-0 items-end gap-4">
           <div>
-            <dt className="text-[11px] tracking-[0.02em] text-muted">C0</dt>
-            <dd className="mt-0.5 text-[15px] font-medium tabular-nums">{formatMoney(lot.c0_mrub)}</dd>
+            <dt className="text-[10px] font-bold tracking-[0.02em] text-ink/45">C0</dt>
+            <dd className="mt-1 text-[13px] font-semibold text-ink/50 tabular-nums">{formatMoney(lot.c0_mrub)}</dd>
           </div>
           <div>
-            <dt className="text-[11px] tracking-[0.02em] text-muted">VPUB</dt>
-            <dd className="mt-0.5 text-[15px] font-medium tabular-nums">
+            <dt className="text-[10px] font-bold tracking-[0.02em] text-ink/45">VPUB</dt>
+            <dd className="mt-1 text-[13px] font-semibold leading-tight text-ink/50 tabular-nums">
               {formatMoney(lot.vpub_mrub_per_year)} / год
             </dd>
           </div>
@@ -77,7 +77,7 @@ export function LotCard({
             variant={selected ? 'primary' : 'secondary'}
             aria-pressed={selected}
             onClick={() => onToggle(lot.lot_id)}
-            className="h-[38px] px-4 text-[14px]"
+            className="h-[34px] px-3 text-[14px]"
           >
             {selected ? <Check className="size-4" weight="bold" aria-hidden /> : <Plus className="size-4" weight="bold" aria-hidden />}
             {selected ? 'Выбрано' : 'Выбрать'}

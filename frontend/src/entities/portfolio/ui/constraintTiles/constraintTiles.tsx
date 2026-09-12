@@ -18,7 +18,7 @@ type Props = {
  */
 export function ConstraintTiles({ checks, scenarioDependent, scenario, className }: Props) {
   return (
-    <div className={cn('grid grid-cols-2 gap-3 sm:grid-cols-3', className)}>
+    <div className={cn('grid auto-rows-fr grid-cols-2 items-stretch gap-2 sm:grid-cols-3', className)}>
       {checks.map((check) => (
         <Tooltip
           /* Ключ со сценарием: сменился порог — плитка перемонтируется и подсвечивается. */
@@ -33,7 +33,7 @@ export function ConstraintTiles({ checks, scenarioDependent, scenario, className
             </span>
           }
         >
-          <div tabIndex={0} className={cn('rounded-tile', scenarioDependent?.has(check.code) && 'animate-highlight')}>
+          <div tabIndex={0} className={cn('h-full rounded-tile', scenarioDependent?.has(check.code) && 'animate-highlight')}>
             <StatTile
               label={checkLabel(check)}
               value={formatCheckValue(check)}
@@ -43,6 +43,7 @@ export function ConstraintTiles({ checks, scenarioDependent, scenario, className
                   : undefined
               }
               tone={check.passed ? 'neutral' : 'fail'}
+              className="h-full"
             />
           </div>
         </Tooltip>

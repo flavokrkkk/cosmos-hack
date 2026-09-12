@@ -17,7 +17,7 @@ type Props = {
  */
 export function MetricTiles({ metrics, tiles = METRIC_TILES, columns = 3, className }: Props) {
   return (
-    <div className={cn('grid grid-cols-2 gap-3', columns === 3 && 'sm:grid-cols-3', className)}>
+    <div className={cn('grid auto-rows-fr grid-cols-2 items-stretch gap-2', columns === 3 && 'sm:grid-cols-3', className)}>
       {tiles.map((tile) => {
         const value = Number(metrics[tile.key])
         return (
@@ -30,8 +30,8 @@ export function MetricTiles({ metrics, tiles = METRIC_TILES, columns = 3, classN
               </span>
             }
           >
-            <div tabIndex={0} className="rounded-tile">
-              <StatTile label={tile.label} value={tile.format(value)} />
+            <div tabIndex={0} className="h-full rounded-tile">
+              <StatTile label={tile.label} value={tile.format(value)} className="h-full" />
             </div>
           </Tooltip>
         )

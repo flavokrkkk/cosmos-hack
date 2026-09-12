@@ -71,9 +71,9 @@ export function PortfolioReview({
     : ''
 
   return (
-    <div className="rise-in flex flex-col gap-6">
+    <div className="rise-in flex flex-col gap-4">
     {/* Две колонки одной высоты, как на макете: панель тянется, карточки внутри — нет. */}
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid items-start gap-4 lg:grid-cols-2">
       <Panel aria-busy={isLoading} className={cn('flex flex-col', isLoading && 'is-stale')}>
         <PanelHeader className="mb-2 items-start">
           <div>
@@ -113,7 +113,7 @@ export function PortfolioReview({
           </div>
         ) : null}
 
-        <div className="grid content-start gap-4 sm:grid-cols-2">
+        <div className="grid content-start gap-3 sm:grid-cols-2">
           {calculation
             ? calculation.detail.map((detail) => {
                 const lot = lotById.get(detail.lot_id)
@@ -133,7 +133,7 @@ export function PortfolioReview({
         </div>
       </Panel>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <Panel aria-busy={isLoading} className={cn(isLoading && 'is-stale')}>
           <PanelHeader>
             <PanelTitle>Проверка этого портфеля</PanelTitle>
@@ -177,7 +177,7 @@ export function PortfolioReview({
           )}
         </Panel>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3" onMouseEnter={onActionsIntent} onFocus={onActionsIntent}>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" onMouseEnter={onActionsIntent} onFocus={onActionsIntent}>
           <Button onClick={onSave} disabled={!complete}>Сохранить вариант</Button>
           <Button variant="secondary" onClick={onCompare} disabled={!complete}>Сравнить</Button>
           {onEditManually ? (

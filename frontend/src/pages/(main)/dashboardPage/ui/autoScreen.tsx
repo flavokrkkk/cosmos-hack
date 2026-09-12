@@ -77,7 +77,7 @@ export function AutoScreen({ catalog }: Props) {
 
   return (
     <div className="flex flex-col gap-14">
-      <div className="flex flex-col items-center gap-5">
+      <div className="flex flex-col items-center gap-4">
         <SectionHeading
           as="h1"
           eyebrow="Профиль"
@@ -136,7 +136,7 @@ export function AutoScreen({ catalog }: Props) {
             </div>
           </div>
 
-          <ul className={`grid w-full max-w-[1180px] gap-6 sm:grid-cols-2 lg:grid-cols-4 ${query.isFetching ? 'is-stale' : ''}`}>
+          <ul className={`grid w-full max-w-[1180px] gap-4 sm:grid-cols-2 lg:grid-cols-4 ${query.isFetching ? 'is-stale' : ''}`}>
             {active.calculation.detail.map((detail, index) => {
               const lot = lotById.get(detail.lot_id)
               if (!lot) return null
@@ -271,7 +271,7 @@ function LaunchBlock({
 
       <section className="flex w-full flex-col items-center gap-6">
         <SectionHeading title="Восемь лотов кейса" />
-        <ul className="grid w-full gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        <ul className="grid w-full gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {catalog.lots.map((lot) => (
             <li key={lot.lot_id} className="flex">
               <LotCard lot={lot} onDetails={onDetails} formatMoney={formatMoney} className="w-full" />

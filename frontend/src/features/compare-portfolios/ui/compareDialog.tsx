@@ -93,7 +93,7 @@ function CompareBody({ datasetHash, candidates, initialIds }: Omit<Props, 'open'
                 <label
                   className={cn(
                     'flex cursor-pointer gap-3 rounded-2xl bg-panel px-3.5 py-3 transition-colors',
-                    checked && 'bg-brand-50 ring-1 ring-brand/30',
+                    checked && 'bg-white/70 shadow-card',
                     disabled && 'cursor-not-allowed opacity-50',
                   )}
                 >

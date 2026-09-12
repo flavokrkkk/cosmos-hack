@@ -78,7 +78,7 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
                 className={cn(
                   'flex w-full flex-col p-[22px] transition-[rotate,box-shadow] duration-300 ease-(--ease-soft)',
                   'lg:rotate-(--tilt) lg:hover:rotate-0 lg:hover:shadow-card-hover',
-                  isActive && 'ring-2 ring-brand/25',
+                  isActive && 'bg-white/70 shadow-card-hover',
                 )}
               >
                 <div className="flex items-start justify-between gap-2">

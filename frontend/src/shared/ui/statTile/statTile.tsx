@@ -35,24 +35,24 @@ const MOTION = 'transition-[background-color,color,box-shadow] duration-300 ease
 export function StatTile({ label, value, hint, tone = 'neutral', className, onClick, title }: Props) {
   const body = (
     <>
-      <span className="stat-label block text-[11.5px] leading-tight text-muted">{label}</span>
-      <span className="mt-2 block text-[16px] leading-tight font-bold tracking-[-0.01em] whitespace-nowrap tabular-nums">
+      <span className="stat-label block min-h-[26px] text-[11px] leading-tight font-semibold text-ink/50">{label}</span>
+      <span className="mt-2 block text-[16px] leading-tight font-bold break-words tabular-nums">
         {value}
       </span>
-      {hint ? <span className="stat-hint mt-1 block text-[11.5px] leading-snug text-muted">{hint}</span> : null}
+      {hint ? <span className="stat-hint mt-1 block text-[11px] leading-snug text-ink/50">{hint}</span> : null}
     </>
   )
 
   if (onClick) {
     return (
       <Tile
-        className={cn(TONE[tone], MOTION, 'p-0 text-left', className)}
+        className={cn(TONE[tone], MOTION, 'flex h-full min-h-[86px] p-0 text-left', className)}
         title={title}
       >
         <button
           type="button"
           onClick={onClick}
-          className="block h-full w-full rounded-tile px-4 py-3.5 text-left"
+          className="block h-full w-full rounded-tile px-3 py-2.5 text-left"
         >
           {body}
         </button>
@@ -61,7 +61,7 @@ export function StatTile({ label, value, hint, tone = 'neutral', className, onCl
   }
 
   return (
-    <Tile className={cn('px-4 py-3.5', TONE[tone], MOTION, className)} title={title}>
+    <Tile className={cn('flex h-full min-h-[86px] flex-col px-3 py-2.5', TONE[tone], MOTION, className)} title={title}>
       {body}
     </Tile>
   )

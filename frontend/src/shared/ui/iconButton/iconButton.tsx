@@ -16,9 +16,9 @@ export function IconButton({ label, size = 'md', className, type = 'button', ...
       aria-label={label}
       title={label}
       className={cn(
-        'inline-flex shrink-0 items-center justify-center rounded-full text-muted transition-colors duration-200',
-        'hover:bg-sunken hover:text-ink disabled:pointer-events-none disabled:opacity-40',
-        size === 'sm' ? 'size-6 [&>svg]:size-3.5' : 'size-8 [&>svg]:size-[18px]',
+        'inline-flex shrink-0 items-center justify-center rounded-full border border-white bg-card text-muted shadow-chip backdrop-blur-[8px] transition-colors duration-200',
+        'hover:bg-white/70 hover:text-ink disabled:pointer-events-none disabled:opacity-40',
+        size === 'sm' ? 'size-[22px] [&>svg]:size-3' : 'size-8 [&>svg]:size-[18px]',
         className,
       )}
       {...props}

@@ -100,25 +100,27 @@ export function ManualScreen({ catalog }: Props) {
   return (
     <div className="flex flex-col gap-14">
       <div className="flex flex-col gap-6">
-        <header className="flex flex-wrap items-center justify-between gap-4">
+        <header className="grid items-center gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(340px,1fr)]">
           <div className="flex items-center gap-4">
-            <h1 className="text-[24px] leading-tight font-bold tracking-[-0.015em]">Выберите сервисные лоты</h1>
+            <h1 className="text-[24px] leading-tight font-bold">Выберите сервисные лоты</h1>
             <Tag size="md" tone="neutral" aria-live="polite">
               {selection.count} из {selection.size}
             </Tag>
           </div>
-          <Segmented
-            size="sm"
-            value={scenario}
-            onChange={(value: Scenario) => setScenario(value)}
-            options={SCENARIO_OPTIONS}
-            label="Сценарий проверки: меняет только пороги"
-          />
+          <div className="flex justify-start lg:justify-end">
+            <Segmented
+              size="sm"
+              value={scenario}
+              onChange={(value: Scenario) => setScenario(value)}
+              options={SCENARIO_OPTIONS}
+              label="Сценарий проверки: меняет только пороги"
+            />
+          </div>
         </header>
         <SearchSettings catalog={catalog} />
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(340px,1fr)] lg:items-start">
-          <ul className="grid content-start gap-5 sm:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.68fr)_minmax(340px,1fr)] lg:items-start">
+          <ul className="grid content-start gap-4 sm:grid-cols-2">
             {catalog.lots.map((lot) => (
               <li key={lot.lot_id} className="flex">
                 <LotCard
@@ -133,7 +135,7 @@ export function ManualScreen({ catalog }: Props) {
             ))}
           </ul>
 
-          <div className="flex flex-col gap-5 lg:sticky lg:top-6 lg:self-start">
+          <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
             <Panel>
               <PanelHeader className="mb-3">
                 <PanelTitle className="text-[20px]">Текущий портфель</PanelTitle>
@@ -143,10 +145,10 @@ export function ManualScreen({ catalog }: Props) {
               </PanelHeader>
 
               {selection.count === 0 ? (
-                <p className="py-8 text-center text-[13px] text-muted">Для продолжения выберите 4 лота слева</p>
+                <p className="py-10 text-center text-[12px] text-ink/50">Для продолжения выберите 4 лота слева</p>
               ) : (
                 <>
-                  <ul className="flex flex-wrap gap-2.5">
+                  <ul className="grid gap-3 sm:grid-cols-2">
                     {selection.lotIds.map((lotId) => {
                       const lot = lotById.get(lotId)
                       return (
@@ -245,7 +247,7 @@ export function ManualScreen({ catalog }: Props) {
                   ) : null}
                 </Panel>
 
-                <div className="grid grid-cols-2 gap-3" onMouseEnter={preloadActionDialogs} onFocus={preloadActionDialogs}>
+                <div className="grid grid-cols-2 gap-2" onMouseEnter={preloadActionDialogs} onFocus={preloadActionDialogs}>
                   <Button
                     onClick={() => {
                       setSaveMounted(true)

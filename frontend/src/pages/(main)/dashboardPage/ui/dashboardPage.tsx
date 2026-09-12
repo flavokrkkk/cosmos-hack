@@ -57,7 +57,7 @@ export default function DashboardPage() {
   const isDraft = mode === 'manual' ? manualOrigin !== 'empty' : activeVariant.auto.kind !== 'default'
 
   return (
-    <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-14 px-6 pt-7 pb-10 sm:px-8 xl:px-[60px]">
+    <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-12 px-6 pt-12 pb-10 sm:px-8 lg:px-12 xl:px-16">
       <ModeSwitch
         onOpenSaved={() => {
           setSavedMounted(true)

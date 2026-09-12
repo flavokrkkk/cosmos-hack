@@ -6,7 +6,7 @@ import { cn } from '@shared/lib/cn'
 export function Panel({ className, ...props }: ComponentProps<'section'>) {
   return (
     <section
-      className={cn('rounded-panel bg-panel p-6 shadow-panel', className)}
+      className={cn('rounded-panel border border-white bg-panel p-4 shadow-panel backdrop-blur-[8px]', className)}
       {...props}
     />
   )
@@ -14,12 +14,17 @@ export function Panel({ className, ...props }: ComponentProps<'section'>) {
 
 /** Белая карточка внутри панели или сама по себе. */
 export function Card({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={cn('rounded-card bg-card shadow-card', className)} {...props} />
+  return (
+    <div
+      className={cn('rounded-card border border-white bg-card shadow-card backdrop-blur-[8px]', className)}
+      {...props}
+    />
+  )
 }
 
 /** Плитка показателя — самый мелкий уровень поверхности. */
 export function Tile({ className, ...props }: ComponentProps<'div'>) {
-  return <div className={cn('rounded-tile bg-card shadow-tile', className)} {...props} />
+  return <div className={cn('rounded-tile border border-white bg-card shadow-tile backdrop-blur-[8px]', className)} {...props} />
 }
 
 /** Заголовок панели: слева название, справа действия/переключатель. */
@@ -34,6 +39,6 @@ export function PanelHeader({ className, ...props }: ComponentProps<'header'>) {
 
 export function PanelTitle({ className, ...props }: ComponentProps<'h2'>) {
   return (
-    <h2 className={cn('text-[22px] leading-tight font-bold tracking-[-0.01em]', className)} {...props} />
+    <h2 className={cn('text-[20px] leading-tight font-bold', className)} {...props} />
   )
 }
