@@ -87,6 +87,12 @@ def collect():
         'коммерческие поступления': (money(commercial, 2), (NOTE,)),
         'доля коммерческих поступлений': (money(commercial / cash * 100, 1), (NOTE, SUMMARY)),
     }
+    flood = space[(space.lots.str.split('+').apply(set) == {'FLOOD', 'AGRI', 'TRANS', 'ENV'}) & (space.modes == 'ACCA')].iloc[0]
+    facts['FLOOD-вариант: остаток'] = (money(flood.cash - flood.opex, 2), (NOTE,))
+    facts['FLOOD-вариант: VPUB'] = (money(flood.vpub, 1), (NOTE,))
+    facts['FLOOD-вариант: запас STRESS'] = (money(1180 - flood.c0), (NOTE,))
+    facts['FLOOD-вариант: прирост остатка, %'] = (money((flood.cash - flood.opex - surplus) / surplus * 100, 1), (NOTE,))
+    facts['дефицит ядра'] = (money(abs(sum(b for b in (detail.cash_mrub_per_year - detail.opex_mrub_per_year) if b < 0)), 2), (NOTE,))
     for row in detail.itertuples():
         facts[f'{row.lot_id}: c0'] = (money(row.c0_mrub, 2), (NOTE,))
         facts[f'{row.lot_id}: баланс'] = (money(abs(row.cash_mrub_per_year - row.opex_mrub_per_year), 2), (NOTE,))
@@ -132,6 +138,10 @@ def relations():
         ('«при 50% возврат уходит за контрольную точку» (раздел 4)',
          0.5 * float(detail.loc[detail.mode_id == 'C', 'c0_mrub'].sum())
          / (metrics['cash_mrub_per_year'] - metrics['opex_mrub_per_year']), 2.5, 99.0),
+        ('«субсидия 0,7% от стартовых затрат в год» (раздел 4)',
+         abs(balances[balances < 0].sum()) / metrics['c0_mrub'] * 100, 0.65, 0.75),
+        ('«запас FLOOD-варианта меньше в 1,7 раза» (раздел 5.3)',
+         (1180 - metrics['c0_mrub']) / (1180 - float(space[(space.lots.str.split('+').apply(set) == {'FLOOD','AGRI','TRANS','ENV'}) & (space.modes == 'ACCA')].c0.iloc[0])), 1.65, 1.75),
         ('«остаток 30,2% сверх расходов» (раздел 1)',
          (metrics['cash_mrub_per_year'] - metrics['opex_mrub_per_year']) / metrics['opex_mrub_per_year'] * 100,
          30.0, 31.0),
