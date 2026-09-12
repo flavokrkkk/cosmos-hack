@@ -6,6 +6,21 @@ import { fileURLToPath, URL } from 'node:url'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: {
+    chunkSizeWarningLimit: 600,
+    rolldownOptions: {
+      output: {
+        /* Вендоры — отдельными чанками: меняется наш код, а не кеш библиотек у эксперта. */
+        codeSplitting: {
+          groups: [
+            { name: 'react', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/ },
+            { name: 'ui', test: /node_modules[\\/](radix-ui|@radix-ui|@phosphor-icons|sonner|class-variance-authority|clsx|tailwind-merge)[\\/]/ },
+            { name: 'data', test: /node_modules[\\/](@tanstack|zustand|axios)[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

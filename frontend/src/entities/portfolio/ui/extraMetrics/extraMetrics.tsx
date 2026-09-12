@@ -22,8 +22,8 @@ export function ExtraMetrics({ metrics, shown = [], rest = [] }: Props) {
   const tiles = [...rest, ...EXTRA_METRIC_TILES].filter((tile) => !shownKeys.has(tile.key))
 
   return (
-    <Collapsible title={<span className="text-[15px] font-semibold">Подробнее о портфеле</span>} className="mt-4">
-      <MetricTiles metrics={metrics} tiles={tiles} columns={3} />
+    <Collapsible title={<span className="text-[15px] font-semibold">Подробнее о портфеле</span>}>
+      <MetricTiles metrics={metrics} tiles={tiles} columns={3} className="lg:grid-cols-6" />
       <p className="mt-3 flex flex-wrap items-center gap-1.5 text-[12px] text-muted">
         Группы возможностей:
         {metrics.capability_set.map((group) => (

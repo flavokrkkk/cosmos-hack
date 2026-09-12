@@ -1,9 +1,9 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from '@phosphor-icons/react'
 
 import { useLotDetails } from '@entities/case'
 import {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, METRIC_TILES, MetricTiles, PortfolioLotCard,
-  ScenarioHeadroom, scenarioDependentCodes, useWorkspace,
+  scenarioDependentCodes, useWorkspace,
 } from '@entities/portfolio'
 import { ExportButton } from '@features'
 import type { AccessMode, Calculation, CaseCatalog, Lot, Scenario } from '@shared/api/contracts'
@@ -58,8 +58,10 @@ export function PortfolioReview({
   const dependent = calculation ? scenarioDependentCodes(calculation) : undefined
 
   return (
-    <div className="rise-in grid gap-6 lg:grid-cols-2 lg:items-start">
-      <Panel aria-busy={isLoading} className={cn(isLoading && 'is-stale')}>
+    <div className="rise-in flex flex-col gap-6">
+    {/* Две колонки одной высоты, как на макете: панель тянется, карточки внутри — нет. */}
+    <div className="grid gap-6 lg:grid-cols-2">
+      <Panel aria-busy={isLoading} className={cn('flex flex-col', isLoading && 'is-stale')}>
         <PanelHeader className="mb-2 items-start">
           <div>
             <PanelTitle>Текущий портфель</PanelTitle>
@@ -73,7 +75,7 @@ export function PortfolioReview({
               </Tag>
               {!isDefault && onBackToDefault ? (
                 <Button variant="link" size="sm" onClick={onBackToDefault}>
-                  <ArrowLeft className="size-3.5" aria-hidden />
+                  <ArrowLeft className="size-3.5" weight="bold" aria-hidden />
                   К портфелю команды
                 </Button>
               ) : null}
@@ -131,11 +133,7 @@ export function PortfolioReview({
             />
           </PanelHeader>
           {complete && calculation.metrics ? (
-            <>
-              <MetricTiles metrics={calculation.metrics} />
-              <ScenarioHeadroom calculation={calculation} scenario={scenario} isTeam={variantKind === 'team'} className="mt-3" />
-              <ExtraMetrics metrics={calculation.metrics} shown={METRIC_TILES} />
-            </>
+            <MetricTiles metrics={calculation.metrics} />
           ) : (
             <div className="grid gap-3 sm:grid-cols-3">
               {[0, 1, 2, 3, 4, 5].map((index) => <Skeleton key={index} className="h-[76px]" />)}
@@ -171,6 +169,14 @@ export function PortfolioReview({
           <ExportButton calculation={calculation} catalog={catalog} />
         </div>
       </div>
+    </div>
+
+    {/* Подробности — отдельной строкой под колонками: раскрытие не меняет их высоту. */}
+    {complete && calculation.metrics ? (
+      <Panel className="px-4 py-2">
+        <ExtraMetrics metrics={calculation.metrics} shown={METRIC_TILES} />
+      </Panel>
+    ) : null}
     </div>
   )
 }

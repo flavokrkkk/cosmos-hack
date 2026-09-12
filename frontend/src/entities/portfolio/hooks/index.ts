@@ -1,5 +1,5 @@
 export {
-  portfolioKeys, useCompare, useComparisonAnalysis, useEvaluate, useRecommendation,
-  useRecommendationExplanations,
+  portfolioKeys, recommendationQueryOptions, useCompare, useComparisonAnalysis, useEvaluate,
+  useRecommendation, useRecommendationExplanations,
 } from './usePortfolio'
 export type { RecommendParams } from './usePortfolio'

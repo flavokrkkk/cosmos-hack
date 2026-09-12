@@ -55,13 +55,13 @@
   --radius-tile: 16px;
   --radius-chip: 14px;
 
-  /* Тени — мягкие, холодные, короткие: карточка чуть приподнята, а не парит */
-  --shadow-panel: 0 10px 24px -14px rgb(21 40 82 / 0.10), 0 1px 3px rgb(21 40 82 / 0.03);
-  --shadow-card: 0 6px 16px -8px rgb(21 40 82 / 0.10), 0 1px 2px rgb(21 40 82 / 0.04);
-  --shadow-card-hover: 0 12px 26px -12px rgb(21 40 82 / 0.16), 0 1px 3px rgb(21 40 82 / 0.05);
-  --shadow-tile: 0 3px 10px -6px rgb(21 40 82 / 0.10), 0 1px 1px rgb(21 40 82 / 0.03);
-  --shadow-chip: 0 1px 4px -1px rgb(21 40 82 / 0.10), 0 1px 1px rgb(21 40 82 / 0.03);
-  --shadow-brand: 0 8px 18px -8px rgb(0 145 255 / 0.45);
+  /* Тени как на макете: широкие, мягкие, малоконтрастные — карточка лежит на странице */
+  --shadow-panel: 0 18px 44px -24px rgb(21 40 82 / 0.16), 0 1px 2px rgb(21 40 82 / 0.03);
+  --shadow-card: 0 12px 30px -14px rgb(21 40 82 / 0.16), 0 1px 2px rgb(21 40 82 / 0.03);
+  --shadow-card-hover: 0 18px 40px -16px rgb(21 40 82 / 0.22), 0 1px 3px rgb(21 40 82 / 0.04);
+  --shadow-tile: 0 6px 18px -10px rgb(21 40 82 / 0.14), 0 1px 1px rgb(21 40 82 / 0.03);
+  --shadow-chip: 0 2px 6px -2px rgb(21 40 82 / 0.14), 0 1px 1px rgb(21 40 82 / 0.03);
+  --shadow-brand: 0 10px 22px -8px rgb(0 145 255 / 0.45);
   --shadow-inset: inset 0 1px 2px rgb(21 40 82 / 0.06);
 
   /* Единая кривая движения: быстрый старт, мягкое торможение, без перелёта */
@@ -121,6 +121,32 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  /* Тонкий скролл в цветах системы: прозрачная дорожка, мягкая круглая ручка. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-line-strong);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted-300);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
   }
 
   body {

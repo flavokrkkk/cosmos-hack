@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { X } from '@phosphor-icons/react'
 import { Dialog as RadixDialog } from 'radix-ui'
 import type { ComponentProps, ReactNode } from 'react'
 
@@ -65,7 +65,7 @@ export function DialogContent({
           </div>
           <RadixDialog.Close asChild>
             <IconButton label="Закрыть" className="-mt-1 -mr-2">
-              <X />
+              <X weight="bold" />
             </IconButton>
           </RadixDialog.Close>
         </div>

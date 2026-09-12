@@ -1,6 +1,6 @@
 import {
-  Coins, Flag, Maximize2, Scale, Shuffle, Sprout, TrendingUp, type LucideIcon,
-} from 'lucide-react'
+  ArrowsOutSimple, Coins, Flag, Plant, Scales, Shuffle, TrendUp, type Icon,
+} from '@phosphor-icons/react'
 import type { CSSProperties, ReactNode } from 'react'
 
 import { selectionLabel } from '@entities/portfolio'
@@ -25,14 +25,14 @@ type Props = {
 const TILTS = [-1.5, 0, 1.5, -1, 1]
 
 /** Иконка по смыслу заголовка опорной точки; для неизвестной — «перестановка». */
-function iconFor(title: string, isTeam: boolean): LucideIcon {
+function iconFor(title: string, isTeam: boolean): Icon {
   if (isTeam) return Flag
   const text = title.toLowerCase()
-  if (text.includes('обществен') || text.includes('ценност')) return Scale
+  if (text.includes('обществен') || text.includes('ценност')) return Scales
   if (text.includes('затрат') || text.includes('дешев') || text.includes('эконом')) return Coins
-  if (text.includes('покрыт') || text.includes('kcash')) return TrendingUp
-  if (text.includes('тираж')) return Sprout
-  if (text.includes('разнообраз')) return Maximize2
+  if (text.includes('покрыт') || text.includes('kcash')) return TrendUp
+  if (text.includes('тираж')) return Plant
+  if (text.includes('разнообраз')) return ArrowsOutSimple
   return Shuffle
 }
 
@@ -76,7 +76,7 @@ export function Alternatives({ title, subtitle, result, active, onOpen, classNam
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <Icon className="size-7 text-brand" aria-hidden strokeWidth={2} />
+                  <Icon className="size-7 text-brand" aria-hidden weight="regular" />
                   {isTeam ? <Tag tone="brand">выбран командой</Tag> : <Tag tone="muted">опорная точка</Tag>}
                 </div>
                 <h3 className="mt-7 text-[17px] leading-tight font-bold tracking-[-0.01em]">{variant.title}</h3>

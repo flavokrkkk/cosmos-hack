@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react'
+import { DownloadSimple } from '@phosphor-icons/react'
 
 import { snapshotFiles, useComparison } from '@entities/portfolio'
 import type { Calculation, CaseCatalog } from '@shared/api/contracts'
@@ -39,7 +39,7 @@ export function ExportButton({ calculation, catalog, className }: Props) {
       }
     >
       <Button variant="ghost" size="sm" onClick={download} disabled={!ready} className={className}>
-        <Download className="size-4" aria-hidden />
+        <DownloadSimple className="size-4" aria-hidden />
         Скачать расчёт (CSV / JSON)
       </Button>
     </Tooltip>

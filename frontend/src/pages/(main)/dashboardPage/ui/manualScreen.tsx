@@ -1,14 +1,14 @@
-import { useMemo, useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 
 import { LotCard, useLotDetails } from '@entities/case'
 import {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, LotChip, METRIC_TILES, METRIC_TILES_COMPACT,
-  MetricTiles, PortfolioProgress, ScenarioHeadroom, formatMoney, scenarioDependentCodes,
-  selectionKey, useEvaluate, useSavedVariants, useWorkspace,
+  MetricTiles, PortfolioProgress, formatMoney, scenarioDependentCodes, selectionKey, useEvaluate,
+  useSavedVariants, useWorkspace,
 } from '@entities/portfolio'
 import {
-  CompareDialog, ExportButton, SaveVariantDialog, SearchStats, StressSwitch, buildCandidates,
-  useActiveVariant, useAutoRecommendation, useManualRecommendation, useManualSelection,
+  ExportButton, SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
+  useManualRecommendation, useManualSelection,
 } from '@features'
 import { normalizeApiError } from '@shared/api'
 import type { Calculation, CaseCatalog, RecommendationResult, Scenario } from '@shared/api/contracts'
@@ -18,6 +18,8 @@ import { Button, Panel, PanelHeader, PanelTitle, Segmented, Skeleton, Tag } from
 import {
   Alternatives, ExplanationBlock, LotDetailsHost, type AlternativeTarget,
 } from '@widgets'
+
+import { LazyCompareDialog, LazySaveVariantDialog } from './lazyDialogs'
 
 type Props = {
   catalog: CaseCatalog
@@ -50,6 +52,9 @@ export function ManualScreen({ catalog }: Props) {
 
   const [saveOpen, setSaveOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
+  /* Диалог монтируется при первом открытии и дальше остаётся: так работает анимация закрытия. */
+  const [saveMounted, setSaveMounted] = useState(false)
+  const [compareMounted, setCompareMounted] = useState(false)
 
   const lotById = useMemo(() => new Map(catalog.lots.map((lot) => [lot.lot_id, lot])), [catalog.lots])
 
@@ -221,12 +226,13 @@ export function ManualScreen({ catalog }: Props) {
                     </p>
                   ) : null}
                   <MetricTiles metrics={active.calculation.metrics} tiles={METRIC_TILES_COMPACT} columns={2} />
-                  <ScenarioHeadroom calculation={active.calculation} scenario={scenario} isTeam={active.kind === 'team'} className="mt-3" />
-                  <ExtraMetrics
-                    metrics={active.calculation.metrics}
-                    shown={METRIC_TILES_COMPACT}
-                    rest={METRIC_TILES.filter((tile) => !METRIC_TILES_COMPACT.includes(tile))}
-                  />
+                  <div className="mt-4">
+                    <ExtraMetrics
+                      metrics={active.calculation.metrics}
+                      shown={METRIC_TILES_COMPACT}
+                      rest={METRIC_TILES.filter((tile) => !METRIC_TILES_COMPACT.includes(tile))}
+                    />
+                  </div>
                 </Panel>
 
                 <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
@@ -241,8 +247,23 @@ export function ManualScreen({ catalog }: Props) {
                 </Panel>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <Button onClick={() => setSaveOpen(true)}>Сохранить вариант</Button>
-                  <Button variant="secondary" onClick={() => setCompareOpen(true)}>Сравнить</Button>
+                  <Button
+                    onClick={() => {
+                      setSaveMounted(true)
+                      setSaveOpen(true)
+                    }}
+                  >
+                    Сохранить вариант
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setCompareMounted(true)
+                      setCompareOpen(true)
+                    }}
+                  >
+                    Сравнить
+                  </Button>
                 </div>
                 <div className="-mt-2">
                   <ExportButton calculation={active.calculation} catalog={catalog} />
@@ -274,24 +295,28 @@ export function ManualScreen({ catalog }: Props) {
         </div>
       ) : null}
 
-      {active.calculation ? (
-        <SaveVariantDialog
-          open={saveOpen}
-          onOpenChange={setSaveOpen}
-          calculation={active.calculation}
-          source="manual"
-          defaultName={`Ручной: ${active.calculation.selection.map((item) => item.lot_id).join(' + ')}`}
-          engineVersion={catalog.engine_version}
-        />
-      ) : null}
+      <Suspense fallback={null}>
+        {saveMounted && active.calculation ? (
+          <LazySaveVariantDialog
+            open={saveOpen}
+            onOpenChange={setSaveOpen}
+            calculation={active.calculation}
+            source="manual"
+            defaultName={`Ручной: ${active.calculation.selection.map((item) => item.lot_id).join(' + ')}`}
+            engineVersion={catalog.engine_version}
+          />
+        ) : null}
 
-      <CompareDialog
-        open={compareOpen}
-        onOpenChange={setCompareOpen}
-        datasetHash={catalog.dataset_hash}
-        candidates={candidates}
-        initialIds={compareInitial}
-      />
+        {compareMounted ? (
+          <LazyCompareDialog
+            open={compareOpen}
+            onOpenChange={setCompareOpen}
+            datasetHash={catalog.dataset_hash}
+            candidates={candidates}
+            initialIds={compareInitial}
+          />
+        ) : null}
+      </Suspense>
 
       <LotDetailsHost catalog={catalog} calculation={active.calculation} />
     </div>
@@ -334,7 +359,6 @@ function NoModesBlock({
             <FeasibilityBadge calculation={diagnostic} scenario={scenario} size="sm" />
           </PanelHeader>
           <p className="mb-3 text-[12.5px] text-muted">Все лоты в режиме {placeholderMode} · сценарий {scenario}</p>
-          <ScenarioHeadroom calculation={diagnostic} scenario={scenario} className="mb-3" />
           <ConstraintTiles checks={checks} scenarioDependent={scenarioDependentCodes(diagnostic)} scenario={scenario} />
         </Panel>
       ) : null}

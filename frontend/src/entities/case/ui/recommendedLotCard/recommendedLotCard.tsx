@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react'
+import { Info } from '@phosphor-icons/react'
 import type { CSSProperties } from 'react'
 
 import type { Lot, LotDetail } from '@shared/api/contracts'

@@ -1,14 +1,14 @@
-import { Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
 import { useCatalog } from '@entities/case'
 import { useWorkspace } from '@entities/portfolio'
-import { SavedVariantsDialog } from '@features'
 import { Button, Panel } from '@shared/ui'
 import { ModeSwitch, PageFooter, SolutionMaterials } from '@widgets'
 
 import { AutoScreen } from './autoScreen'
+import { LazySavedVariantsDialog } from './lazyDialogs'
 import { ManualScreen } from './manualScreen'
+import { PageSkeleton } from './pageSkeleton'
 
 /**
  * Одна страница инструмента: переключатель «Автоподбор / Ручная проверка»,
@@ -25,22 +25,14 @@ export default function DashboardPage() {
   const activeVariant = useWorkspace((state) => state.activeVariant)
   const boundHash = useWorkspace((state) => state.datasetHash)
   const [savedOpen, setSavedOpen] = useState(false)
+  const [savedMounted, setSavedMounted] = useState(false)
 
   const datasetHash = catalog.data?.dataset_hash
   useEffect(() => {
     if (datasetHash) bindDataset(datasetHash)
   }, [datasetHash, bindDataset])
 
-  if (catalog.isPending) {
-    return (
-      <main className="flex min-h-dvh items-center justify-center">
-        <p className="flex items-center gap-3 text-[14px] text-muted" role="status">
-          <Loader2 className="size-5 animate-spin text-brand" aria-hidden />
-          Загружаем каталог кейса…
-        </p>
-      </main>
-    )
-  }
+  if (catalog.isPending) return <PageSkeleton />
 
   if (catalog.isError || !catalog.data) {
     return (
@@ -66,7 +58,12 @@ export default function DashboardPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-14 px-6 pt-7 pb-10 sm:px-8 xl:px-[60px]">
-      <ModeSwitch onOpenSaved={() => setSavedOpen(true)} />
+      <ModeSwitch
+        onOpenSaved={() => {
+          setSavedMounted(true)
+          setSavedOpen(true)
+        }}
+      />
 
       {bound ? (
         mode === 'auto' ? <AutoScreen catalog={catalog.data} /> : <ManualScreen catalog={catalog.data} />
@@ -75,7 +72,11 @@ export default function DashboardPage() {
       <SolutionMaterials catalog={catalog.data} isDraft={isDraft} />
       <PageFooter catalog={catalog.data} />
 
-      <SavedVariantsDialog open={savedOpen} onOpenChange={setSavedOpen} datasetHash={catalog.data.dataset_hash} />
+      <Suspense fallback={null}>
+        {savedMounted ? (
+          <LazySavedVariantsDialog open={savedOpen} onOpenChange={setSavedOpen} datasetHash={catalog.data.dataset_hash} />
+        ) : null}
+      </Suspense>
     </main>
   )
 }

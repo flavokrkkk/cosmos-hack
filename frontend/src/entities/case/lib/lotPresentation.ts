@@ -1,26 +1,27 @@
 import {
-  Factory, Flame, Leaf, Map, Mountain, Orbit, Satellite, Tractor, Truck, type LucideIcon,
-} from 'lucide-react'
+  Factory, Fire, Leaf, MapTrifold, Mountains, Planet, RocketLaunch, Tractor, Truck, type Icon,
+} from '@phosphor-icons/react'
 
 import type { AccessMode, Lot } from '@shared/api/contracts'
 
 /**
- * Иконка лота по идентификатору из каталога. Незнакомый лот получает спутник:
+ * Иконка лота по идентификатору из каталога — набор Phosphor (https://phosphoricons.com),
+ * которым пользовался дизайнер, начертание `fill`. Незнакомый лот получает ракету:
  * набор восьми лотов задан кейсом, но код не должен падать на девятом.
  */
-const LOT_ICONS: Record<string, LucideIcon> = {
-  FIRE: Flame,
-  FLOOD: Mountain,
+const LOT_ICONS: Record<string, Icon> = {
+  FIRE: Fire,
+  FLOOD: Mountains,
   AGRI: Tractor,
   INFRA: Factory,
-  ARCTIC: Map,
+  ARCTIC: MapTrifold,
   TRANS: Truck,
   ENV: Leaf,
-  SSA: Orbit,
+  SSA: Planet,
 }
 
-export function lotIcon(lotId: string): LucideIcon {
-  return LOT_ICONS[lotId] ?? Satellite
+export function lotIcon(lotId: string): Icon {
+  return LOT_ICONS[lotId] ?? RocketLaunch
 }
 
 /**

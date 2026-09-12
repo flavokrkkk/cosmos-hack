@@ -56,16 +56,16 @@ export function PortfolioLotCard({ lot, mode, detail, onDetails, className }: Pr
         </Tooltip>
       </div>
 
-      <div className="mt-5">
-        <h3 className="text-[17px] leading-tight font-bold tracking-[-0.01em]">{lot.lot_id}</h3>
-        <p className="mt-0.5 text-[12px] text-muted">{lot.title}</p>
-      </div>
+      {/* Как на макете — только идентификатор; полное название в подсказке и в модалке. */}
+      <h3 className="mt-4 text-[17px] leading-tight font-bold tracking-[-0.01em]" title={lot.title}>
+        {lot.lot_id}
+      </h3>
 
-      <dl className="mt-3 flex flex-col gap-2">
+      <dl className="mt-3 flex flex-col gap-1.5">
         {rows.map((row) => (
           <div key={row.label}>
             <dt className="text-[11px] tracking-[0.02em] text-muted">{row.label}</dt>
-            <dd className="mt-0.5 text-[15px] font-medium text-ink-700 tabular-nums">
+            <dd className="mt-0.5 text-[14px] font-medium text-ink-700 tabular-nums">
               {formatNumber(row.base)} × {formatFactorPlain(row.factor)} ={' '}
               <span className="text-ink">{formatNumber(row.result)}</span> {row.unit}
             </dd>
@@ -81,7 +81,7 @@ export function PortfolioLotCard({ lot, mode, detail, onDetails, className }: Pr
         <button
           type="button"
           onClick={() => onDetails(lot.lot_id)}
-          className="block h-full w-full rounded-card p-[18px] text-left transition-shadow duration-300 ease-(--ease-soft) hover:shadow-card-hover"
+          className="block h-full w-full rounded-card p-4 text-left transition-shadow duration-300 ease-(--ease-soft) hover:shadow-card-hover"
           aria-label={`Подробнее о лоте ${lot.title} в режиме ${mode.mode_id}`}
         >
           {content}
@@ -90,5 +90,5 @@ export function PortfolioLotCard({ lot, mode, detail, onDetails, className }: Pr
     )
   }
 
-  return <Card className={cn('p-[18px]', className)}>{content}</Card>
+  return <Card className={cn('p-4', className)}>{content}</Card>
 }

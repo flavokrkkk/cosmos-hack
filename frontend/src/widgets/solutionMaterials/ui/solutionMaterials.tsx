@@ -1,4 +1,4 @@
-import { ExternalLink } from 'lucide-react'
+import { ArrowSquareOut } from '@phosphor-icons/react'
 
 import type { CaseCatalog } from '@shared/api/contracts'
 import { STATUS_LABEL, SUBMISSION_MANIFEST, type MaterialStatus } from '@shared/config/submissionManifest'
@@ -63,7 +63,7 @@ export function SolutionMaterials({ catalog, isDraft }: Props) {
                           {material.href ? (
                             <a href={material.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-brand hover:underline">
                               {material.title}
-                              <ExternalLink className="size-3.5" aria-hidden />
+                              <ArrowSquareOut className="size-3.5" aria-hidden />
                             </a>
                           ) : (
                             material.title

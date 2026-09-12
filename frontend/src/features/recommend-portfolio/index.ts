@@ -3,5 +3,6 @@ export type { ActiveVariantKind, ActiveVariantView } from './model/useActiveVari
 export { explanationFor } from './model/explanations'
 export { useAutoRecommendation } from './model/useAutoRecommendation'
 export { useManualRecommendation } from './model/useManualRecommendation'
+export { usePrefetchRecommendation } from './model/usePrefetchRecommendation'
 export { SearchStats } from './ui/searchStats'
 export { StressSwitch } from './ui/stressSwitch'

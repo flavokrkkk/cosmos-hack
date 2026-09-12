@@ -19,7 +19,7 @@ const TONE = { brand: 'text-brand', muted: 'text-muted', ink: 'text-ink' }
 export function LotIcon({ lotId, tone = 'brand', size = 'md', className }: Props) {
   return createElement(lotIcon(lotId), {
     'aria-hidden': true,
-    strokeWidth: 2,
+    weight: 'fill',
     className: cn(SIZE[size], TONE[tone], className),
   })
 }

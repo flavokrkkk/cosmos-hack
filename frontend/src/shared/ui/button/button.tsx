@@ -1,5 +1,5 @@
 import type { VariantProps } from 'class-variance-authority'
-import { Loader2 } from 'lucide-react'
+import { CircleNotch } from '@phosphor-icons/react'
 import type { ComponentProps } from 'react'
 
 import { cn } from '@shared/lib/cn'
@@ -23,7 +23,7 @@ export function Button({
       aria-busy={loading || undefined}
       {...props}
     >
-      {loading ? <Loader2 className="size-4 animate-spin" aria-hidden /> : null}
+      {loading ? <CircleNotch className="size-4 animate-spin" weight="bold" aria-hidden /> : null}
       {children}
     </button>
   )

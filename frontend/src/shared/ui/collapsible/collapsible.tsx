@@ -1,4 +1,4 @@
-import { ChevronDown } from 'lucide-react'
+import { CaretDown } from '@phosphor-icons/react'
 import { Collapsible as RadixCollapsible } from 'radix-ui'
 import type { ReactNode } from 'react'
 
@@ -26,7 +26,8 @@ export function Collapsible({ title, summary, defaultOpen = false, children, cla
         <span className="text-[18px] font-bold tracking-[-0.01em]">{title}</span>
         <span className="flex items-center gap-3 text-[13px] text-muted">
           {summary}
-          <ChevronDown
+          <CaretDown
+            weight="bold"
             className="size-5 shrink-0 transition-transform duration-300 ease-(--ease-soft) group-data-[state=open]:rotate-180"
             aria-hidden
           />

@@ -1,4 +1,4 @@
-import { Check, Info, Plus } from 'lucide-react'
+import { Check, Info, Plus } from '@phosphor-icons/react'
 
 import type { Lot } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
@@ -79,7 +79,7 @@ export function LotCard({
             onClick={() => onToggle(lot.lot_id)}
             className="h-[38px] px-4 text-[14px]"
           >
-            {selected ? <Check className="size-4" aria-hidden /> : <Plus className="size-4" aria-hidden />}
+            {selected ? <Check className="size-4" weight="bold" aria-hidden /> : <Plus className="size-4" weight="bold" aria-hidden />}
             {selected ? 'Выбрано' : 'Выбрать'}
           </Button>
         ) : null}

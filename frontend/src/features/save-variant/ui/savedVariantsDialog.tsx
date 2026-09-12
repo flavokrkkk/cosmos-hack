@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react'
+import { Trash } from '@phosphor-icons/react'
 
 import { selectionLabel, useSavedVariants, useWorkspace } from '@entities/portfolio'
 import { SCENARIOS } from '@shared/api/contracts'
@@ -73,7 +73,7 @@ export function SavedVariantsDialog({ open, onOpenChange, datasetHash }: Props) 
                       Открыть
                     </Button>
                     <IconButton label={`Удалить «${item.name}»`} onClick={() => remove(item.id)}>
-                      <Trash2 />
+                      <Trash />
                     </IconButton>
                   </div>
                 </li>

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 
 import type {
   CompareRequest, ComparisonAnalysisRequest, EvaluateRequest, RecommendRequest, SelectionItem,
@@ -58,20 +58,24 @@ function recommendEnabled({ datasetHash, lotIds, enabled }: RecommendParams): bo
 }
 
 /**
- * Подбор в два шага. Первый — только расчёт и фронт (`with_explanations: false`,
- * доли секунды): числа видны сразу. Результат определяется входами, поэтому
- * кешируется по ним и переживает перезагрузку; «Подобрать заново» — `refetch()`.
+ * Первый шаг подбора — только расчёт и фронт (`with_explanations: false`, доли
+ * секунды). Вынесен в options, чтобы те же ключ и функция служили и хуку, и
+ * предзагрузке: результат детерминирован, поэтому не протухает.
  */
-export function useRecommendation(params: RecommendParams) {
-  return useQuery({
+export function recommendationQueryOptions(params: RecommendParams) {
+  return queryOptions({
     queryKey: portfolioKeys.recommend(params.datasetHash ?? '', params.requireStress, params.lotIds, false),
     queryFn: ({ signal }) => portfolioService.recommend(recommendRequest(params, false), signal, 30_000),
-    enabled: recommendEnabled(params),
     staleTime: Infinity,
     retry: false,
     /* Ошибку показываем на странице рядом с кнопкой «Повторить», тост был бы дублем. */
     meta: { skipErrorToast: true },
   })
+}
+
+/** Подбор в два шага: числа видны сразу; «Подобрать заново» — `refetch()`. */
+export function useRecommendation(params: RecommendParams) {
+  return useQuery({ ...recommendationQueryOptions(params), enabled: recommendEnabled(params) })
 }
 
 /**

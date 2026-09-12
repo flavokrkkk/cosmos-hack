@@ -1,11 +1,11 @@
-import { RotateCcw } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { ArrowCounterClockwise } from '@phosphor-icons/react'
+import { Suspense, useMemo, useState } from 'react'
 
 import { LotCard, RecommendedLotCard, useLotDetails } from '@entities/case'
 import { formatMoney, selectionKey, useSavedVariants, useWorkspace } from '@entities/portfolio'
 import {
-  CompareDialog, SaveVariantDialog, SearchStats, StressSwitch, buildCandidates,
-  useActiveVariant, useAutoRecommendation, useManualRecommendation,
+  SearchStats, StressSwitch, buildCandidates, useActiveVariant, useAutoRecommendation,
+  useManualRecommendation, usePrefetchRecommendation,
 } from '@features'
 import { normalizeApiError } from '@shared/api'
 import type { CaseCatalog, RecommendationResult } from '@shared/api/contracts'
@@ -13,6 +13,8 @@ import { Button, Panel, SectionHeading, Skeleton, Tag } from '@shared/ui'
 import {
   Alternatives, ExplanationBlock, LotDetailsHost, PortfolioReview, type AlternativeTarget,
 } from '@widgets'
+
+import { LazyCompareDialog, LazySaveVariantDialog } from './lazyDialogs'
 
 type Props = {
   catalog: CaseCatalog
@@ -34,6 +36,7 @@ function firstSentence(text: string): string {
  * Получение результата само по себе не означает, что команда приняла его решением.
  */
 export function AutoScreen({ catalog }: Props) {
+  usePrefetchRecommendation(catalog.dataset_hash)
   const auto = useAutoRecommendation(catalog.dataset_hash)
   const { query, explanations, launched, searchRequireStress, launch } = auto
   const manual = useManualRecommendation(catalog.dataset_hash)
@@ -48,6 +51,9 @@ export function AutoScreen({ catalog }: Props) {
 
   const [saveOpen, setSaveOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
+  /* Диалог монтируется при первом открытии и дальше остаётся: так работает анимация закрытия. */
+  const [saveMounted, setSaveMounted] = useState(false)
+  const [compareMounted, setCompareMounted] = useState(false)
 
   const method = catalog.methods[0]
   const lotById = useMemo(() => new Map(catalog.lots.map((lot) => [lot.lot_id, lot])), [catalog.lots])
@@ -152,7 +158,7 @@ export function AutoScreen({ catalog }: Props) {
           {result ? <SearchStats result={result} /> : null}
 
           <Button onClick={launch} loading={query.isFetching}>
-            <RotateCcw className="size-4" aria-hidden />
+            <ArrowCounterClockwise className="size-4" weight="bold" aria-hidden />
             Подобрать заново
           </Button>
         </section>
@@ -173,8 +179,14 @@ export function AutoScreen({ catalog }: Props) {
             isError={active.isError}
             onRetry={active.retry}
             onBackToDefault={result?.status === 'ok' ? () => openVariant({ kind: 'default' }) : undefined}
-            onSave={() => setSaveOpen(true)}
-            onCompare={() => setCompareOpen(true)}
+            onSave={() => {
+              setSaveMounted(true)
+              setSaveOpen(true)
+            }}
+            onCompare={() => {
+              setCompareMounted(true)
+              setCompareOpen(true)
+            }}
             onEditManually={() => {
               if (!active.calculation) return
               startManualFrom(active.calculation.selection.map((item) => item.lot_id))
@@ -205,24 +217,28 @@ export function AutoScreen({ catalog }: Props) {
         />
       ) : null}
 
-      {active.calculation ? (
-        <SaveVariantDialog
-          open={saveOpen}
-          onOpenChange={setSaveOpen}
-          calculation={active.calculation}
-          source={active.kind}
-          defaultName={active.title}
-          engineVersion={catalog.engine_version}
-        />
-      ) : null}
+      <Suspense fallback={null}>
+        {saveMounted && active.calculation ? (
+          <LazySaveVariantDialog
+            open={saveOpen}
+            onOpenChange={setSaveOpen}
+            calculation={active.calculation}
+            source={active.kind}
+            defaultName={active.title}
+            engineVersion={catalog.engine_version}
+          />
+        ) : null}
 
-      <CompareDialog
-        open={compareOpen}
-        onOpenChange={setCompareOpen}
-        datasetHash={catalog.dataset_hash}
-        candidates={candidates}
-        initialIds={compareInitial}
-      />
+        {compareMounted ? (
+          <LazyCompareDialog
+            open={compareOpen}
+            onOpenChange={setCompareOpen}
+            datasetHash={catalog.dataset_hash}
+            candidates={candidates}
+            initialIds={compareInitial}
+          />
+        ) : null}
+      </Suspense>
 
       <LotDetailsHost catalog={catalog} calculation={active.calculation} />
     </div>

@@ -1,4 +1,4 @@
-import { Bookmark } from 'lucide-react'
+import { BookmarkSimple } from '@phosphor-icons/react'
 
 import { useSavedVariants, useWorkspace, type WorkspaceMode } from '@entities/portfolio'
 import { Button, Segmented } from '@shared/ui'
@@ -32,7 +32,7 @@ export function ModeSwitch({ onOpenSaved }: Props) {
       />
       <div className="sm:justify-self-end">
         <Button variant="ghost" size="sm" onClick={onOpenSaved}>
-          <Bookmark className="size-4" aria-hidden />
+          <BookmarkSimple className="size-4" aria-hidden />
           Сохранённые{savedCount > 0 ? ` · ${savedCount}` : ''}
         </Button>
       </div>

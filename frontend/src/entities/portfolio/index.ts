@@ -1,7 +1,7 @@
 export { portfolioService } from './api'
 export {
-  portfolioKeys, useCompare, useComparisonAnalysis, useEvaluate, useRecommendation,
-  useRecommendationExplanations,
+  portfolioKeys, recommendationQueryOptions, useCompare, useComparisonAnalysis, useEvaluate,
+  useRecommendation, useRecommendationExplanations,
 } from './hooks'
 export type { RecommendParams } from './hooks'
 export {
@@ -16,5 +16,5 @@ export { useComparison, useSavedVariants, useWorkspace } from './model'
 export type { ActiveVariant, ManualOrigin, SavedSource, SavedVariant, WorkspaceMode } from './model'
 export {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, LotChip, MetricTiles, PortfolioLotCard,
-  PortfolioProgress, ScenarioHeadroom,
+  PortfolioProgress,
 } from './ui'

@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react'
+import { Sparkle } from '@phosphor-icons/react'
 
 import type { RecommendationExplanation } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
@@ -7,6 +7,7 @@ import { Button, Card, Panel, Skeleton, Tag } from '@shared/ui'
 type Props = {
   result: RecommendationExplanation | null | undefined
   isLoading?: boolean
+  errorMessage?: string
   onRetry?: () => void
   className?: string
 }
@@ -14,14 +15,12 @@ type Props = {
 /**
  * «Почему такой выбор?» — необязательное объяснение расчёта (бриф AI1).
  *
- * Модель ничего не считает и не выбирает: она излагает факты расчёта, каждый
- * тезис ссылается на факт, а числа подставляет сервер. Ошибка или отсутствие
- * Ollama не блокирует подбор, сравнение, сохранение и экспорт — блок просто
- * говорит об этом словами.
+ * Модель ничего не считает и не выбирает: она отбирает и излагает факты
+ * расчёта, числа подставляет сервер. Объяснение приходит вторым запросом
+ * после чисел, поэтому его задержка или отсутствие Ollama не блокирует
+ * подбор, сравнение, сохранение и экспорт.
  */
-export function ExplanationBlock({ result, isLoading, onRetry, className }: Props) {
-  const status = isLoading ? 'loading' : result ? 'succeeded' : 'unavailable'
-
+export function ExplanationBlock({ result, isLoading, errorMessage, onRetry, className }: Props) {
   return (
     <section
       className={cn('rise-in relative mx-auto w-full max-w-[880px] lg:pt-14 lg:pl-10', className)}
@@ -35,54 +34,64 @@ export function ExplanationBlock({ result, isLoading, onRetry, className }: Prop
           'lg:absolute lg:top-0 lg:left-[-84px] lg:mb-0 lg:-rotate-[8deg] lg:shadow-card-hover',
         )}
       >
-        <Sparkles className="size-7 text-brand" aria-hidden />
+        <Sparkle className="size-7 text-brand" weight="fill" aria-hidden />
         <h2 id="explanation-title" className="text-[20px] leading-tight font-bold text-brand">
           Почему такой выбор?
         </h2>
       </Card>
 
-      <Panel className="relative min-h-[190px] px-7 pt-6 pb-7 lg:pt-[104px]">
+      <Panel className="relative min-h-[190px] px-7 pt-6 pb-7 lg:pt-[104px]" aria-busy={isLoading}>
         <div className="mb-3 flex items-center justify-end gap-2 lg:absolute lg:top-6 lg:right-8 lg:mb-0">
-          <StatusLabel status={status} generatedBy={result?.generated_by} model={result?.model ?? null} composition={result?.composition} />
+          <StatusLabel isLoading={isLoading} result={result} />
         </div>
 
-        {isLoading ? <Skeleton className="h-16 w-full" /> : result ? (
-          <ExplanationText result={result} onRetry={onRetry} />
-        ) : <p className="text-[14px] text-muted">Для этого варианта нет объяснения в текущем результате подбора.</p>}
+        {isLoading && !result ? (
+          <div className="flex flex-col gap-3" role="status" aria-live="polite">
+            <p className="text-[13px] text-muted">Модель формирует объяснение — до полутора минут на процессоре. Числа выше уже готовы.</p>
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
+        ) : errorMessage && !result ? (
+          <div className="flex flex-col items-start gap-3">
+            <p className="text-[14px] text-fail">Объяснение не получено: {errorMessage}.</p>
+            {onRetry ? <Button size="sm" variant="secondary" onClick={onRetry}>Повторить</Button> : null}
+          </div>
+        ) : result ? (
+          <ExplanationText result={result} onRetry={onRetry} isLoading={isLoading} />
+        ) : (
+          <p className="text-[14px] text-muted">Объяснение появится после подбора.</p>
+        )}
       </Panel>
     </section>
   )
 }
 
-function StatusLabel({
-  status, generatedBy, model, composition,
-}: {
-  status: 'loading' | 'succeeded' | 'unavailable'
-  generatedBy: 'ollama' | 'template' | undefined
-  model: string | null
-  composition?: 'generative' | 'extractive'
-}) {
-  if (status === 'succeeded' && generatedBy === 'ollama') {
+function StatusLabel({ isLoading, result }: { isLoading?: boolean; result: RecommendationExplanation | null | undefined }) {
+  if (result?.generated_by === 'ollama') {
     return (
       <span className="text-[14px] font-medium text-brand">
-        {composition === 'extractive' ? 'AI выбрал акценты · факты расчёта' : 'Суммаризировано AI'}{model ? <span className="text-muted"> · {model}</span> : null}
+        {result.composition === 'extractive' ? 'AI выбрал акценты · факты расчёта' : 'Суммаризировано AI'}
+        {result.model ? <span className="text-muted"> · {result.model}</span> : null}
       </span>
     )
   }
-  if (status === 'succeeded') return <Tag tone="warn" size="md">Шаблонный текст · модель недоступна</Tag>
-  return <span className="text-[14px] font-medium text-brand">Объяснение AI · необязательно</span>
+  if (result) return <Tag tone="warn" size="md">Факты расчёта · без AI</Tag>
+  if (isLoading) return <Tag tone="brand" size="md">модель отвечает…</Tag>
+  return <span className="text-[14px] font-medium text-brand">Объяснение AI</span>
 }
 
 function ExplanationText({
-  result, onRetry,
+  result, onRetry, isLoading,
 }: {
   result: RecommendationExplanation
   onRetry?: () => void
+  isLoading?: boolean
 }) {
   const { explanation } = result
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={cn('flex flex-col gap-4', isLoading && 'is-stale')}>
       <div>
         <p className="text-[16px] font-semibold">Краткий вывод</p>
         <p className="mt-2 text-[14px] leading-relaxed text-ink-500">{explanation.summary}</p>
@@ -91,13 +100,13 @@ function ExplanationText({
       {result.warning ? <p className="text-[12px] text-warn">{result.warning}</p> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[11.5px] text-muted">
-          Объяснение для условия поиска {result.scenario}, составленное по проверенным фактам расчёта.
+          Сценарий {result.scenario} · составлено по проверенным фактам расчёта
         </p>
         {/* Шаблон — не приговор: когда модель поднимется, можно запросить текст заново. */}
         {result.generated_by === 'template' && onRetry ? (
-          <Button size="sm" variant="secondary" onClick={onRetry}>
-            <Sparkles className="size-3.5" aria-hidden />
-            Повторить подбор и объяснение
+          <Button size="sm" variant="secondary" onClick={onRetry} loading={isLoading}>
+            <Sparkle className="size-3.5" weight="fill" aria-hidden />
+            Запросить у модели снова
           </Button>
         ) : null}
       </div>

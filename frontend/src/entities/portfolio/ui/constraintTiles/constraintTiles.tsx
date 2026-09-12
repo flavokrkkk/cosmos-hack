@@ -2,7 +2,7 @@ import type { ConstraintCheck } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { StatTile, Tooltip } from '@shared/ui'
 
-import { checkLabel, formatCheckValue, formatSlack } from '../../lib/format'
+import { checkLabel, formatCheckValue, formatCompact, formatSlack } from '../../lib/format'
 
 type Props = {
   checks: ConstraintCheck[]
@@ -36,7 +36,11 @@ export function ConstraintTiles({ checks, scenarioDependent, scenario, className
             <StatTile
               label={checkLabel(check)}
               value={formatCheckValue(check)}
-              hint={scenarioDependent?.has(check.code) ? `порог ${scenario ?? ''}`.trim() : undefined}
+              hint={
+                scenarioDependent?.has(check.code)
+                  ? `порог ${scenario ?? ''} · ${check.slack !== null && check.slack < 0 ? 'превышение' : 'запас'} ${formatCompact(Math.abs(check.slack ?? 0))}`.trim()
+                  : undefined
+              }
               tone={check.passed ? 'neutral' : 'fail'}
             />
           </div>

@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { X } from '@phosphor-icons/react'
 
 import { LotIcon } from '@entities/case'
 import { cn } from '@shared/lib/cn'
@@ -30,7 +30,7 @@ export function LotChip({ lotId, title, modeId, onRemove, onClick, className }: 
           onClick={() => onRemove(lotId)}
           className="absolute top-1 right-1 text-muted-300"
         >
-          <X />
+          <X weight="bold" />
         </IconButton>
       ) : null}
       <button
