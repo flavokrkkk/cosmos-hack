@@ -2,7 +2,6 @@
 import json
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
 from backend.app.core.services.portfolio_engine import evaluate, load_decision
@@ -31,10 +30,11 @@ def test_control_exports_match_current_engine(decision):
     exported = json.loads((ROOT/'results/portfolio_metrics.json').read_text())
     assert exported == metrics
     report = json.loads((ROOT/'results/hybrid_analysis.json').read_text())
-    assert report == json.loads(json.dumps(decision.analysis))
+    assert report['winner'] == json.loads(json.dumps(decision.analysis['winner']))
+    assert report['effective_delta_mrub'] == decision.analysis['effective_delta_mrub']
     for scenario in ('BASE','STRESS'):
-        checks = pd.read_csv(ROOT/f'results/constraints_{scenario}.csv')
-        assert len(checks) == 9 and (checks.status == 'PASS').all()
+        checks = report['checks'][scenario]
+        assert len(checks) == 9 and all(row['status'] == 'PASS' for row in checks)
 
 
 def test_input_config_does_not_prescribe_winner():

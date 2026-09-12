@@ -16,10 +16,8 @@ type Props = {
 /**
  * Выгрузка текущего варианта — критерий Т5.
  *
- * Имена файлов и колонки совпадают с контрольными снимками в `results/`,
- * которые пишет `python -m engine export`. Числа берутся из ответа бэкенда
- * дословно, в полной точности. Если сравнение уже посчитано, добавляется
- * `comparison.csv`.
+ * Четыре файла: детали, показатели, конфигурация и отчёт выбора/проверок.
+ * Сравнение, если посчитано, сохраняется внутри отчёта. Числа — из ответа API.
  */
 export function ExportButton({ calculation, catalog, recommendation, className }: Props) {
   const comparison = useComparison((state) => state.result)
@@ -36,7 +34,7 @@ export function ExportButton({ calculation, catalog, recommendation, className }
     <Tooltip
       content={
         ready
-          ? `Скачать ${files.length} файлов расчёта: ${files.map((file) => file.name).join(', ')}. calculation_snapshot.json хранит dataset_hash, engine_version и input_hash — при тех же значениях повторный расчёт обязан дать те же числа.`
+          ? 'Скачать 4 файла: расчёт по лотам, показатели, конфигурацию и отчёт с проверками BASE/STRESS'
           : 'Выгрузка доступна для полного портфеля из четырёх лотов'
       }
     >

@@ -11,7 +11,7 @@
 
 Как. Движок остаётся единственным источником: здесь нет ни одной своей формулы канона.
 Каждый факт получает имя, значение, формат и список документов, где обязан встречаться.
-Слепок предыдущих значений лежит в `results/document_facts.json`. Автоправка допустима лишь
+Слепок предыдущих значений — поле `document_values` в `results/team_decision_config.json`. Автоправка допустима лишь
 в явной привязке `<!-- fact: C0 -->1129,8<!-- /fact -->`. Непомеченные числа проверяются
 как целые числовые токены, но не заменяются: одинаковое число может означать разные факты.
 Если старое число осталось вне маркеров, слепок не обновляется до проверки автором.
@@ -32,9 +32,8 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from backend.app.core.services.portfolio_engine.canonical import CASE_ROOT
-from backend.app.core.services.portfolio_engine.export_integrity import verify_export
-from backend.app.core.services.portfolio_engine.hybrid import score_frame
-SNAPSHOT = ROOT / 'results/document_facts.json'
+from backend.app.core.services.portfolio_engine.export_integrity import verify_export, write_export_provenance
+SNAPSHOT = ROOT / 'results/team_decision_config.json'
 NOTE, SUMMARY, ALGORITHM = 'docs/23-management-note.md', 'docs/24-stress-summary.md', 'docs/22-hybrid-selection.md'
 SLIDES = 'docs/25-presentation-skeleton.md'  # содержание слайдов: те же числа, что в записке
 
@@ -62,11 +61,9 @@ def collect():
     """Все числа отчётов, выведенные из выгрузок движка. Возвращает имя → (строка, документы)."""
     decision, metrics, analysis = current_export()
     selection = decision['recommended']['selection']
-    space = pd.read_csv(ROOT / 'results/portfolio_space.csv')
     detail = pd.read_csv(ROOT / 'results/portfolio_detail.csv')
-    sens = pd.read_csv(ROOT / 'results/sensitivity_STRESS.csv')
-    ours = space[space.lots.str.split('+').apply(set) == {lot for lot, _ in selection}]
-    stress = space[space.STRESS_ok]
+    sens = pd.DataFrame(analysis['headroom']['STRESS'])
+    summary = analysis['search_summary']
     lots = pd.read_csv(CASE_ROOT / 'data/lots.csv').set_index('lot_id')
     modes = pd.read_csv(CASE_ROOT / 'data/access_modes.csv').set_index('mode_id')
     anchor = sum(lots.at[lot, 'anchor_cash_mrub_per_year'] * modes.at[mode, 'k_anchor'] for lot, mode in selection)
@@ -74,10 +71,6 @@ def collect():
                      for lot, mode in selection)
     c0, opex, cash = metrics['c0_mrub'], metrics['opex_mrub_per_year'], metrics['cash_mrub_per_year']
     surplus = cash - opex
-    reference = space[space.BASE_ok & (space.STRESS_ok if decision['algorithm_parameters'].get('require_stress', True) else True)]
-    # Только нормировка сохранённых показателей; перебор и новый выбор не запускаются.
-    scored = score_frame(reference.assign(surplus=reference.cash - reference.opex), analysis['bounds'])
-
     facts = {
         'Q победителя': (str(analysis['q_max']).replace('.', ','), (NOTE, ALGORITHM, SLIDES)),
         'Δ, млн ₽/год': (str(analysis['effective_delta_mrub']).replace('.', ','), (NOTE, ALGORITHM, SLIDES)),
@@ -93,28 +86,25 @@ def collect():
         'запас STRESS': (money(1180 - c0), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
         'запас BASE': (money(1300 - c0), (SUMMARY,)),
         'сокращение лимита в стрессе, %': (money((1300 - 1180) / 1300 * 100, 2), (NOTE, SUMMARY, SLIDES)),
-        'минимум C0 пространства': (money(stress.c0.min()), (NOTE, SUMMARY, SLIDES)),
-        'конфигураций всего': (str(len(space)), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
-        'проходят BASE': (str(int(space.BASE_ok.sum())), (NOTE, ALGORITHM, SLIDES)),
-        'проходят STRESS': (str(len(stress)), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
-        'конфигураций с максимальным Q': (str(int((scored.q_exact == scored.q_exact.max()).sum())), (NOTE, SLIDES)),
-        'наборов проходит STRESS': (str(stress.lots.nunique()), (NOTE,)),
-        'режимных комбинаций нашего набора': (str(int(ours.STRESS_ok.sum())), (NOTE,)),
+        'минимум C0 пространства': (money(summary['min_stress_c0']), (NOTE, SUMMARY, SLIDES)),
+        'конфигураций всего': (str(summary['total_count']), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'проходят BASE': (str(summary['base_count']), (NOTE, ALGORITHM, SLIDES)),
+        'проходят STRESS': (str(summary['stress_count']), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'конфигураций с максимальным Q': (str(summary['max_q_count']), (NOTE, SLIDES)),
+        'наборов проходит STRESS': (str(summary['stress_lot_sets']), (NOTE,)),
+        'режимных комбинаций нашего набора': (str(summary['selected_lot_set_stress_count']), (NOTE,)),
         'якорные поступления': (money(anchor, 2), (NOTE,)),
         'коммерческие поступления': (money(commercial, 2), (NOTE,)),
         'доля коммерческих поступлений': (money(commercial / cash * 100, 1), (NOTE, SUMMARY, SLIDES)),
     }
-    flood = space[(space.lots.str.split('+').apply(set) == {'FLOOD', 'AGRI', 'TRANS', 'ENV'}) & (space.modes == 'ACCA')].iloc[0]
+    flood = pd.Series(next(item for item in analysis['alternatives']
+                           if item['selection_id'] == 'AGRI:C,ENV:A,FLOOD:A,TRANS:C'))
     facts['FLOOD-вариант: остаток'] = (money(flood.cash - flood.opex, 2), (NOTE,))
     facts['FLOOD-вариант: VPUB'] = (money(flood.vpub, 1), (NOTE,))
     facts['FLOOD-вариант: запас STRESS'] = (money(1180 - flood.c0), (NOTE, SLIDES))
     facts['FLOOD-вариант: прирост остатка, %'] = (money((flood.cash - flood.opex - surplus) / surplus * 100, 1), (NOTE, SLIDES))
     facts['FLOOD-вариант: прирост VPUB, %'] = (money((flood.vpub / metrics['vpub_mrub_per_year'] - 1) * 100, 1), (NOTE, SLIDES))
-    flood_outcome = next((point['winner'] for point in analysis['switching_curve']
-                          if point['winner']['selection_id'] == 'AGRI:C,ENV:A,FLOOD:A,TRANS:C'), None)
-    if flood_outcome is None:
-        raise ValueError('FLOOD-вариант отсутствует в сохранённой кривой выбора; сравнение в защите требует проверки')
-    facts['FLOOD-вариант: Q'] = (str(flood_outcome['q']).replace('.', ','), (NOTE, SLIDES))
+    facts['FLOOD-вариант: Q'] = (str(flood.q).replace('.', ','), (NOTE, SLIDES))
     facts['дефицит ядра'] = (money(abs(sum(b for b in (detail.cash_mrub_per_year - detail.opex_mrub_per_year) if b < 0)), 2), (NOTE,))
     for row in detail.itertuples():
         facts[f'{row.lot_id}: c0'] = (money(row.c0_mrub, 2), (NOTE,))
@@ -134,12 +124,13 @@ def collect():
 
 def relations():
     """Утверждения об отношениях величин: проверяются по диапазону, правятся человеком."""
-    _, metrics, _ = current_export()
-    space = pd.read_csv(ROOT / 'results/portfolio_space.csv')
+    _, metrics, analysis = current_export()
     detail = pd.read_csv(ROOT / 'results/portfolio_detail.csv')
-    sens = pd.read_csv(ROOT / 'results/sensitivity_STRESS.csv')
+    sens = pd.DataFrame(analysis['headroom']['STRESS'])
     balances = detail.cash_mrub_per_year - detail.opex_mrub_per_year
-    never = [c for c in space.columns if c.startswith('chk_') and bool(space[c].all())]
+    never = analysis['search_summary']['never_binding_constraints']
+    flood = next(item for item in analysis['alternatives']
+                 if item['selection_id'] == 'AGRI:C,ENV:A,FLOOD:A,TRANS:C')
     limits = {r.binding_constraint.split(' ')[0] + ':' + r.input.split(' ')[0]: abs(r.change_pct)
               for r in sens.itertuples()}
     # Диапазон задан тем, что означает фраза: «двенадцатикратно» читается как «не меньше двенадцати»,
@@ -162,7 +153,7 @@ def relations():
         ('«субсидия 0,7% от стартовых затрат в год» (раздел 4)',
          abs(balances[balances < 0].sum()) / metrics['c0_mrub'] * 100, 0.65, 0.75),
         ('«запас FLOOD-варианта меньше в 1,7 раза» (раздел 5.3)',
-         (1180 - metrics['c0_mrub']) / (1180 - float(space[(space.lots.str.split('+').apply(set) == {'FLOOD','AGRI','TRANS','ENV'}) & (space.modes == 'ACCA')].c0.iloc[0])), 1.65, 1.75),
+         (1180 - metrics['c0_mrub']) / (1180 - float(flood['c0'])), 1.65, 1.75),
         ('«остаток 30,2% сверх расходов» (раздел 1)',
          (metrics['cash_mrub_per_year'] - metrics['opex_mrub_per_year']) / metrics['opex_mrub_per_year'] * 100,
          30.0, 31.0),
@@ -189,7 +180,8 @@ def main():
     except (ValueError, OSError) as error:
         print(f'ОШИБКА: {error}')
         return 1
-    previous = json.loads(SNAPSHOT.read_text(encoding='utf-8')) if SNAPSHOT.exists() else {}
+    snapshot = json.loads(SNAPSHOT.read_text(encoding='utf-8')) if SNAPSHOT.exists() else {}
+    previous = snapshot.get('document_values', {})
     missing, manual = [], []
     changed = [(name, previous[name], value, documents)
                for name, (value, documents) in facts.items()
@@ -246,9 +238,10 @@ def main():
                 (ROOT / document).write_text(text, encoding='utf-8')
                 print(f'  правка fact-маркеров: {document}')
     if not failed and (args.fix or args.snapshot):
-        SNAPSHOT.write_text(json.dumps({k: v[0] for k, v in facts.items()}, ensure_ascii=False, indent=2) + '\n',
-                            encoding='utf-8')
-        print(f'Слепок обновлён: {SNAPSHOT.relative_to(ROOT)}')
+        snapshot['document_values'] = {key: value[0] for key, value in facts.items()}
+        SNAPSHOT.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        write_export_provenance(SNAPSHOT.parent, ROOT / 'config/decision.json')
+        print(f'Слепок обновлён: {SNAPSHOT.relative_to(ROOT)} → document_values')
 
     print(f'Фактов: {len(facts)}; изменилось: {len(changed)}; нет в тексте: {len(missing)}; '
           f'человеку: {len(manual)}')

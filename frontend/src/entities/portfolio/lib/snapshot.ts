@@ -1,29 +1,11 @@
-import type { Calculation, CalculationInputs, CaseCatalog, ComparisonResult, RecommendationResult, Scenario } from '@shared/api/contracts'
+import type {
+  Calculation, CalculationInputs, CaseCatalog, ComparisonResult, MethodOutcome, RecommendationResult,
+} from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 
-import { DELTA_ROWS, comparisonValue } from './compare'
+/** Четыре файла текущего расчёта. Все показатели берутся из ответа API без округления. */
+export type ExportFile = { name: string; mime: string; content: string }
 
-/**
- * Выгрузка расчёта в том же формате, что даёт `python -m engine export`.
- *
- * Формат не придуман здесь: имена файлов и колонки повторяют контрольные
- * снимки в [`results/`](../../../../../results) — `portfolio_detail.csv`,
- * `portfolio_metrics.json`, `constraints_BASE.csv`, `constraints_STRESS.csv`.
- * Требование рубрики: цифры в записке, на слайдах и в выводе инструмента
- * обязаны совпадать, поэтому расходиться форматами нельзя.
- *
- * Числа берутся из ответа бэкенда как есть, без округления и без арифметики на
- * фронтенде: JSON отдаёт полную точность (`kcash = 1.0181531176006313`).
- * Интерфейс округляет только при показе.
- */
-
-export type ExportFile = {
-  name: string
-  mime: string
-  content: string
-}
-
-/** Экранирование по RFC 4180 — как это делает `pandas.to_csv`. */
 function csvCell(value: unknown): string {
   if (value === null || value === undefined) return ''
   if (typeof value === 'boolean') return value ? 'True' : 'False'
@@ -32,13 +14,11 @@ function csvCell(value: unknown): string {
 }
 
 function csv(columns: readonly string[], rows: readonly Record<string, unknown>[]): string {
-  const head = columns.join(',')
-  const body = rows.map((row) => columns.map((column) => csvCell(row[column])).join(','))
-  return [head, ...body].join('\n') + '\n'
+  return [columns.join(','), ...rows.map((row) => columns.map((key) => csvCell(row[key])).join(','))].join('\n') + '\n'
 }
 
-function json(value: unknown): string {
-  return JSON.stringify(value, null, 2) + '\n'
+function jsonFile(name: string, value: unknown): ExportFile {
+  return { name, mime: 'application/json;charset=utf-8', content: JSON.stringify(value, null, 2) + '\n' }
 }
 
 const DETAIL_COLUMNS = [
@@ -47,112 +27,100 @@ const DETAIL_COLUMNS = [
   'territorial_archetype', 'federal', 'capability_groups', 'public_core',
 ] as const
 
-/** Колонки контрольных `constraints_*.csv`: статус словом, не булевым. */
-const CONSTRAINT_COLUMNS = [
-  'code', 'title', 'operator', 'threshold', 'actual', 'unit', 'slack', 'status',
-] as const
-
 export function detailCsv(calculation: Calculation): ExportFile {
-  return {
-    name: 'portfolio_detail.csv',
-    mime: 'text/csv;charset=utf-8',
-    content: csv(DETAIL_COLUMNS, calculation.detail),
-  }
+  return { name: 'portfolio_detail.csv', mime: 'text/csv;charset=utf-8', content: csv(DETAIL_COLUMNS, calculation.detail) }
 }
 
 export function metricsJson(calculation: Calculation): ExportFile {
-  return {
-    name: 'portfolio_metrics.json',
-    mime: 'application/json;charset=utf-8',
-    content: json(calculation.metrics),
-  }
+  return jsonFile('portfolio_metrics.json', calculation.metrics)
 }
 
-export function constraintsCsv(calculation: Calculation, scenario: Scenario): ExportFile {
-  const checks = calculation.checks[scenario] ?? []
-  return {
-    name: `constraints_${scenario}.csv`,
-    mime: 'text/csv;charset=utf-8',
-    content: csv(
-      CONSTRAINT_COLUMNS,
-      checks.map((check) => ({ ...check, status: check.passed ? 'PASS' : 'FAIL' })),
-    ),
-  }
+function relatedRecommendation(calculation: Calculation, recommendation?: RecommendationResult) {
+  return recommendation && [recommendation.recommended, ...recommendation.alternatives]
+    .some((variant) => variant?.calculation.input_hash === calculation.input_hash) ? recommendation : undefined
 }
 
-/**
- * `calculation_snapshot.json` — то, что делает расчёт воспроизводимым.
- * Имя не совпадает с `config/decision.json`: это снимок расчёта, а не решение команды.
- *
- * Здесь ответы бэкенда лежат дословно: `dataset_hash` привязывает снимок к
- * версии исходных данных, `input_hash` — к конкретному составу, `engine_version`
- * — к версии формул. При тех же трёх значениях повторный запуск обязан дать
- * те же числа.
- */
+/** Параметры именно скачиваемого расчёта; ручной вариант не выдаётся за победителя. */
 export function decisionJson(
   calculation: Calculation,
   catalog: CaseCatalog,
-  comparison?: ComparisonResult,
   recommendation?: RecommendationResult,
   inputs?: CalculationInputs | null,
 ): ExportFile {
-  return {
-    name: 'calculation_snapshot.json',
-    mime: 'application/json;charset=utf-8',
-    content: json({
-      case_id: catalog.case_id,
-      case_version: catalog.case_version,
-      dataset_hash: calculation.dataset_hash,
-      engine_version: calculation.engine_version,
-      input_hash: calculation.input_hash,
-      inputs: inputs ?? null,
-      search_context: recommendation && [recommendation.recommended, ...recommendation.alternatives]
-        .some((variant) => variant?.calculation.input_hash === calculation.input_hash)
-        ? { request: recommendation.request, method: recommendation.method, analysis: recommendation.analysis,
-          is_recommended: recommendation.recommended?.calculation.input_hash === calculation.input_hash }
-        : null,
-      source_refs: catalog.source_refs,
-      exported_at: new Date().toISOString(),
-      exported_by: 'frontend/dashboard',
-      calculation,
-      comparison: comparison ?? null,
-    }),
-  }
-}
-
-/** `comparison.csv` — сопоставление вариантов, критерий Т4. */
-export function comparisonCsv(result: ComparisonResult): ExportFile {
-  const columns = [
-    'variant_index', 'is_baseline', 'selection',
-    ...SCENARIOS.map((scenario) => `feasible_${scenario}`),
-    ...SCENARIOS.map((scenario) => `failed_${scenario}`),
-    ...DELTA_ROWS.map((row) => row.key),
-    ...DELTA_ROWS.map((row) => `delta_${row.key}`),
-  ]
-  const rows = result.variants.map((variant, index) => {
-    const delta = result.deltas[index] ?? {}
-    const row: Record<string, unknown> = {
-      variant_index: index,
-      is_baseline: index === result.baseline_index,
-      selection: variant.selection.map((item) => `${item.lot_id}:${item.mode_id}`).join(' '),
-    }
-    for (const scenario of SCENARIOS) {
-      row[`feasible_${scenario}`] = variant.feasible_by_scenario[scenario] ? 'PASS' : 'FAIL'
-      row[`failed_${scenario}`] = (variant.checks[scenario] ?? [])
-        .filter((check) => !check.passed)
-        .map((check) => check.code)
-        .join(' ')
-    }
-    for (const { key } of DELTA_ROWS) {
-      row[key] = comparisonValue(variant, key) ?? ''
-      row[`delta_${key}`] = delta[key] ?? ''
-    }
-    return row
+  const related = relatedRecommendation(calculation, recommendation)
+  const isRecommended = related?.recommended?.calculation.input_hash === calculation.input_hash
+  return jsonFile('team_decision_config.json', {
+    case_id: catalog.case_id,
+    case_version: catalog.case_version,
+    dataset_hash: calculation.dataset_hash,
+    engine_version: calculation.engine_version,
+    input_hash: calculation.input_hash,
+    inputs: inputs ?? null,
+    selection: calculation.selection,
+    decision_method: related?.method.id ?? 'manual_evaluation',
+    is_recommended: isRecommended,
+    recommended: isRecommended ? { selection: calculation.selection } : null,
+    search_request: related?.request ?? null,
+    source_refs: catalog.source_refs,
+    exported_by: 'frontend/dashboard',
   })
-  return { name: 'comparison.csv', mime: 'text/csv;charset=utf-8', content: csv(columns, rows) }
 }
 
-/** Полный набор файлов для текущего расчёта. */
+function shortWinner(winner: MethodOutcome | null) {
+  return winner ? { selection_id: winner.selection_id, q: winner.q, annual_surplus_mrub: winner.annual_surplus_mrub } : null
+}
+
+export function analysisJson(
+  calculation: Calculation,
+  comparison?: ComparisonResult,
+  recommendation?: RecommendationResult,
+): ExportFile {
+  const related = relatedRecommendation(calculation, recommendation)
+  const isRecommended = related?.recommended?.calculation.input_hash === calculation.input_hash
+  const analysis = isRecommended ? related?.analysis : null
+  const checks = Object.fromEntries(SCENARIOS.map((scenario) => [
+    scenario, (calculation.checks[scenario] ?? []).map(({ passed, ...check }) => ({
+      ...check, status: passed ? 'PASS' : 'FAIL',
+    })),
+  ]))
+  return jsonFile('hybrid_analysis.json', {
+    format_version: 2,
+    method: related?.method.id ?? 'manual_evaluation',
+    selection_status: isRecommended ? 'recommended' : related ? 'alternative' : 'manual_evaluation',
+    selection: calculation.selection,
+    selection_rule: related?.method.description ?? 'Ручная проверка указанного портфеля; оптимальность не утверждается.',
+    winner: analysis?.winner ?? null,
+    q_max: analysis?.q_max ?? null,
+    effective_delta_mrub: analysis?.effective_delta_mrub ?? null,
+    s_max_mrub: analysis?.s_max_mrub ?? null,
+    cash_floor_mrub: analysis?.cash_floor_mrub ?? null,
+    cash_eligible_count: analysis?.cash_eligible_count ?? null,
+    cash_loss_limit_mrub: analysis?.cash_loss_limit_mrub ?? null,
+    quality_epsilon: analysis?.quality_epsilon ?? null,
+    reference_count: analysis?.reference_count ?? null,
+    checks,
+    financial: calculation.financial,
+    search_summary: related ? {
+      total_count: related.considered_count, base_count: related.base_count,
+      stress_count: related.stress_count, feasible_count: related.feasible_count,
+    } : null,
+    switching_curve: analysis?.switching_curve.map((point) => ({ ...point, winner: shortWinner(point.winner) })) ?? [],
+    sensitivity: analysis?.sensitivity.map((item) => ({
+      id: item.id, title: item.title, feasible_count: item.feasible_count, budget_cap_mrub: item.budget_cap_mrub,
+      outcome: { winner: shortWinner(item.outcome.winner), winner_changed: item.outcome.winner_changed,
+        original_still_feasible: item.outcome.original_still_feasible },
+    })) ?? [],
+    comparison: comparison ? {
+      baseline_index: comparison.baseline_index,
+      variants: comparison.variants.map((variant) => ({
+        selection: variant.selection, metrics: variant.metrics, feasible_by_scenario: variant.feasible_by_scenario,
+      })),
+      deltas: comparison.deltas,
+    } : null,
+    caveat: analysis?.caveat ?? calculation.financial?.limitation,
+  })
+}
+
 export function snapshotFiles(
   calculation: Calculation,
   catalog: CaseCatalog,
@@ -160,12 +128,10 @@ export function snapshotFiles(
   recommendation?: RecommendationResult,
   inputs?: CalculationInputs | null,
 ): ExportFile[] {
-  const files = [
-    decisionJson(calculation, catalog, comparison, recommendation, inputs),
-    metricsJson(calculation),
+  return [
     detailCsv(calculation),
-    ...SCENARIOS.map((scenario) => constraintsCsv(calculation, scenario)),
+    metricsJson(calculation),
+    decisionJson(calculation, catalog, recommendation, inputs),
+    analysisJson(calculation, comparison, recommendation),
   ]
-  if (comparison) files.push(comparisonCsv(comparison))
-  return files
 }

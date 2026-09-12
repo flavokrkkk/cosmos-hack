@@ -3,7 +3,7 @@ import { create } from 'zustand'
 import type { ComparisonResult } from '@shared/api/contracts'
 
 type ComparisonState = {
-  /** Последнее выполненное сравнение и подписи его колонок — для экспорта `comparison.csv`. */
+  /** Последнее выполненное сравнение и подписи его колонок — для раздела comparison в отчёте. */
   result: ComparisonResult | null
   titles: string[]
   set: (result: ComparisonResult, titles: string[]) => void

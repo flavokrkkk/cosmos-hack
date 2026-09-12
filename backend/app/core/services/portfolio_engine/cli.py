@@ -255,45 +255,31 @@ def cmd_recommend(args) -> int:
 
 
 def cmd_export(args) -> int:
-    from .export_integrity import write_export_manifest
+    from .export_integrity import CONFIG_NAME, EXPORT_FILES, LEGACY_FILES, write_export_provenance
+    from .export_report import build_report
 
     decision = load_decision(args.config)
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-
-    with open(RESULTS_DIR / "hybrid_analysis.json", "w", encoding="utf-8") as handle:
-        json.dump(decision.analysis, handle, ensure_ascii=False, indent=2, allow_nan=False)
     detail, metrics = evaluate(decision.recommended.selection)
+    report = build_report(decision, metrics)
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    # Сохраняем слепок для безопасного сравнения документов после нового экспорта.
+    previous = RESULTS_DIR / CONFIG_NAME
+    document_values = json.loads(previous.read_text()).get("document_values", {}) if previous.exists() else {}
+    legacy_snapshot = RESULTS_DIR / "document_facts.json"
+    if not document_values and legacy_snapshot.exists():
+        document_values = json.loads(legacy_snapshot.read_text())
+    configuration = dict(decision.as_export(), document_values=document_values)
     detail.to_csv(RESULTS_DIR / "portfolio_detail.csv", index=False, encoding="utf-8")
-    with open(RESULTS_DIR / "portfolio_metrics.json", "w", encoding="utf-8") as handle:
-        json.dump(metrics, handle, ensure_ascii=False, indent=2)
-    with open(RESULTS_DIR / "team_decision_config.json", "w", encoding="utf-8") as handle:
-        json.dump(decision.as_export(), handle, ensure_ascii=False, indent=2)
-
-    for scenario in scenarios():
-        rows = [row.as_dict() for row in diagnose(metrics, scenario)]
-        import pandas as pd
-
-        pd.DataFrame(rows).to_csv(
-            RESULTS_DIR / f"constraints_{scenario}.csv", index=False, encoding="utf-8"
-        )
-
-    import pandas as pd
-
-    for scenario in scenarios():
-        selection = decision.recommended.selection
-        # Официальные ограничения и отдельно порог команды «остаток >= 0» — он помечен в строке.
-        headroom = input_headroom(selection, scenario) + surplus_headroom(selection)
-        pd.DataFrame([row.as_dict() for row in headroom]).to_csv(
-            RESULTS_DIR / f"sensitivity_{scenario}.csv", index=False, encoding="utf-8"
-        )
-
-    # Поиск уже наполнил кэш пространства: здесь только копия и запись того же расчёта.
-    enumerate_space().to_csv(RESULTS_DIR / "portfolio_space.csv", index=False, encoding="utf-8")
-    write_export_manifest(RESULTS_DIR, args.config)
-
-    written = sorted(p.name for p in RESULTS_DIR.iterdir() if p.is_file())
+    for name, value in (("portfolio_metrics.json", metrics), (CONFIG_NAME, configuration),
+                        ("hybrid_analysis.json", report)):
+        (RESULTS_DIR / name).write_text(
+            json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    write_export_provenance(RESULTS_DIR, args.config)
+    # Только известные артефакты прежнего формата, не произвольные файлы пользователя.
+    for name in LEGACY_FILES:
+        (RESULTS_DIR / name).unlink(missing_ok=True)
     print(f"Записано в {RESULTS_DIR}:")
-    for name in written:
+    for name in EXPORT_FILES:
         print("  •", name)
     return 0
 

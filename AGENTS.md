@@ -155,14 +155,17 @@ backend/.venv/bin/python scripts/build_submission.py --skip-export
   («перекрывают разрыв двенадцатикратно», «четыре ограничения из девяти») goes into
   `relations()` with the band the wording actually means — those phrases rot
   silently and cannot be substituted automatically.
-- `results/document_facts.json` stores the registered values. Automatic replacement
+- `document_values` in `results/team_decision_config.json` stores the registered values. Automatic replacement
   requires an explicit `<!-- fact: NAME -->VALUE<!-- /fact -->` binding; bare numerical
   tokens are checked but never replaced globally. Ambiguous or stale unmarked values
   block both edits and snapshot updates. A registered value occurring elsewhere does
   not prove the meaning of every numerical claim: review its context separately.
-- `results/export_manifest.json` binds the calculation to the inputs, configuration,
-  implementation and generated outputs. Export once after source changes; document
+- `export_provenance` in that same configuration binds the calculation to the inputs,
+  implementation and four generated outputs. Export once after source changes; document
   checks and `build_submission.py --skip-export` verify hashes without repeating the search.
+- Both repository and submission `results/` contain exactly four files: `portfolio_detail.csv`,
+  `portfolio_metrics.json`, `team_decision_config.json`, `hybrid_analysis.json`. Checks and compact
+  comparisons belong in the last file. Never restore separate space, sensitivity or constraint dumps.
 - The root `engine/` wrapper was deliberately removed. Use the backend module above;
   the standalone submission uses `python run.py ...` and its generated `src/engine`.
 - PDFs come only from `scripts/render_pdf.py`. It measures the real page count and

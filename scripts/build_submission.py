@@ -15,7 +15,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from backend.app.core.services.portfolio_engine.export_integrity import verify_export
+from backend.app.core.services.portfolio_engine.export_integrity import EXPORT_FILES, LEGACY_FILES, verify_export
 
 ENGINE_MODULE = 'backend.app.core.services.portfolio_engine'
 
@@ -57,9 +57,10 @@ def main():
     for name in official:
         copy(f'case/source/{name}', f'data/official/{name}')
     copy('config/decision.json', 'config/decision.json')
-    for path in sorted((ROOT / 'results').glob('*')):
-        if path.is_file():
-            copy(str(path.relative_to(ROOT)), f'results/{path.name}')
+    for name in EXPORT_FILES:
+        copy(f'results/{name}', f'results/{name}')
+    for name in LEGACY_FILES:
+        (target / 'results' / name).unlink(missing_ok=True)
     for name in ('test_engine.py', 'test_hybrid.py', 'test_cli_config.py'):
         copy(f'tests/{name}', f'tests/{name}')
         copied_test = target / 'tests' / name
@@ -87,7 +88,7 @@ def main():
 
 По пункту 13 итоговой сдаче нужны те же два документа в PDF (`docs/management-note.pdf` — 8–12 страниц, `docs/stress-summary.pdf` — 1 страница) и `presentation.pdf` (до 12 слайдов). Сборщик переносит PDF, если они собраны в основном репозитории, и честно отражает их отсутствие в `manifest.json`: вёрстка не подменяет содержание, источником остаются markdown-файлы рядом. Notebook не используется.
 
-Контроль BASE/STRESS — в `../results/constraints_BASE.csv` и `../results/constraints_STRESS.csv`. Оба файла проверяют один и тот же выбранный портфель. Актуальные числа — `../results/portfolio_metrics.json`, метод — `../results/hybrid_analysis.json`.
+Начните с `../results/hybrid_analysis.json`: выбранный портфель, шесть оценок, денежный компромисс и проверки BASE/STRESS одного состава. Итоги — `portfolio_metrics.json`, расчёт по лотам — `portfolio_detail.csv`, конфигурация — `team_decision_config.json` в той же папке. В `results/` ровно четыре файла.
 ''', encoding='utf-8')
     # Этот индекс генерировался старым сборщиком и не входил в source_copies.
     (target / 'docs/research/README.md').unlink(missing_ok=True)

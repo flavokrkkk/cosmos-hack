@@ -68,7 +68,7 @@ def test_snapshot_matches_current_facts(facts):
     """Слепок коммитится: расхождение означает, что расчёт изменился, а документы — нет."""
     import json
 
-    snapshot = json.loads((ROOT / 'results/document_facts.json').read_text(encoding='utf-8'))
+    snapshot = json.loads((ROOT / 'results/team_decision_config.json').read_text(encoding='utf-8'))['document_values']
     drift = {name: (snapshot.get(name), value)
              for name, (value, _) in facts.items() if snapshot.get(name) != value}
     assert not drift, ('слепок устарел, запустите python scripts/sync_documents.py --fix: '

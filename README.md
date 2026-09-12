@@ -148,7 +148,7 @@ python scripts/render_pdf.py
 python scripts/build_submission.py --skip-export
 ```
 
-Хеши в `results/export_manifest.json` связывают входы, код и выгрузки. Сверка и сборка не повторяют
+Поле `export_provenance` в `results/team_decision_config.json` связывает входы, код и четыре выгрузки. Сверка и сборка не повторяют
 подбор. `render_pdf.py --check` проверяет объём во временных файлах, сохраняя готовые PDF.
 
 **Версия исходных данных.** Файлы в [`case/source/`](case/source) побайтово совпадают с
@@ -180,9 +180,9 @@ python -m pytest tests/ -q                     # формулы, границы,
 |---|---|
 | C0, OPEX, VPUB, CASH, KCASH и индексы текущего портфеля | `results/portfolio_metrics.json` |
 | Расчёт по лотам, раздел 3 | `results/portfolio_detail.csv` |
-| 5670 / 1031 / 143 и связывающие ограничения | `results/portfolio_space.csv` |
-| Запасы по ограничениям, раздел 7 | `results/constraints_STRESS.csv` |
-| Границы слома входов, раздел 7 | `results/sensitivity_STRESS.csv` |
+| 5670 / 1031 / 143 и связывающие ограничения | `results/hybrid_analysis.json` → `search_summary` |
+| Запасы по ограничениям, раздел 7 | `results/hybrid_analysis.json` → `checks.STRESS` |
+| Границы слома входов, раздел 7 | `results/hybrid_analysis.json` → `headroom.STRESS` |
 
 `tests/test_documents_match_engine.py` сверяет опорные показатели и состав с движком;
 `tests/test_document_numbers.py` проверяет реестр фактов и тайминг. Контекст остальных численных

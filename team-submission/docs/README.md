@@ -6,4 +6,4 @@
 
 По пункту 13 итоговой сдаче нужны те же два документа в PDF (`docs/management-note.pdf` — 8–12 страниц, `docs/stress-summary.pdf` — 1 страница) и `presentation.pdf` (до 12 слайдов). Сборщик переносит PDF, если они собраны в основном репозитории, и честно отражает их отсутствие в `manifest.json`: вёрстка не подменяет содержание, источником остаются markdown-файлы рядом. Notebook не используется.
 
-Контроль BASE/STRESS — в `../results/constraints_BASE.csv` и `../results/constraints_STRESS.csv`. Оба файла проверяют один и тот же выбранный портфель. Актуальные числа — `../results/portfolio_metrics.json`, метод — `../results/hybrid_analysis.json`.
+Начните с `../results/hybrid_analysis.json`: выбранный портфель, шесть оценок, денежный компромисс и проверки BASE/STRESS одного состава. Итоги — `portfolio_metrics.json`, расчёт по лотам — `portfolio_detail.csv`, конфигурация — `team_decision_config.json` в той же папке. В `results/` ровно четыре файла.

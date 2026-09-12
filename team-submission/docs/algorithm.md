@@ -95,11 +95,12 @@ S — годовой денежный остаток после OPEX. Он не 
 
 - `portfolio_detail.csv` — выбранные лоты после применения режимов;
   `portfolio_metrics.json` — суммы и средние портфеля.
-- `constraints_BASE.csv` / `constraints_STRESS.csv` — проверки одного состава по двум сценариям.
-- `sensitivity_BASE.csv` / `sensitivity_STRESS.csv` — пределы изменения одного входа
-  при прочих неизменных; нового победителя эти файлы не выбирают.
-- `portfolio_space.csv` — таблица всех сочетаний, не рейтинг метода;
-  `hybrid_analysis.json` — выбор, шкалы, точки смены по Δ и отдельные сценарии с повторным подбором.
+- `team_decision_config.json` — состав, параметры и допущения; `export_provenance` хранит хеши,
+  `document_values` — слепок чисел для сверки документов.
+- `hybrid_analysis.json` — результат выбора и шесть оценок. `checks.BASE` / `checks.STRESS` —
+  проверки одного состава; `headroom` — пределы изменения входов по отдельности;
+  `search_summary` — итоги перебора; `alternatives`, `switching_curve`, `sensitivity` — компактные сравнения.
+  Полная таблица сочетаний и отдельные CSV проверок больше не генерируются: в `results/` четыре файла.
 - `lots.csv` — исходные лоты; `access_modes.csv` — множители A/B/C.
 - `mrub` — млн ₽; `mrub_per_year` — млн ₽/год; `_1_5` — шкала индекса 1–5;
   `pct` — проценты; `factor` / `multiplier` — множитель.

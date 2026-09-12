@@ -8,5 +8,5 @@ export {
 } from './format'
 export type { MetricTileDefinition } from './format'
 export { MAX_CANDIDATE_LOTS, PORTFOLIO_SIZE, lotIdsKey, selectionKey, selectionLabel, sortedLotIds } from './selection'
-export { comparisonCsv, constraintsCsv, decisionJson, detailCsv, metricsJson, snapshotFiles } from './snapshot'
+export { analysisJson, decisionJson, detailCsv, metricsJson, snapshotFiles } from './snapshot'
 export type { ExportFile } from './snapshot'

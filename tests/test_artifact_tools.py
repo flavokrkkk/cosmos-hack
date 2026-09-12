@@ -15,13 +15,14 @@ from scripts import build_submission, render_pdf, sync_documents
 @pytest.fixture
 def document_fixture(tmp_path, monkeypatch):
     note = tmp_path / 'note.md'
-    snapshot = tmp_path / 'document_facts.json'
+    snapshot = tmp_path / 'team_decision_config.json'
     note.write_text('Δ = 9,5; FLOOD S = 99,50.', encoding='utf-8')
-    snapshot.write_text(json.dumps({'Δ': '9,5'}), encoding='utf-8')
+    snapshot.write_text(json.dumps({'document_values': {'Δ': '9,5'}}), encoding='utf-8')
     monkeypatch.setattr(sync_documents, 'ROOT', tmp_path)
     monkeypatch.setattr(sync_documents, 'SNAPSHOT', snapshot)
     monkeypatch.setattr(sync_documents, 'collect', lambda: {'Δ': ('8,5', ('note.md',))})
     monkeypatch.setattr(sync_documents, 'relations', lambda: [])
+    monkeypatch.setattr(sync_documents, 'write_export_provenance', lambda *_args: None)
     return note, snapshot
 
 
@@ -49,7 +50,7 @@ def test_fix_is_bound_to_the_fact_name_not_equal_numbers(document_fixture, monke
     monkeypatch.setattr(sys, 'argv', ['sync_documents.py', '--fix'])
     assert sync_documents.main() == 0
     assert note.read_text() == 'Δ = <!-- fact: Δ -->8,5<!-- /fact -->; FLOOD S = 99,50.'
-    assert json.loads(snapshot.read_text()) == {'Δ': '8,5'}
+    assert json.loads(snapshot.read_text())['document_values'] == {'Δ': '8,5'}
 
 
 @pytest.mark.parametrize('flags', [['--fix'], ['--snapshot']])
@@ -65,7 +66,7 @@ def test_old_unmarked_occurrence_blocks_fix_and_snapshot(document_fixture, monke
 def test_equal_numbers_of_different_facts_are_not_changed(document_fixture, monkeypatch):
     note, snapshot = document_fixture
     note.write_text('<!-- fact: Δ -->9,5<!-- /fact -->; <!-- fact: другой -->9,5<!-- /fact -->')
-    snapshot.write_text(json.dumps({'Δ': '9,5', 'другой': '9,5'}))
+    snapshot.write_text(json.dumps({'document_values': {'Δ': '9,5', 'другой': '9,5'}}))
     monkeypatch.setattr(sync_documents, 'collect', lambda: {
         'Δ': ('8,5', ('note.md',)), 'другой': ('9,5', ('note.md',)),
     })
@@ -193,7 +194,8 @@ def test_export_manifest_rejects_stale_sources_or_results(tmp_path, monkeypatch,
     monkeypatch.setattr(export_integrity, 'dataset_hash', lambda: 'case version 1')
     for name in export_integrity.EXPORT_FILES:
         (tmp_path / name).write_text('result version 1')
-    export_integrity.write_export_manifest(tmp_path, config)
+    (tmp_path / export_integrity.CONFIG_NAME).write_text('{"selection": []}')
+    export_integrity.write_export_provenance(tmp_path, config)
     export_integrity.verify_export(tmp_path, config)
     if change == 'config':
         config.write_text('{"version": 2}')
