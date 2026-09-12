@@ -21,7 +21,7 @@ python scripts/build_submission.py
 
 Добавлен backend-срез: портфельный API с автоподбором, альтернативами,
 проверками BASE/STRESS, сравнением и синхронным объяснением через Ollama.
-Фронтенд не реализован; исходный каркас сохранён.
+Фронтенд реализован: одна страница дашборда на контракте бэкенда, проверяется `npm run build`.
 Расчётное ядро теперь находится в
 `backend/app/core/services/portfolio_engine`; корневой `engine` — совместимость прежнего CLI.
 Исторические описания стартового каркаса ниже не отражают добавленные портфельные маршруты.
@@ -52,11 +52,11 @@ python -m pip install -r requirements.txt
 python -m engine evaluate     # портфель + PASS/FAIL по ограничениям, BASE и STRESS
 python -m engine space        # полный перебор 5670 конфигураций
 python -m engine sensitivity  # запас по входным данным и где портфель ломается
-python -m pytest tests/ -q    # 23 проверки формул, границ и фронта
+python -m pytest tests/ -q    # проверки формул, границ, фронта и сверки документов с расчётом
 ```
 
 Портфель меняется **без правки кода** — [`config/decision.json`](config/decision.json) или
-флаг `--portfolio FIRE:A,AGRI:A,TRANS:B,ENV:A`. Контракт для backend и что делать нельзя —
+флаг `--portfolio FIRE:A,AGRI:A,TRANS:A,ENV:A`. Контракт для backend и что делать нельзя —
 [`engine/README.md`](engine/README.md). Разбор пространства решений —
 [docs/research/portfolio-space.md](docs/research/portfolio-space.md).
 
@@ -67,10 +67,18 @@ python -m pytest tests/ -q    # 23 проверки формул, границ �
 
 | Материал | Где |
 |---|---|
-| **Управленческая записка** | [docs/10-management-note.md](docs/10-management-note.md) |
-| **Резюме стресс-сценария**, одна страница | [docs/11-stress-summary.md](docs/11-stress-summary.md) |
+| **Управленческая записка**, 12 страниц + приложения | [docs/management-note.pdf](docs/management-note.pdf), исходник [docs/23-management-note.md](docs/23-management-note.md) |
+| **Резюме стресс-сценария**, одна страница | [docs/stress-summary.pdf](docs/stress-summary.pdf), исходник [docs/24-stress-summary.md](docs/24-stress-summary.md) |
+| Как вычислен портфель | [docs/22-hybrid-selection.md](docs/22-hybrid-selection.md) |
 | Рекомендуемый портфель в машиночитаемом виде | [config/decision.json](config/decision.json) |
 | Контрольные выгрузки | [results/](results) |
+| Автономный комплект по п. 13 | [team-submission/](team-submission) |
+
+Записки `docs/10-` и `docs/11-` — историческая версия под прежний портфель, в сдачу не входят.
+
+Сверка чисел автоматизирована: `python scripts/sync_documents.py` сравнивает 46 величин
+в документах с выгрузками движка, `--fix` подставляет новые значения. Вёрстка PDF и контроль
+объёма — `python scripts/render_pdf.py`.
 
 **Версия исходных данных.** Файлы в [`case/source/`](case/source) побайтово совпадают с
 публичным репозиторием кейсодержателя <https://github.com/SpaceEconomyPolicy/test>,

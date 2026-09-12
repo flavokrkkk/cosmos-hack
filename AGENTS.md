@@ -135,6 +135,17 @@ For changes to the portfolio engine, run its self-check and confirm the numbers
 are reproducible. Do not report Docker verification unless the containers were
 actually built and started.
 
+When engine numbers or the documents change, run from the repo root:
+
+```bash
+backend/.venv/bin/python scripts/sync_documents.py   # --fix substitutes new values
+backend/.venv/bin/python scripts/render_pdf.py       # fails if the note leaves 8-12 pages
+```
+
+`sync_documents.py` keeps the registry of every figure the reports state; phrases about
+ratios ("twelvefold", "a third of the constraints") are range-checked and reported for a
+human to rewrite. Never hand-edit a figure without re-running it.
+
 ## Documentation and knowledge base
 
 `docs/` is the single source of truth for everything the team knows about the
