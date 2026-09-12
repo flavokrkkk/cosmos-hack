@@ -1,0 +1,2565 @@
+{
+  "dataset_hash": "1700fdbd1f2d51b7b639304323147dfa592a71d541c9ea723dca32b66fe38f22",
+  "audit_version": "2026-09-12-v1",
+  "source": "case/source; coefficients of D: competitor d_type.md b15299c, hypothetical",
+  "counts": {
+    "all": 5670,
+    "base": 1031,
+    "stress": 143
+  },
+  "abc_financial_winner": {
+    "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+    "c0": 1178.1,
+    "opex": 315.25,
+    "cash": 417.0,
+    "surplus": 101.75,
+    "vpub": 1148.6,
+    "kcash": 1.3227597145122918,
+    "public_core_lots": 2
+  },
+  "competitor_equal_weight_winner": {
+    "selection": "AGRI:C,ENV:A,FIRE:A,TRANS:B",
+    "competitor_score": 0.4498111435355784,
+    "surplus": 80.75
+  },
+  "c0_overrun_frontier": [
+    {
+      "overrun_pct": 0,
+      "budget_cap": 1180.0,
+      "winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "overrun_pct": 0.1,
+      "budget_cap": 1178.821178821179,
+      "winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "overrun_pct": 0.2,
+      "budget_cap": 1177.6447105788423,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FLOOD:A,TRANS:C",
+        "c0": 1150.8,
+        "opex": 311.0,
+        "cash": 410.5,
+        "surplus": 99.5,
+        "vpub": 1239.0,
+        "kcash": 1.319935691318328,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "overrun_pct": 1,
+      "budget_cap": 1168.3168316831684,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FLOOD:A,TRANS:C",
+        "c0": 1150.8,
+        "opex": 311.0,
+        "cash": 410.5,
+        "surplus": 99.5,
+        "vpub": 1239.0,
+        "kcash": 1.319935691318328,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "overrun_pct": 2,
+      "budget_cap": 1156.862745098039,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FLOOD:A,TRANS:C",
+        "c0": 1150.8,
+        "opex": 311.0,
+        "cash": 410.5,
+        "surplus": 99.5,
+        "vpub": 1239.0,
+        "kcash": 1.319935691318328,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "overrun_pct": 2.5,
+      "budget_cap": 1151.219512195122,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FLOOD:A,TRANS:C",
+        "c0": 1150.8,
+        "opex": 311.0,
+        "cash": 410.5,
+        "surplus": 99.5,
+        "vpub": 1239.0,
+        "kcash": 1.319935691318328,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "overrun_pct": 3,
+      "budget_cap": 1145.631067961165,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+        "c0": 1129.8,
+        "opex": 305.75,
+        "cash": 398.0,
+        "surplus": 92.25,
+        "vpub": 1199.0,
+        "kcash": 1.3017170891251022,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "overrun_pct": 4,
+      "budget_cap": 1134.6153846153845,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+        "c0": 1129.8,
+        "opex": 305.75,
+        "cash": 398.0,
+        "surplus": 92.25,
+        "vpub": 1199.0,
+        "kcash": 1.3017170891251022,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "overrun_pct": 5,
+      "budget_cap": 1123.8095238095239,
+      "winner": {
+        "selection": "AGRI:A,ENV:C,FIRE:C,TRANS:A",
+        "c0": 1123.5,
+        "opex": 304.25,
+        "cash": 301.25,
+        "surplus": -3.0,
+        "vpub": 1020.4,
+        "kcash": 0.990139687756779,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "overrun_pct": 5.1,
+      "budget_cap": 1122.7402473834445,
+      "winner": null
+    }
+  ],
+  "vpub_floor_frontier": [
+    {
+      "vpub_floor": 1000,
+      "winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "vpub_floor": 1150,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FLOOD:A,TRANS:C",
+        "c0": 1150.8,
+        "opex": 311.0,
+        "cash": 410.5,
+        "surplus": 99.5,
+        "vpub": 1239.0,
+        "kcash": 1.319935691318328,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "vpub_floor": 1200,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FLOOD:A,TRANS:C",
+        "c0": 1150.8,
+        "opex": 311.0,
+        "cash": 410.5,
+        "surplus": 99.5,
+        "vpub": 1239.0,
+        "kcash": 1.319935691318328,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "vpub_floor": 1240,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FLOOD:A,TRANS:B",
+        "c0": 1155.8,
+        "opex": 314.5,
+        "cash": 402.5,
+        "surplus": 88.0,
+        "vpub": 1283.0,
+        "kcash": 1.2798092209856915,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "vpub_floor": 1250,
+      "winner": {
+        "selection": "AGRI:C,ENV:A,FLOOD:A,TRANS:B",
+        "c0": 1155.8,
+        "opex": 314.5,
+        "cash": 402.5,
+        "surplus": 88.0,
+        "vpub": 1283.0,
+        "kcash": 1.2798092209856915,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "vpub_floor": 1300,
+      "winner": {
+        "selection": "AGRI:B,ENV:A,FLOOD:A,TRANS:B",
+        "c0": 1161.0,
+        "opex": 318.25,
+        "cash": 383.0,
+        "surplus": 64.75,
+        "vpub": 1329.0,
+        "kcash": 1.2034564021995287,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "vpub_floor": 1350,
+      "winner": {
+        "selection": "AGRI:B,ENV:A,FLOOD:A,TRANS:A",
+        "c0": 1173.5,
+        "opex": 321.75,
+        "cash": 349.25,
+        "surplus": 27.5,
+        "vpub": 1368.6,
+        "kcash": 1.0854700854700854,
+        "public_core_lots": 3
+      }
+    },
+    {
+      "vpub_floor": 1370,
+      "winner": {
+        "selection": "AGRI:A,ENV:A,FLOOD:A,TRANS:B",
+        "c0": 1174.0,
+        "opex": 322.0,
+        "cash": 335.0,
+        "surplus": 13.0,
+        "vpub": 1370.4,
+        "kcash": 1.0403726708074534,
+        "public_core_lots": 3
+      }
+    }
+  ],
+  "d_candidates": [
+    {
+      "definition": "public_core_plus",
+      "values": [
+        1.07,
+        1.08,
+        1.0,
+        1.0,
+        0.34
+      ],
+      "public_core": true,
+      "all": 17920,
+      "base": 5260,
+      "stress": 619,
+      "winner": {
+        "selection": "AGRI:C,ENV:D,FLOOD:D,TRANS:C",
+        "c0": 1163.2,
+        "opex": 315.95,
+        "cash": 422.2,
+        "surplus": 106.25,
+        "vpub": 1239.0,
+        "kcash": 1.3362873872448173,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "definition": "public_buyer",
+      "values": [
+        1.04,
+        1.06,
+        0.91,
+        0.9,
+        0.63
+      ],
+      "public_core": true,
+      "all": 17920,
+      "base": 5379,
+      "stress": 751,
+      "winner": {
+        "selection": "AGRI:C,FLOOD:D,INFRA:D,TRANS:C",
+        "c0": 1175.8,
+        "opex": 317.95000000000005,
+        "cash": 458.5,
+        "surplus": 140.54999999999995,
+        "vpub": 1098.0,
+        "kcash": 1.442050636892593,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "definition": "shared_core",
+      "values": [
+        1.007,
+        1.0175,
+        1.0,
+        1.0,
+        0.25
+      ],
+      "public_core": true,
+      "all": 17920,
+      "base": 5701,
+      "stress": 1323,
+      "winner": {
+        "selection": "AGRI:C,FLOOD:D,INFRA:C,TRANS:D",
+        "c0": 1152.73,
+        "opex": 310.05,
+        "cash": 417.0,
+        "surplus": 106.94999999999999,
+        "vpub": 1148.6,
+        "kcash": 1.3449443638122882,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "definition": "weighted_ab",
+      "values": [
+        1.025,
+        1.025,
+        0.91,
+        0.9,
+        0.475
+      ],
+      "public_core": false,
+      "all": 17920,
+      "base": 2105,
+      "stress": 288,
+      "winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "definition": "anchor_reservation",
+      "values": [
+        1.0,
+        1.02,
+        0.82,
+        0.9,
+        0.63
+      ],
+      "public_core": false,
+      "all": 17920,
+      "base": 2115,
+      "stress": 291,
+      "winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "definition": "portability",
+      "values": [
+        0.99,
+        0.97,
+        0.62,
+        0.45,
+        0.95
+      ],
+      "public_core": false,
+      "all": 17920,
+      "base": 2067,
+      "stress": 270,
+      "winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      }
+    },
+    {
+      "definition": "mean_abc",
+      "values": [
+        1.01,
+        1.0,
+        0.8133333333333334,
+        0.75,
+        0.6333333333333333
+      ],
+      "public_core": false,
+      "all": 17920,
+      "base": 2103,
+      "stress": 284,
+      "winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      }
+    }
+  ],
+  "d_demand_sensitivity": [
+    {
+      "alpha": 0.0,
+      "global_winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      },
+      "env_only": {
+        "selection": "FLOOD:A,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1156.4,
+        "opex_mrub_per_year": 313.25,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 410.5,
+        "kcash": 1.3104549082202714,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 236.75,
+        "surplus": 97.25,
+        "c0_growth_tolerance_pct": 2.0408163265306145,
+        "stress_budget_headroom": 23.59999999999991,
+        "commercial_drop_break_even_pct": 41.07708553326294,
+        "anchor_drop_break_even_pct": 55.97122302158273,
+        "combined_split_shock_surplus": 16.862499999999955,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 76.25,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "A",
+            "c0_mrub": 357.0,
+            "opex_mrub_per_year": 94.5,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 96.25,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      },
+      "both_public": {
+        "selection": "FLOOD:D,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1163.2,
+        "opex_mrub_per_year": 315.95,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 410.5,
+        "kcash": 1.2992562114258586,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 236.75,
+        "surplus": 94.55000000000001,
+        "c0_growth_tolerance_pct": 1.4442916093535096,
+        "stress_budget_headroom": 16.799999999999955,
+        "commercial_drop_break_even_pct": 39.93664202745513,
+        "anchor_drop_break_even_pct": 54.41726618705037,
+        "combined_split_shock_surplus": 14.027499999999975,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 76.25,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "D",
+            "c0_mrub": 363.8,
+            "opex_mrub_per_year": 97.2,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 96.25,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      }
+    },
+    {
+      "alpha": 0.05,
+      "global_winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      },
+      "env_only": {
+        "selection": "FLOOD:A,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1156.4,
+        "opex_mrub_per_year": 313.25,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 412.4125,
+        "kcash": 1.316560255387071,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 238.66250000000002,
+        "surplus": 99.16250000000002,
+        "c0_growth_tolerance_pct": 2.0408163265306145,
+        "stress_budget_headroom": 23.59999999999991,
+        "commercial_drop_break_even_pct": 41.549258890692926,
+        "anchor_drop_break_even_pct": 57.071942446043174,
+        "combined_split_shock_surplus": 18.39250000000004,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 78.1625,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "A",
+            "c0_mrub": 357.0,
+            "opex_mrub_per_year": 94.5,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 96.25,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      },
+      "both_public": {
+        "selection": "FLOOD:D,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1163.2,
+        "opex_mrub_per_year": 315.95,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 413.425,
+        "kcash": 1.3085140053805984,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 239.675,
+        "surplus": 97.47500000000002,
+        "c0_growth_tolerance_pct": 1.4442916093535096,
+        "stress_budget_headroom": 16.799999999999955,
+        "commercial_drop_break_even_pct": 40.66965682695317,
+        "anchor_drop_break_even_pct": 56.10071942446044,
+        "combined_split_shock_surplus": 16.367500000000007,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 78.1625,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "D",
+            "c0_mrub": 363.8,
+            "opex_mrub_per_year": 97.2,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 97.2625,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      }
+    },
+    {
+      "alpha": 0.1,
+      "global_winner": {
+        "selection": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "c0": 1178.1,
+        "opex": 315.25,
+        "cash": 417.0,
+        "surplus": 101.75,
+        "vpub": 1148.6,
+        "kcash": 1.3227597145122918,
+        "public_core_lots": 2
+      },
+      "env_only": {
+        "selection": "FLOOD:A,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1156.4,
+        "opex_mrub_per_year": 313.25,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 414.325,
+        "kcash": 1.3226656025538708,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 240.575,
+        "surplus": 101.07499999999999,
+        "c0_growth_tolerance_pct": 2.0408163265306145,
+        "stress_budget_headroom": 23.59999999999991,
+        "commercial_drop_break_even_pct": 42.013924971422625,
+        "anchor_drop_break_even_pct": 58.17266187050359,
+        "combined_split_shock_surplus": 19.922500000000014,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 80.075,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "A",
+            "c0_mrub": 357.0,
+            "opex_mrub_per_year": 94.5,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 96.25,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      },
+      "both_public": {
+        "selection": "FLOOD:D,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1163.2,
+        "opex_mrub_per_year": 315.95,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 416.35,
+        "kcash": 1.317771799335338,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 242.60000000000002,
+        "surplus": 100.40000000000003,
+        "c0_growth_tolerance_pct": 1.4442916093535096,
+        "stress_budget_headroom": 16.799999999999955,
+        "commercial_drop_break_even_pct": 41.38499587798847,
+        "anchor_drop_break_even_pct": 57.78417266187053,
+        "combined_split_shock_surplus": 18.70750000000004,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 80.075,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "D",
+            "c0_mrub": 363.8,
+            "opex_mrub_per_year": 97.2,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 98.275,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      }
+    },
+    {
+      "alpha": 0.15,
+      "global_winner": {
+        "selection": "AGRI:C,ENV:D,FLOOD:D,TRANS:C",
+        "c0": 1163.2,
+        "opex": 315.95,
+        "cash": 419.275,
+        "surplus": 103.32499999999999,
+        "vpub": 1239.0,
+        "kcash": 1.3270295932900775,
+        "public_core_lots": 2
+      },
+      "env_only": {
+        "selection": "FLOOD:A,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1156.4,
+        "opex_mrub_per_year": 313.25,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 416.2375,
+        "kcash": 1.3287709497206703,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 242.4875,
+        "surplus": 102.98750000000001,
+        "c0_growth_tolerance_pct": 2.0408163265306145,
+        "stress_budget_headroom": 23.59999999999991,
+        "commercial_drop_break_even_pct": 42.47126140522708,
+        "anchor_drop_break_even_pct": 59.27338129496404,
+        "combined_split_shock_surplus": 21.452499999999986,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 81.9875,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "A",
+            "c0_mrub": 357.0,
+            "opex_mrub_per_year": 94.5,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 96.25,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      },
+      "both_public": {
+        "selection": "FLOOD:D,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1163.2,
+        "opex_mrub_per_year": 315.95,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 419.275,
+        "kcash": 1.3270295932900775,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 245.52499999999998,
+        "surplus": 103.32499999999999,
+        "c0_growth_tolerance_pct": 1.4442916093535096,
+        "stress_budget_headroom": 16.799999999999955,
+        "commercial_drop_break_even_pct": 42.083290907239586,
+        "anchor_drop_break_even_pct": 59.46762589928056,
+        "combined_split_shock_surplus": 21.047499999999957,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 81.9875,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "D",
+            "c0_mrub": 363.8,
+            "opex_mrub_per_year": 97.2,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 99.2875,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      }
+    },
+    {
+      "alpha": 0.2,
+      "global_winner": {
+        "selection": "AGRI:C,ENV:D,FLOOD:D,TRANS:C",
+        "c0": 1163.2,
+        "opex": 315.95,
+        "cash": 422.2,
+        "surplus": 106.25,
+        "vpub": 1239.0,
+        "kcash": 1.3362873872448173,
+        "public_core_lots": 2
+      },
+      "env_only": {
+        "selection": "FLOOD:A,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1156.4,
+        "opex_mrub_per_year": 313.25,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 418.15,
+        "kcash": 1.33487629688747,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 244.39999999999998,
+        "surplus": 104.89999999999998,
+        "c0_growth_tolerance_pct": 2.0408163265306145,
+        "stress_budget_headroom": 23.59999999999991,
+        "commercial_drop_break_even_pct": 42.92144026186579,
+        "anchor_drop_break_even_pct": 60.37410071942445,
+        "combined_split_shock_surplus": 22.98249999999996,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 83.9,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "A",
+            "c0_mrub": 357.0,
+            "opex_mrub_per_year": 94.5,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 96.25,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      },
+      "both_public": {
+        "selection": "FLOOD:D,AGRI:C,TRANS:C,ENV:D",
+        "selected_lots": 4,
+        "c0_mrub": 1163.2,
+        "opex_mrub_per_year": 315.95,
+        "vpub_mrub_per_year": 1239.0,
+        "cash_mrub_per_year": 422.2,
+        "kcash": 1.3362873872448173,
+        "t_rep": 0.715,
+        "readiness_1_5": 4.45,
+        "resilience_1_5": 4.225,
+        "scale_1_5": 4.6,
+        "territorial_archetypes": 4,
+        "capability_groups": 2,
+        "capability_set": [
+          "EO",
+          "PNT/InSAR"
+        ],
+        "public_core_lots": 2,
+        "anchor": 173.75,
+        "commercial": 248.45,
+        "surplus": 106.25,
+        "c0_growth_tolerance_pct": 1.4442916093535096,
+        "stress_budget_headroom": 16.799999999999955,
+        "commercial_drop_break_even_pct": 42.76514389213121,
+        "anchor_drop_break_even_pct": 61.15107913669065,
+        "combined_split_shock_surplus": 23.38749999999999,
+        "checks": {
+          "BASE": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "STRESS": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true
+          ]
+        },
+        "lots": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C",
+            "c0_mrub": 254.79999999999998,
+            "opex_mrub_per_year": 71.25,
+            "vpub_mrub_per_year": 142.6,
+            "cash_mrub_per_year": 127.5,
+            "t_rep": 0.74,
+            "readiness_1_5": 4.6,
+            "resilience_1_5": 4.1,
+            "scale_1_5": 4.8,
+            "territorial_archetype": "South",
+            "federal": false,
+            "capability_groups": "EO;PNT/InSAR",
+            "public_core": false
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "D",
+            "c0_mrub": 299.6,
+            "opex_mrub_per_year": 81.0,
+            "vpub_mrub_per_year": 360.0,
+            "cash_mrub_per_year": 83.9,
+            "t_rep": 0.73,
+            "readiness_1_5": 4.4,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "VolgaCaspian",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "D",
+            "c0_mrub": 363.8,
+            "opex_mrub_per_year": 97.2,
+            "vpub_mrub_per_year": 600.0,
+            "cash_mrub_per_year": 100.3,
+            "t_rep": 0.62,
+            "readiness_1_5": 4.0,
+            "resilience_1_5": 4.2,
+            "scale_1_5": 4.2,
+            "territorial_archetype": "FarEast",
+            "federal": false,
+            "capability_groups": "EO",
+            "public_core": true
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C",
+            "c0_mrub": 245.0,
+            "opex_mrub_per_year": 66.5,
+            "vpub_mrub_per_year": 136.4,
+            "cash_mrub_per_year": 110.5,
+            "t_rep": 0.77,
+            "readiness_1_5": 4.8,
+            "resilience_1_5": 4.4,
+            "scale_1_5": 4.7,
+            "territorial_archetype": "Central",
+            "federal": false,
+            "capability_groups": "PNT/InSAR;EO",
+            "public_core": false
+          }
+        ]
+      }
+    }
+  ],
+  "d_robust_two_percent_overrun": {
+    "assumptions": {
+      "alpha_interval": [
+        0,
+        0.2
+      ],
+      "c0_overrun": 0.02,
+      "other_inputs": "unchanged"
+    },
+    "maximin": [
+      {
+        "selection": "AGRI:C,ENV:A,FLOOD:A,TRANS:C",
+        "surplus_low": 99.5,
+        "surplus_high": 99.5,
+        "max_regret": 5.399999999999977
+      }
+    ],
+    "minimax_regret": [
+      {
+        "selection": "AGRI:C,ENV:D,FLOOD:A,TRANS:C",
+        "surplus_low": 97.25,
+        "surplus_high": 104.89999999999998,
+        "max_regret": 2.25
+      }
+    ],
+    "nominal_winner": {
+      "selection": "AGRI:C,ENV:D,FLOOD:A,TRANS:C",
+      "c0": 1156.4,
+      "opex": 313.25,
+      "cash": 418.15,
+      "surplus": 104.89999999999998,
+      "vpub": 1239.0,
+      "kcash": 1.33487629688747,
+      "public_core_lots": 2
+    }
+  },
+  "d_thresholds": {
+    "env_increment_operating_alpha": 0.058823529411764705,
+    "env_total_operating_alpha": 0.12418300653594772,
+    "env_beats_abc_max_alpha": 0.11764705882352941,
+    "flood_increment_operating_alpha": 0.13333333333333333,
+    "env_increment_capex": 5.6000000000000005,
+    "env_increment_opex": 2.25,
+    "env_increment_commercial_at_alpha_point2": 7.650000000000001
+  },
+  "fixed": {
+    "team_config": {
+      "selection": "FIRE:A,AGRI:A,TRANS:B,ENV:A",
+      "selected_lots": 4,
+      "c0_mrub": 1153.0,
+      "opex_mrub_per_year": 316.75,
+      "vpub_mrub_per_year": 1330.4,
+      "cash_mrub_per_year": 322.5,
+      "kcash": 1.0181531176006313,
+      "t_rep": 0.73,
+      "readiness_1_5": 4.525,
+      "resilience_1_5": 4.050000000000001,
+      "scale_1_5": 4.675,
+      "territorial_archetypes": 4,
+      "capability_groups": 2,
+      "capability_set": [
+        "EO",
+        "PNT/InSAR"
+      ],
+      "public_core_lots": 3,
+      "anchor": 196.0,
+      "commercial": 126.5,
+      "surplus": 5.75,
+      "c0_growth_tolerance_pct": 2.341717259323506,
+      "stress_budget_headroom": 27.0,
+      "commercial_drop_break_even_pct": 4.545454545454546,
+      "anchor_drop_break_even_pct": 2.933673469387755,
+      "combined_split_shock_surplus": -54.98750000000001,
+      "checks": {
+        "BASE": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "STRESS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "lots": [
+        {
+          "lot_id": "AGRI",
+          "mode_id": "A",
+          "c0_mrub": 273.0,
+          "opex_mrub_per_year": 78.75,
+          "vpub_mrub_per_year": 230.0,
+          "cash_mrub_per_year": 60.0,
+          "t_rep": 0.74,
+          "readiness_1_5": 4.6,
+          "resilience_1_5": 4.1,
+          "scale_1_5": 4.8,
+          "territorial_archetype": "South",
+          "federal": false,
+          "capability_groups": "EO;PNT/InSAR",
+          "public_core": true
+        },
+        {
+          "lot_id": "ENV",
+          "mode_id": "A",
+          "c0_mrub": 294.0,
+          "opex_mrub_per_year": 78.75,
+          "vpub_mrub_per_year": 360.0,
+          "cash_mrub_per_year": 76.25,
+          "t_rep": 0.73,
+          "readiness_1_5": 4.4,
+          "resilience_1_5": 4.2,
+          "scale_1_5": 4.7,
+          "territorial_archetype": "VolgaCaspian",
+          "federal": false,
+          "capability_groups": "EO",
+          "public_core": true
+        },
+        {
+          "lot_id": "FIRE",
+          "mode_id": "A",
+          "c0_mrub": 336.0,
+          "opex_mrub_per_year": 89.25,
+          "vpub_mrub_per_year": 560.0,
+          "cash_mrub_per_year": 83.75,
+          "t_rep": 0.68,
+          "readiness_1_5": 4.3,
+          "resilience_1_5": 3.5,
+          "scale_1_5": 4.5,
+          "territorial_archetype": "Siberian",
+          "federal": false,
+          "capability_groups": "EO",
+          "public_core": true
+        },
+        {
+          "lot_id": "TRANS",
+          "mode_id": "B",
+          "c0_mrub": 250.0,
+          "opex_mrub_per_year": 70.0,
+          "vpub_mrub_per_year": 180.39999999999998,
+          "cash_mrub_per_year": 102.5,
+          "t_rep": 0.77,
+          "readiness_1_5": 4.8,
+          "resilience_1_5": 4.4,
+          "scale_1_5": 4.7,
+          "territorial_archetype": "Central",
+          "federal": false,
+          "capability_groups": "PNT/InSAR;EO",
+          "public_core": false
+        }
+      ]
+    },
+    "competitor": {
+      "selection": "FIRE:A,AGRI:C,TRANS:B,ENV:A",
+      "selected_lots": 4,
+      "c0_mrub": 1134.8,
+      "opex_mrub_per_year": 309.25,
+      "vpub_mrub_per_year": 1243.0,
+      "cash_mrub_per_year": 390.0,
+      "kcash": 1.2611156022635408,
+      "t_rep": 0.73,
+      "readiness_1_5": 4.525,
+      "resilience_1_5": 4.050000000000001,
+      "scale_1_5": 4.675,
+      "territorial_archetypes": 4,
+      "capability_groups": 2,
+      "capability_set": [
+        "EO",
+        "PNT/InSAR"
+      ],
+      "public_core_lots": 2,
+      "anchor": 179.5,
+      "commercial": 210.5,
+      "surplus": 80.75,
+      "c0_growth_tolerance_pct": 3.983080719069454,
+      "stress_budget_headroom": 45.200000000000045,
+      "commercial_drop_break_even_pct": 38.36104513064133,
+      "anchor_drop_break_even_pct": 44.986072423398326,
+      "combined_split_shock_surplus": 5.237500000000011,
+      "checks": {
+        "BASE": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "STRESS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "lots": [
+        {
+          "lot_id": "AGRI",
+          "mode_id": "C",
+          "c0_mrub": 254.79999999999998,
+          "opex_mrub_per_year": 71.25,
+          "vpub_mrub_per_year": 142.6,
+          "cash_mrub_per_year": 127.5,
+          "t_rep": 0.74,
+          "readiness_1_5": 4.6,
+          "resilience_1_5": 4.1,
+          "scale_1_5": 4.8,
+          "territorial_archetype": "South",
+          "federal": false,
+          "capability_groups": "EO;PNT/InSAR",
+          "public_core": false
+        },
+        {
+          "lot_id": "ENV",
+          "mode_id": "A",
+          "c0_mrub": 294.0,
+          "opex_mrub_per_year": 78.75,
+          "vpub_mrub_per_year": 360.0,
+          "cash_mrub_per_year": 76.25,
+          "t_rep": 0.73,
+          "readiness_1_5": 4.4,
+          "resilience_1_5": 4.2,
+          "scale_1_5": 4.7,
+          "territorial_archetype": "VolgaCaspian",
+          "federal": false,
+          "capability_groups": "EO",
+          "public_core": true
+        },
+        {
+          "lot_id": "FIRE",
+          "mode_id": "A",
+          "c0_mrub": 336.0,
+          "opex_mrub_per_year": 89.25,
+          "vpub_mrub_per_year": 560.0,
+          "cash_mrub_per_year": 83.75,
+          "t_rep": 0.68,
+          "readiness_1_5": 4.3,
+          "resilience_1_5": 3.5,
+          "scale_1_5": 4.5,
+          "territorial_archetype": "Siberian",
+          "federal": false,
+          "capability_groups": "EO",
+          "public_core": true
+        },
+        {
+          "lot_id": "TRANS",
+          "mode_id": "B",
+          "c0_mrub": 250.0,
+          "opex_mrub_per_year": 70.0,
+          "vpub_mrub_per_year": 180.39999999999998,
+          "cash_mrub_per_year": 102.5,
+          "t_rep": 0.77,
+          "readiness_1_5": 4.8,
+          "resilience_1_5": 4.4,
+          "scale_1_5": 4.7,
+          "territorial_archetype": "Central",
+          "federal": false,
+          "capability_groups": "PNT/InSAR;EO",
+          "public_core": false
+        }
+      ]
+    },
+    "financial_max": {
+      "selection": "FLOOD:A,AGRI:C,INFRA:C,TRANS:A",
+      "selected_lots": 4,
+      "c0_mrub": 1178.1,
+      "opex_mrub_per_year": 315.25,
+      "vpub_mrub_per_year": 1148.6,
+      "cash_mrub_per_year": 417.0,
+      "kcash": 1.3227597145122918,
+      "t_rep": 0.71,
+      "readiness_1_5": 4.375,
+      "resilience_1_5": 4.175000000000001,
+      "scale_1_5": 4.575,
+      "territorial_archetypes": 4,
+      "capability_groups": 2,
+      "capability_set": [
+        "EO",
+        "PNT/InSAR"
+      ],
+      "public_core_lots": 2,
+      "anchor": 168.25,
+      "commercial": 248.75,
+      "surplus": 101.75,
+      "c0_growth_tolerance_pct": 0.16127663186487062,
+      "stress_budget_headroom": 1.900000000000091,
+      "commercial_drop_break_even_pct": 40.904522613065325,
+      "anchor_drop_break_even_pct": 60.475482912332836,
+      "combined_split_shock_surplus": 19.412500000000023,
+      "checks": {
+        "BASE": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "STRESS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "lots": [
+        {
+          "lot_id": "AGRI",
+          "mode_id": "C",
+          "c0_mrub": 254.79999999999998,
+          "opex_mrub_per_year": 71.25,
+          "vpub_mrub_per_year": 142.6,
+          "cash_mrub_per_year": 127.5,
+          "t_rep": 0.74,
+          "readiness_1_5": 4.6,
+          "resilience_1_5": 4.1,
+          "scale_1_5": 4.8,
+          "territorial_archetype": "South",
+          "federal": false,
+          "capability_groups": "EO;PNT/InSAR",
+          "public_core": false
+        },
+        {
+          "lot_id": "FLOOD",
+          "mode_id": "A",
+          "c0_mrub": 357.0,
+          "opex_mrub_per_year": 94.5,
+          "vpub_mrub_per_year": 600.0,
+          "cash_mrub_per_year": 96.25,
+          "t_rep": 0.62,
+          "readiness_1_5": 4.0,
+          "resilience_1_5": 4.2,
+          "scale_1_5": 4.2,
+          "territorial_archetype": "FarEast",
+          "federal": false,
+          "capability_groups": "EO",
+          "public_core": true
+        },
+        {
+          "lot_id": "INFRA",
+          "mode_id": "C",
+          "c0_mrub": 303.8,
+          "opex_mrub_per_year": 76.0,
+          "vpub_mrub_per_year": 186.0,
+          "cash_mrub_per_year": 124.5,
+          "t_rep": 0.71,
+          "readiness_1_5": 4.1,
+          "resilience_1_5": 4.0,
+          "scale_1_5": 4.6,
+          "territorial_archetype": "UralVolga",
+          "federal": false,
+          "capability_groups": "PNT/InSAR",
+          "public_core": false
+        },
+        {
+          "lot_id": "TRANS",
+          "mode_id": "A",
+          "c0_mrub": 262.5,
+          "opex_mrub_per_year": 73.5,
+          "vpub_mrub_per_year": 220.0,
+          "cash_mrub_per_year": 68.75,
+          "t_rep": 0.77,
+          "readiness_1_5": 4.8,
+          "resilience_1_5": 4.4,
+          "scale_1_5": 4.7,
+          "territorial_archetype": "Central",
+          "federal": false,
+          "capability_groups": "PNT/InSAR;EO",
+          "public_core": true
+        }
+      ]
+    },
+    "compromise": {
+      "selection": "FLOOD:A,AGRI:C,TRANS:C,ENV:A",
+      "selected_lots": 4,
+      "c0_mrub": 1150.8,
+      "opex_mrub_per_year": 311.0,
+      "vpub_mrub_per_year": 1239.0,
+      "cash_mrub_per_year": 410.5,
+      "kcash": 1.319935691318328,
+      "t_rep": 0.715,
+      "readiness_1_5": 4.45,
+      "resilience_1_5": 4.225,
+      "scale_1_5": 4.6,
+      "territorial_archetypes": 4,
+      "capability_groups": 2,
+      "capability_set": [
+        "EO",
+        "PNT/InSAR"
+      ],
+      "public_core_lots": 2,
+      "anchor": 173.75,
+      "commercial": 236.75,
+      "surplus": 99.5,
+      "c0_growth_tolerance_pct": 2.537365311087947,
+      "stress_budget_headroom": 29.200000000000045,
+      "commercial_drop_break_even_pct": 42.02745512143611,
+      "anchor_drop_break_even_pct": 57.26618705035971,
+      "combined_split_shock_surplus": 19.224999999999966,
+      "checks": {
+        "BASE": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "STRESS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "lots": [
+        {
+          "lot_id": "AGRI",
+          "mode_id": "C",
+          "c0_mrub": 254.79999999999998,
+          "opex_mrub_per_year": 71.25,
+          "vpub_mrub_per_year": 142.6,
+          "cash_mrub_per_year": 127.5,
+          "t_rep": 0.74,
+          "readiness_1_5": 4.6,
+          "resilience_1_5": 4.1,
+          "scale_1_5": 4.8,
+          "territorial_archetype": "South",
+          "federal": false,
+          "capability_groups": "EO;PNT/InSAR",
+          "public_core": false
+        },
+        {
+          "lot_id": "ENV",
+          "mode_id": "A",
+          "c0_mrub": 294.0,
+          "opex_mrub_per_year": 78.75,
+          "vpub_mrub_per_year": 360.0,
+          "cash_mrub_per_year": 76.25,
+          "t_rep": 0.73,
+          "readiness_1_5": 4.4,
+          "resilience_1_5": 4.2,
+          "scale_1_5": 4.7,
+          "territorial_archetype": "VolgaCaspian",
+          "federal": false,
+          "capability_groups": "EO",
+          "public_core": true
+        },
+        {
+          "lot_id": "FLOOD",
+          "mode_id": "A",
+          "c0_mrub": 357.0,
+          "opex_mrub_per_year": 94.5,
+          "vpub_mrub_per_year": 600.0,
+          "cash_mrub_per_year": 96.25,
+          "t_rep": 0.62,
+          "readiness_1_5": 4.0,
+          "resilience_1_5": 4.2,
+          "scale_1_5": 4.2,
+          "territorial_archetype": "FarEast",
+          "federal": false,
+          "capability_groups": "EO",
+          "public_core": true
+        },
+        {
+          "lot_id": "TRANS",
+          "mode_id": "C",
+          "c0_mrub": 245.0,
+          "opex_mrub_per_year": 66.5,
+          "vpub_mrub_per_year": 136.4,
+          "cash_mrub_per_year": 110.5,
+          "t_rep": 0.77,
+          "readiness_1_5": 4.8,
+          "resilience_1_5": 4.4,
+          "scale_1_5": 4.7,
+          "territorial_archetype": "Central",
+          "federal": false,
+          "capability_groups": "PNT/InSAR;EO",
+          "public_core": false
+        }
+      ]
+    },
+    "fire_fallback": {
+      "selection": "FIRE:A,AGRI:C,TRANS:C,ENV:A",
+      "selected_lots": 4,
+      "c0_mrub": 1129.8,
+      "opex_mrub_per_year": 305.75,
+      "vpub_mrub_per_year": 1199.0,
+      "cash_mrub_per_year": 398.0,
+      "kcash": 1.3017170891251022,
+      "t_rep": 0.73,
+      "readiness_1_5": 4.525,
+      "resilience_1_5": 4.050000000000001,
+      "scale_1_5": 4.675,
+      "territorial_archetypes": 4,
+      "capability_groups": 2,
+      "capability_set": [
+        "EO",
+        "PNT/InSAR"
+      ],
+      "public_core_lots": 2,
+      "anchor": 163.75,
+      "commercial": 234.25,
+      "surplus": 92.25,
+      "c0_growth_tolerance_pct": 4.443264294565408,
+      "stress_budget_headroom": 50.200000000000045,
+      "commercial_drop_break_even_pct": 39.38100320170758,
+      "anchor_drop_break_even_pct": 56.33587786259542,
+      "combined_split_shock_surplus": 13.737499999999955,
+      "checks": {
+        "BASE": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "STRESS": [
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "lots": [
+        {
+          "lot_id": "AGRI",
+          "mode_id": "C",
+          "c0_mrub": 254.79999999999998,
+          "opex_mrub_per_year": 71.25,
+          "vpub_mrub_per_year": 142.6,
+          "cash_mrub_per_year": 127.5,
+          "t_rep": 0.74,
+          "readiness_1_5": 4.6,
+          "resilience_1_5": 4.1,
+          "scale_1_5": 4.8,
+          "territorial_archetype": "South",
+          "federal": false,
+          "capability_groups": "EO;PNT/InSAR",
+          "public_core": false
+        },
+        {
+          "lot_id": "ENV",
+          "mode_id": "A",
+          "c0_mrub": 294.0,
+          "opex_mrub_per_year": 78.75,
+          "vpub_mrub_per_year": 360.0,
+          "cash_mrub_per_year": 76.25,
+          "t_rep": 0.73,
+          "readiness_1_5": 4.4,
+          "resilience_1_5": 4.2,
+          "scale_1_5": 4.7,
+          "territorial_archetype": "VolgaCaspian",
+          "federal": false,
+          "capability_groups": "EO",
+          "public_core": true
+        },
+        {
+          "lot_id": "FIRE",
+          "mode_id": "A",
+          "c0_mrub": 336.0,
+          "opex_mrub_per_year": 89.25,
+          "vpub_mrub_per_year": 560.0,
+          "cash_mrub_per_year": 83.75,
+          "t_rep": 0.68,
+          "readiness_1_5": 4.3,
+          "resilience_1_5": 3.5,
+          "scale_1_5": 4.5,
+          "territorial_archetype": "Siberian",
+          "federal": false,
+          "capability_groups": "EO",
+          "public_core": true
+        },
+        {
+          "lot_id": "TRANS",
+          "mode_id": "C",
+          "c0_mrub": 245.0,
+          "opex_mrub_per_year": 66.5,
+          "vpub_mrub_per_year": 136.4,
+          "cash_mrub_per_year": 110.5,
+          "t_rep": 0.77,
+          "readiness_1_5": 4.8,
+          "resilience_1_5": 4.4,
+          "scale_1_5": 4.7,
+          "territorial_archetype": "Central",
+          "federal": false,
+          "capability_groups": "PNT/InSAR;EO",
+          "public_core": false
+        }
+      ]
+    }
+  },
+  "our_mcda": [
+    {
+      "scope": null,
+      "outcome": {
+        "method_id": "weighted_mcda_v1",
+        "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+        "selection": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C"
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "FIRE",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C"
+          }
+        ],
+        "c0_mrub": 1129.8,
+        "vpub_mrub_per_year": 1199.0,
+        "annual_surplus_mrub": 92.25,
+        "kcash": 1.3017170891251022,
+        "score": 0.7725968624381419,
+        "components": [
+          {
+            "key": "vpub",
+            "title": "Общественная ценность",
+            "direction": "max",
+            "raw": 1199.0,
+            "minimum": 1001.4000000000001,
+            "maximum": 1370.4,
+            "normalized": 0.5355013550135499,
+            "weight": 0.125,
+            "contribution": 0.06693766937669374
+          },
+          {
+            "key": "c0",
+            "title": "Затраты на запуск",
+            "direction": "min",
+            "raw": 1129.8,
+            "minimum": 1123.5,
+            "maximum": 1179.5,
+            "normalized": 0.8875000000000008,
+            "weight": 0.125,
+            "contribution": 0.1109375000000001
+          },
+          {
+            "key": "opex",
+            "title": "Ежегодные расходы",
+            "direction": "min",
+            "raw": 305.75,
+            "minimum": 304.25,
+            "maximum": 330.75,
+            "normalized": 0.9433962264150944,
+            "weight": 0.125,
+            "contribution": 0.1179245283018868
+          },
+          {
+            "key": "kcash",
+            "title": "Покрытие расходов поступлениями",
+            "direction": "max",
+            "raw": 1.3017170891251022,
+            "minimum": 0.8724939855653568,
+            "maximum": 1.3227597145122918,
+            "normalized": 0.9532662069653772,
+            "weight": 0.125,
+            "contribution": 0.11915827587067215
+          },
+          {
+            "key": "t_rep",
+            "title": "Индекс t_rep",
+            "direction": "max",
+            "raw": 0.73,
+            "minimum": 0.7075,
+            "maximum": 0.7374999999999999,
+            "normalized": 0.7500000000000009,
+            "weight": 0.125,
+            "contribution": 0.09375000000000011
+          },
+          {
+            "key": "readiness",
+            "title": "Готовность",
+            "direction": "max",
+            "raw": 4.525,
+            "minimum": 4.324999999999999,
+            "maximum": 4.525,
+            "normalized": 1.0,
+            "weight": 0.125,
+            "contribution": 0.125
+          },
+          {
+            "key": "resilience",
+            "title": "Индекс устойчивости из данных кейса",
+            "direction": "max",
+            "raw": 4.050000000000001,
+            "minimum": 3.775,
+            "maximum": 4.225,
+            "normalized": 0.6111111111111133,
+            "weight": 0.125,
+            "contribution": 0.07638888888888916
+          },
+          {
+            "key": "scale",
+            "title": "Тиражируемость",
+            "direction": "max",
+            "raw": 4.675,
+            "minimum": 4.575,
+            "maximum": 4.775,
+            "normalized": 0.4999999999999978,
+            "weight": 0.125,
+            "contribution": 0.06249999999999972
+          }
+        ]
+      }
+    },
+    {
+      "scope": [
+        "FIRE",
+        "AGRI",
+        "TRANS",
+        "ENV"
+      ],
+      "outcome": {
+        "method_id": "weighted_mcda_v1",
+        "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+        "selection": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C"
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "FIRE",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C"
+          }
+        ],
+        "c0_mrub": 1129.8,
+        "vpub_mrub_per_year": 1199.0,
+        "annual_surplus_mrub": 92.25,
+        "kcash": 1.3017170891251022,
+        "score": 0.908389945652174,
+        "components": [
+          {
+            "key": "vpub",
+            "title": "Общественная ценность",
+            "direction": "max",
+            "raw": 1199.0,
+            "minimum": 1020.4,
+            "maximum": 1370.0,
+            "normalized": 0.5108695652173914,
+            "weight": 0.125,
+            "contribution": 0.06385869565217392
+          },
+          {
+            "key": "c0",
+            "title": "Затраты на запуск",
+            "direction": "min",
+            "raw": 1129.8,
+            "minimum": 1123.5,
+            "maximum": 1165.5,
+            "normalized": 0.8500000000000011,
+            "weight": 0.125,
+            "contribution": 0.10625000000000014
+          },
+          {
+            "key": "opex",
+            "title": "Ежегодные расходы",
+            "direction": "min",
+            "raw": 305.75,
+            "minimum": 304.25,
+            "maximum": 320.25,
+            "normalized": 0.90625,
+            "weight": 0.125,
+            "contribution": 0.11328125
+          },
+          {
+            "key": "kcash",
+            "title": "Покрытие расходов поступлениями",
+            "direction": "max",
+            "raw": 1.3017170891251022,
+            "minimum": 0.8724939855653568,
+            "maximum": 1.3017170891251022,
+            "normalized": 1.0,
+            "weight": 0.125,
+            "contribution": 0.125
+          },
+          {
+            "key": "t_rep",
+            "title": "Индекс t_rep",
+            "direction": "max",
+            "raw": 0.73,
+            "minimum": 0.73,
+            "maximum": 0.73,
+            "normalized": 1.0,
+            "weight": 0.125,
+            "contribution": 0.125
+          },
+          {
+            "key": "readiness",
+            "title": "Готовность",
+            "direction": "max",
+            "raw": 4.525,
+            "minimum": 4.525,
+            "maximum": 4.525,
+            "normalized": 1.0,
+            "weight": 0.125,
+            "contribution": 0.125
+          },
+          {
+            "key": "resilience",
+            "title": "Индекс устойчивости из данных кейса",
+            "direction": "max",
+            "raw": 4.050000000000001,
+            "minimum": 4.050000000000001,
+            "maximum": 4.050000000000001,
+            "normalized": 1.0,
+            "weight": 0.125,
+            "contribution": 0.125
+          },
+          {
+            "key": "scale",
+            "title": "Тиражируемость",
+            "direction": "max",
+            "raw": 4.675,
+            "minimum": 4.675,
+            "maximum": 4.675,
+            "normalized": 1.0,
+            "weight": 0.125,
+            "contribution": 0.125
+          }
+        ]
+      }
+    }
+  ]
+}

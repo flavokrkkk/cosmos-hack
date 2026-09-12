@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { useWorkspace } from '@entities/portfolio'
-import type { CaseCatalog, RankingMethod } from '@shared/api/contracts'
+import type { CaseCatalog } from '@shared/api/contracts'
 import { Button, Panel } from '@shared/ui'
 
 export function SearchSettings({ catalog }: { catalog: CaseCatalog }) {
@@ -15,19 +15,18 @@ export function SearchSettings({ catalog }: { catalog: CaseCatalog }) {
         <summary className="cursor-pointer font-semibold">Правило выбора и дополнительные условия</summary>
         <form className="mt-5 flex flex-col gap-5" onSubmit={(event) => {
           event.preventDefault()
-          if (Object.values(draft.weights).some((weight) => !Number.isFinite(weight) || weight < 0) || Object.values(draft.weights).reduce((a, b) => a + b, 0) <= 0) {
-            setError('Задайте неотрицательные веса; хотя бы один должен быть больше нуля.')
-            return
+          if (draft.cashLossLimit !== null && (!Number.isFinite(draft.cashLossLimit) || draft.cashLossLimit < 0)) {
+            setError('Δ должен быть конечным неотрицательным числом.'); return
           }
           if (draft.publicLotIds.length > 4) { setError('Общественными можно назначить не более четырёх лотов.'); return }
           apply(draft)
           setError('')
         }}>
-          <label className="flex flex-col gap-2 text-sm">Основной способ выбора
-            <select className="rounded-xl bg-white p-3" value={draft.methodId} onChange={(event) => setDraft({ ...draft, methodId: event.target.value as RankingMethod })}>
-              {catalog.methods.filter((method) => method.id !== 'pareto_lexicographic_v1').map((method) => <option key={method.id} value={method.id}>{method.title}</option>)}
-            </select>
+          <p className="font-semibold">Баланс критериев с денежным ограничением</p>
+          <label className="flex flex-col gap-2 text-sm">Допустимая потеря годового денежного остатка Δ, млн ₽/год
+            <input className="rounded-xl bg-white p-3" type="number" min="0" step="any" value={draft.cashLossLimit ?? ''} placeholder="Автоматически: минимум для достижения лучшего Q" onChange={(event) => setDraft({ ...draft, cashLossLimit: event.target.value === '' ? null : Number(event.target.value) })} />
           </label>
+          <p className="text-sm text-muted">Сначала ограничиваем потерю денег, затем улучшаем самую слабую из шести оценок. При равенстве выбираем больший денежный остаток. Допуск качества ε = 0. Пустой Δ вычисляется из доступных вариантов; это приоритет качества, а не независимый денежный лимит.</p>
           <p className="text-sm text-muted">Обязательные ограничения сохраняются. Поля ниже — ваши дополнительные требования, а не условия организаторов. Пустое поле не вводит нового ограничения.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="flex flex-col gap-2 text-sm">Лимит запуска, млн ₽
@@ -45,17 +44,9 @@ export function SearchSettings({ catalog }: { catalog: CaseCatalog }) {
               </label>
             ))}</div>
           </fieldset>
-          <fieldset>
-            <legend className="mb-3 text-sm">Веса дополнительного взвешенного метода — по умолчанию равные</legend>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{catalog.ranking_criteria.map((criterion) => (
-              <label key={criterion.key} className="flex flex-col justify-between gap-2 text-xs">{criterion.title}
-                <input type="number" className="w-full rounded-xl bg-white p-3" min="0" max="1000" step="any" value={draft.weights[criterion.key]} onChange={(event) => setDraft({ ...draft, weights: { ...draft.weights, [criterion.key]: Number(event.target.value) } })} />
-              </label>
-            ))}</div>
-          </fieldset>
           {error ? <p role="alert" className="text-sm text-fail">{error}</p> : null}
           <Button type="submit" className="self-start">Применить условия</Button>
-          <p className="text-xs text-muted">Оба метода пересчитываются на одинаковых условиях. В ручном подборе обязательные общественные лоты должны входить в выбранный состав. Налоги, срок проекта и ставка дисконтирования не заданы — NPV и чистую прибыль не рассчитываем.</p>
+          <p className="text-xs text-muted">В ручном подборе обязательные общественные лоты должны входить в выбранный состав. Налоги, срок проекта и ставка дисконтирования не заданы — NPV и чистую прибыль не рассчитываем.</p>
         </form>
       </details>
     </Panel>

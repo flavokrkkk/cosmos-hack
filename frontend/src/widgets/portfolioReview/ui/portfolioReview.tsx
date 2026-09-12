@@ -6,7 +6,7 @@ import {
   FinancialBreakdown, checkLabel, formatCompact, scenarioDependentCodes, useWorkspace,
 } from '@entities/portfolio'
 import { ExportButton } from '@features'
-import type { AccessMode, Calculation, CaseCatalog, Lot, Scenario } from '@shared/api/contracts'
+import type { AccessMode, Calculation, CaseCatalog, Lot, RecommendationResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Button, Panel, PanelHeader, PanelTitle, Segmented, Skeleton, Tag } from '@shared/ui'
@@ -15,6 +15,7 @@ import { describeComposition } from './describeComposition'
 
 type Props = {
   catalog: CaseCatalog
+  recommendation?: RecommendationResult
   calculation: Calculation | undefined
   /** Что именно открыто: портфель команды, опорная точка фронта или сохранённый вариант. */
   variantKind: 'team' | 'reference' | 'saved'
@@ -45,7 +46,7 @@ const SCENARIO_OPTIONS = SCENARIOS.map((scenario) => ({ value: scenario, label: 
  * раздельно — на карточке лота видно «исходное × коэффициент = после режима».
  */
 export function PortfolioReview({
-  catalog, calculation, variantKind, variantTitle, isDefault, reason, isLoading, isError, onRetry,
+  catalog, recommendation, calculation, variantKind, variantTitle, isDefault, reason, isLoading, isError, onRetry,
   onBackToDefault, onSave, onCompare, onEditManually, onActionsIntent,
 }: Props) {
   const scenario = useWorkspace((state) => state.scenario)
@@ -184,6 +185,10 @@ export function PortfolioReview({
               Изменить вручную
             </Button>
           ) : null}
+        </div>
+
+        <div className="-mt-3">
+          <ExportButton calculation={calculation} catalog={catalog} recommendation={recommendation} />
         </div>
       </div>
     </div>

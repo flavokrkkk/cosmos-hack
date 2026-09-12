@@ -7,29 +7,35 @@
  */
 
 export type Scenario = 'BASE' | 'STRESS'
-export type RankingMethod = 'cash_surplus_v1' | 'weighted_mcda_v1'
-export type RankingKey = 'vpub' | 'c0' | 'opex' | 'kcash' | 't_rep' | 'readiness' | 'resilience' | 'scale'
-export type RankingWeights = Record<RankingKey, number>
+export type RankingMethod = 'hybrid_maximin_v1'
+export type RankingKey = 'vpub' | 'surplus' | 'c0' | 'readiness' | 'resilience' | 'scale'
 export type RankingCriterion = { key: RankingKey; title: string; direction: 'max' | 'min' }
 export type ScoreComponent = RankingCriterion & {
-  raw: number; minimum: number; maximum: number; normalized: number; weight: number; contribution: number
+  raw: number; minimum: number; maximum: number; normalized: number; bottleneck: boolean
 }
 export type MethodOutcome = {
   method_id: RankingMethod; selection_id: string; selection: SelectionItem[]
   c0_mrub: number; vpub_mrub_per_year: number; annual_surplus_mrub: number; kcash: number
-  score: number | null; components: ScoreComponent[]
+  q: number; q_exact: string; components: ScoreComponent[]
 }
-export type SensitivityCase = {
+type SelectionStages = {
+  s_max_mrub: number | null; cash_floor_mrub: number | null; cash_eligible_count: number
+  q_max: number | null; effective_delta_mrub: number | null
+}
+export type SensitivityCase = SelectionStages & {
   id: string; title: string; origin: 'допущение'; feasible_count: number
   budget_cap_mrub: number; vpub_floor_mrub_per_year: number; required_public_lot_ids: string[]
-  cash_multiplier: number; opex_multiplier: number; weights: RankingWeights
-  outcomes: Record<RankingMethod, {
+  cash_multiplier: number; opex_multiplier: number
+  outcome: {
     winner: MethodOutcome | null; winner_changed: boolean; original_still_feasible: boolean
     original_adjusted_surplus_mrub: number | null
-  }>
+  }
 }
-export type DecisionAnalysis = {
-  normalized_weights: RankingWeights; methods: MethodOutcome[]; sensitivity: SensitivityCase[]
+export type DecisionAnalysis = SelectionStages & {
+  winner: MethodOutcome | null; sensitivity: SensitivityCase[]
+  cash_loss_limit_mrub: number | null; quality_epsilon: 0
+  reference_count: number; bounds: Record<RankingKey, [number, number]>
+  switching_curve: { delta_from_mrub: number; delta_to_exclusive_mrub: number | null; winner: MethodOutcome }[]
   pareto_objectives: string[]; normalization: string; caveat: string
 }
 export type FinancialSummary = {
@@ -232,8 +238,9 @@ export type RecommendRequest = {
   dataset_hash: string
   /** Искать только среди проходящих STRESS без пересмотра состава. */
   require_stress: boolean
-  method_id: 'pareto_lexicographic_v1' | RankingMethod
-  weights?: RankingWeights
+  method_id: RankingMethod
+  cash_loss_limit_mrub?: number | null
+  quality_epsilon?: 0
   budget_cap_mrub?: number | null
   vpub_floor_mrub_per_year?: number | null
   required_public_lot_ids?: string[]

@@ -13,28 +13,7 @@ from app.core.services.portfolio_ranking_service import CRITERIA, METHODS
 from app.infrastructure.errors.portfolio_errors import DatasetMismatch, InvalidPortfolio
 
 
-ENGINE_VERSION = "1.1.0"
-# ПРАВКА 12.09.2026: описание метода приведено в соответствие с тем, что
-# алгоритм действительно делает. Раньше он назывался «Общественный эффект
-# в заданных условиях» и объявлял восемь приоритетов, из которых срабатывал
-# только первый. Подробности и причина — в шапке recommendation_service.py.
-METHOD = MethodDefinition(
-    id="pareto_lexicographic_v1",
-    title="Парето без весов: фронт и его опорные точки",
-    priorities=[
-        "Полный перебор: C(8,4) × 3^4 = 5670 конфигураций",
-        "Отсев по девяти ограничениям выбранного сценария",
-        "Парето-доминирование: остаются только недоминируемые",
-        "Опорные точки фронта — крайние значения по каждому показателю",
-        "Выбор одной конфигурации — решение команды, не результат расчёта",
-    ],
-    description="Алгоритм сужает пространство объективно и на этом останавливается. "
-    "Внутри Парето-фронта оснований предпочесть один вариант другому нет: "
-    "при любых строго положительных весах оптимум лежит на фронте, поэтому фронт "
-    "содержит ответ для любой системы предпочтений. Опорные точки показывают границы "
-    "возможного. Портфель команды приходит из config/decision.json и помечен отдельно "
-    "от машинного результата.",
-)
+ENGINE_VERSION = "2.0.0"
 LOT_TITLES = {
     "FIRE": ("Мониторинг лесных пожаров", "Сибирь"),
     "FLOOD": ("Паводки и оползни", "Дальний Восток"),
@@ -76,7 +55,7 @@ def _catalog() -> CaseCatalog:
         case_id=config["case_id"], case_version=config["case_version"],
         dataset_hash=canonical.source_version(), engine_version=ENGINE_VERSION,
         lots=records, modes=[AccessMode(**row) for row in modes.to_dict("records")],
-        constraints=definitions, methods=[*METHODS, METHOD], ranking_criteria=CRITERIA,
+        constraints=definitions, methods=METHODS, ranking_criteria=CRITERIA,
         source_refs=[f"case/source/{name}" for name in canonical.SOURCE_FILES],
     )
 

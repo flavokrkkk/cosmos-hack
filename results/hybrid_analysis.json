@@ -1,0 +1,2041 @@
+{
+  "winner": {
+    "method_id": "hybrid_maximin_v1",
+    "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+    "selection": [
+      {
+        "lot_id": "AGRI",
+        "mode_id": "C"
+      },
+      {
+        "lot_id": "ENV",
+        "mode_id": "A"
+      },
+      {
+        "lot_id": "FIRE",
+        "mode_id": "A"
+      },
+      {
+        "lot_id": "TRANS",
+        "mode_id": "C"
+      }
+    ],
+    "c0_mrub": 1129.8,
+    "vpub_mrub_per_year": 1199.0,
+    "annual_surplus_mrub": 92.25,
+    "kcash": 1.3017170891251022,
+    "q": 0.5,
+    "q_exact": "1/2",
+    "components": [
+      {
+        "key": "vpub",
+        "title": "Общественная ценность",
+        "direction": "max",
+        "raw": 1199.0,
+        "minimum": 1001.4000000000001,
+        "maximum": 1370.4,
+        "normalized": 0.5355013550135501,
+        "bottleneck": false
+      },
+      {
+        "key": "surplus",
+        "title": "Годовой денежный остаток",
+        "direction": "max",
+        "raw": 92.25,
+        "minimum": -40.0,
+        "maximum": 101.75,
+        "normalized": 0.9329805996472663,
+        "bottleneck": false
+      },
+      {
+        "key": "c0",
+        "title": "Затраты на запуск",
+        "direction": "min",
+        "raw": 1129.8,
+        "minimum": 1123.5,
+        "maximum": 1179.5,
+        "normalized": 0.8875,
+        "bottleneck": false
+      },
+      {
+        "key": "readiness",
+        "title": "Готовность",
+        "direction": "max",
+        "raw": 4.525,
+        "minimum": 4.324999999999999,
+        "maximum": 4.525,
+        "normalized": 1.0,
+        "bottleneck": false
+      },
+      {
+        "key": "resilience",
+        "title": "Индекс устойчивости из данных кейса",
+        "direction": "max",
+        "raw": 4.050000000000001,
+        "minimum": 3.775,
+        "maximum": 4.225,
+        "normalized": 0.6111111111111112,
+        "bottleneck": false
+      },
+      {
+        "key": "scale",
+        "title": "Тиражируемость",
+        "direction": "max",
+        "raw": 4.675,
+        "minimum": 4.575,
+        "maximum": 4.775,
+        "normalized": 0.5,
+        "bottleneck": true
+      }
+    ]
+  },
+  "s_max_mrub": 101.75,
+  "cash_floor_mrub": 92.25,
+  "cash_eligible_count": 4,
+  "q_max": 0.5,
+  "effective_delta_mrub": 9.5,
+  "cash_loss_limit_mrub": null,
+  "quality_epsilon": 0,
+  "reference_count": 143,
+  "bounds": {
+    "vpub": [
+      1001.4000000000001,
+      1370.4
+    ],
+    "surplus": [
+      -40.0,
+      101.75
+    ],
+    "c0": [
+      1123.5,
+      1179.5
+    ],
+    "readiness": [
+      4.324999999999999,
+      4.525
+    ],
+    "resilience": [
+      3.775,
+      4.225
+    ],
+    "scale": [
+      4.575,
+      4.775
+    ]
+  },
+  "sensitivity": [
+    {
+      "id": "budget_1",
+      "title": "Лимит запуска ниже на 1%",
+      "origin": "допущение",
+      "budget_cap_mrub": 1168.2,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 99.5,
+      "cash_floor_mrub": 92.25,
+      "cash_eligible_count": 3,
+      "q_max": 0.5,
+      "effective_delta_mrub": 7.25,
+      "feasible_count": 109,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1129.8,
+          "vpub_mrub_per_year": 1199.0,
+          "annual_surplus_mrub": 92.25,
+          "kcash": 1.3017170891251022,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1199.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.5355013550135501,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 92.25,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.9329805996472663,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1129.8,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.8875,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": false,
+        "original_still_feasible": true,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "budget_5",
+      "title": "Лимит запуска ниже на 5%",
+      "origin": "допущение",
+      "budget_cap_mrub": 1121.0,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": null,
+      "cash_floor_mrub": null,
+      "cash_eligible_count": 0,
+      "q_max": null,
+      "effective_delta_mrub": null,
+      "feasible_count": 0,
+      "outcome": {
+        "winner": null,
+        "winner_changed": true,
+        "original_still_feasible": false,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "budget_10",
+      "title": "Лимит запуска ниже на 10%",
+      "origin": "допущение",
+      "budget_cap_mrub": 1062.0,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": null,
+      "cash_floor_mrub": null,
+      "cash_eligible_count": 0,
+      "q_max": null,
+      "effective_delta_mrub": null,
+      "feasible_count": 0,
+      "outcome": {
+        "winner": null,
+        "winner_changed": true,
+        "original_still_feasible": false,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "vpub_10",
+      "title": "Минимум общественной ценности выше на 10%",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1100.0,
+      "required_public_lot_ids": [],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 101.75,
+      "cash_floor_mrub": 92.25,
+      "cash_eligible_count": 4,
+      "q_max": 0.5,
+      "effective_delta_mrub": 9.5,
+      "feasible_count": 92,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1129.8,
+          "vpub_mrub_per_year": 1199.0,
+          "annual_surplus_mrub": 92.25,
+          "kcash": 1.3017170891251022,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1199.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.5355013550135501,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 92.25,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.9329805996472663,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1129.8,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.8875,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": false,
+        "original_still_feasible": true,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "vpub_20",
+      "title": "Минимум общественной ценности выше на 20%",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1200.0,
+      "required_public_lot_ids": [],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 99.5,
+      "cash_floor_mrub": 80.75,
+      "cash_eligible_count": 5,
+      "q_max": 0.5,
+      "effective_delta_mrub": 18.75,
+      "feasible_count": 46,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:B",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "B"
+            }
+          ],
+          "c0_mrub": 1134.8,
+          "vpub_mrub_per_year": 1243.0,
+          "annual_surplus_mrub": 80.75,
+          "kcash": 1.2611156022635408,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1243.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.6547425474254742,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 80.75,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.8518518518518519,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1134.8,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.7982142857142858,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": true,
+        "original_still_feasible": false,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "public_FIRE",
+      "title": "Сохранить FIRE в общественном ядре",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [
+        "FIRE"
+      ],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 94.5,
+      "cash_floor_mrub": 92.25,
+      "cash_eligible_count": 2,
+      "q_max": 0.5,
+      "effective_delta_mrub": 2.25,
+      "feasible_count": 38,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1129.8,
+          "vpub_mrub_per_year": 1199.0,
+          "annual_surplus_mrub": 92.25,
+          "kcash": 1.3017170891251022,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1199.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.5355013550135501,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 92.25,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.9329805996472663,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1129.8,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.8875,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": false,
+        "original_still_feasible": true,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "public_FLOOD",
+      "title": "Сохранить FLOOD в общественном ядре",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [
+        "FLOOD"
+      ],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 101.75,
+      "cash_floor_mrub": 99.5,
+      "cash_eligible_count": 2,
+      "q_max": 0.125,
+      "effective_delta_mrub": 2.25,
+      "feasible_count": 20,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:A,FLOOD:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "FLOOD",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1150.8,
+          "vpub_mrub_per_year": 1239.0,
+          "annual_surplus_mrub": 99.5,
+          "kcash": 1.319935691318328,
+          "q": 0.125,
+          "q_exact": "1/8",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1239.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.6439024390243903,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 99.5,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.9841269841269841,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1150.8,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.5125,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.45,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 0.625,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.225,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.6,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.125,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": true,
+        "original_still_feasible": false,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "public_AGRI",
+      "title": "Сохранить AGRI в общественном ядре",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [
+        "AGRI"
+      ],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 75.5,
+      "cash_floor_mrub": 48.25,
+      "cash_eligible_count": 12,
+      "q_max": 0.5,
+      "effective_delta_mrub": 27.25,
+      "feasible_count": 80,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:A,ENV:B,FIRE:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "B"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1134.0,
+          "vpub_mrub_per_year": 1221.6000000000001,
+          "annual_surplus_mrub": 48.25,
+          "kcash": 1.1558966074313408,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1221.6000000000001,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.5967479674796748,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 48.25,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.6225749559082893,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1134.0,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.8125,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": true,
+        "original_still_feasible": false,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "public_INFRA",
+      "title": "Сохранить INFRA в общественном ядре",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [
+        "INFRA"
+      ],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 92.0,
+      "cash_floor_mrub": 92.0,
+      "cash_eligible_count": 1,
+      "q_max": 0.325,
+      "effective_delta_mrub": 0.0,
+      "feasible_count": 28,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,FIRE:A,INFRA:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "INFRA",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1161.3,
+          "vpub_mrub_per_year": 1139.0,
+          "annual_surplus_mrub": 92.0,
+          "kcash": 1.2958199356913183,
+          "q": 0.325,
+          "q_exact": "13/40",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1139.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.37289972899728996,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 92.0,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.9312169312169312,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1161.3,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.325,
+              "bottleneck": true
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.449999999999999,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 0.625,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.0,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.5,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.65,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.375,
+              "bottleneck": false
+            }
+          ]
+        },
+        "winner_changed": true,
+        "original_still_feasible": false,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "public_ARCTIC",
+      "title": "Сохранить ARCTIC в общественном ядре",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [
+        "ARCTIC"
+      ],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": null,
+      "cash_floor_mrub": null,
+      "cash_eligible_count": 0,
+      "q_max": null,
+      "effective_delta_mrub": null,
+      "feasible_count": 0,
+      "outcome": {
+        "winner": null,
+        "winner_changed": true,
+        "original_still_feasible": false,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "public_TRANS",
+      "title": "Сохранить TRANS в общественном ядре",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [
+        "TRANS"
+      ],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 101.75,
+      "cash_floor_mrub": 74.5,
+      "cash_eligible_count": 9,
+      "q_max": 0.5,
+      "effective_delta_mrub": 27.25,
+      "feasible_count": 82,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:B,FIRE:A,TRANS:A",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "B"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "A"
+            }
+          ],
+          "c0_mrub": 1133.3,
+          "vpub_mrub_per_year": 1217.8,
+          "annual_surplus_mrub": 74.5,
+          "kcash": 1.2411003236245954,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1217.8,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.586449864498645,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 74.5,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.8077601410934744,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1133.3,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.825,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": true,
+        "original_still_feasible": false,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "public_ENV",
+      "title": "Сохранить ENV в общественном ядре",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [
+        "ENV"
+      ],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 99.5,
+      "cash_floor_mrub": 92.25,
+      "cash_eligible_count": 2,
+      "q_max": 0.5,
+      "effective_delta_mrub": 7.25,
+      "feasible_count": 63,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1129.8,
+          "vpub_mrub_per_year": 1199.0,
+          "annual_surplus_mrub": 92.25,
+          "kcash": 1.3017170891251022,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1199.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.5355013550135501,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 92.25,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.9329805996472663,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1129.8,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.8875,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": false,
+        "original_still_feasible": true,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "public_SSA",
+      "title": "Сохранить SSA в общественном ядре",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [
+        "SSA"
+      ],
+      "cash_multiplier": 1.0,
+      "opex_multiplier": 1.0,
+      "s_max_mrub": 76.5,
+      "cash_floor_mrub": 53.25,
+      "cash_eligible_count": 3,
+      "q_max": 0.125,
+      "effective_delta_mrub": 23.25,
+      "feasible_count": 15,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:B,ENV:A,SSA:A,TRANS:B",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "B"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "SSA",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "B"
+            }
+          ],
+          "c0_mrub": 1150.5,
+          "vpub_mrub_per_year": 1069.0,
+          "annual_surplus_mrub": 53.25,
+          "kcash": 1.1646058732612055,
+          "q": 0.125,
+          "q_exact": "1/8",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1069.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.1831978319783198,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 53.25,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.6578483245149912,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1150.5,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.5178571428571429,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.35,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 0.125,
+              "bottleneck": true
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 3.95,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.3888888888888889,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.775,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 1.0,
+              "bottleneck": false
+            }
+          ]
+        },
+        "winner_changed": true,
+        "original_still_feasible": false,
+        "original_adjusted_surplus_mrub": 92.25
+      }
+    },
+    {
+      "id": "cash_drop",
+      "title": "Поступления ниже на 10%",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [],
+      "cash_multiplier": 0.9,
+      "opex_multiplier": 1,
+      "s_max_mrub": 60.05,
+      "cash_floor_mrub": 52.45,
+      "cash_eligible_count": 4,
+      "q_max": 0.5,
+      "effective_delta_mrub": 7.6,
+      "feasible_count": 143,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1129.8,
+          "vpub_mrub_per_year": 1199.0,
+          "annual_surplus_mrub": 52.44999999999999,
+          "kcash": 1.171545380212592,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1199.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.5355013550135501,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 52.44999999999999,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.6522045855379188,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1129.8,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.8875,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": false,
+        "original_still_feasible": true,
+        "original_adjusted_surplus_mrub": 52.44999999999999
+      }
+    },
+    {
+      "id": "opex_growth",
+      "title": "Расходы выше на 5%",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [],
+      "cash_multiplier": 1,
+      "opex_multiplier": 1.05,
+      "s_max_mrub": 85.9875,
+      "cash_floor_mrub": 76.9625,
+      "cash_eligible_count": 4,
+      "q_max": 0.5,
+      "effective_delta_mrub": 9.025,
+      "feasible_count": 143,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1129.8,
+          "vpub_mrub_per_year": 1199.0,
+          "annual_surplus_mrub": 76.96249999999998,
+          "kcash": 1.239730561071526,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1199.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.5355013550135501,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 76.96249999999998,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.8251322751322752,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1129.8,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.8875,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": false,
+        "original_still_feasible": true,
+        "original_adjusted_surplus_mrub": 76.96249999999998
+      }
+    },
+    {
+      "id": "combined",
+      "title": "Поступления −10%, расходы +5%",
+      "origin": "допущение",
+      "budget_cap_mrub": 1180,
+      "vpub_floor_mrub_per_year": 1000,
+      "required_public_lot_ids": [],
+      "cash_multiplier": 0.9,
+      "opex_multiplier": 1.05,
+      "s_max_mrub": 44.2875,
+      "cash_floor_mrub": 37.1625,
+      "cash_eligible_count": 4,
+      "q_max": 0.5,
+      "effective_delta_mrub": 7.125,
+      "feasible_count": 143,
+      "outcome": {
+        "winner": {
+          "method_id": "hybrid_maximin_v1",
+          "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+          "selection": [
+            {
+              "lot_id": "AGRI",
+              "mode_id": "C"
+            },
+            {
+              "lot_id": "ENV",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "FIRE",
+              "mode_id": "A"
+            },
+            {
+              "lot_id": "TRANS",
+              "mode_id": "C"
+            }
+          ],
+          "c0_mrub": 1129.8,
+          "vpub_mrub_per_year": 1199.0,
+          "annual_surplus_mrub": 37.162499999999966,
+          "kcash": 1.1157575049643733,
+          "q": 0.5,
+          "q_exact": "1/2",
+          "components": [
+            {
+              "key": "vpub",
+              "title": "Общественная ценность",
+              "direction": "max",
+              "raw": 1199.0,
+              "minimum": 1001.4000000000001,
+              "maximum": 1370.4,
+              "normalized": 0.5355013550135501,
+              "bottleneck": false
+            },
+            {
+              "key": "surplus",
+              "title": "Годовой денежный остаток",
+              "direction": "max",
+              "raw": 37.162499999999966,
+              "minimum": -40.0,
+              "maximum": 101.75,
+              "normalized": 0.5443562610229277,
+              "bottleneck": false
+            },
+            {
+              "key": "c0",
+              "title": "Затраты на запуск",
+              "direction": "min",
+              "raw": 1129.8,
+              "minimum": 1123.5,
+              "maximum": 1179.5,
+              "normalized": 0.8875,
+              "bottleneck": false
+            },
+            {
+              "key": "readiness",
+              "title": "Готовность",
+              "direction": "max",
+              "raw": 4.525,
+              "minimum": 4.324999999999999,
+              "maximum": 4.525,
+              "normalized": 1.0,
+              "bottleneck": false
+            },
+            {
+              "key": "resilience",
+              "title": "Индекс устойчивости из данных кейса",
+              "direction": "max",
+              "raw": 4.050000000000001,
+              "minimum": 3.775,
+              "maximum": 4.225,
+              "normalized": 0.6111111111111112,
+              "bottleneck": false
+            },
+            {
+              "key": "scale",
+              "title": "Тиражируемость",
+              "direction": "max",
+              "raw": 4.675,
+              "minimum": 4.575,
+              "maximum": 4.775,
+              "normalized": 0.5,
+              "bottleneck": true
+            }
+          ]
+        },
+        "winner_changed": false,
+        "original_still_feasible": true,
+        "original_adjusted_surplus_mrub": 37.162499999999966
+      }
+    }
+  ],
+  "switching_curve": [
+    {
+      "delta_from_mrub": 0.0,
+      "delta_to_exclusive_mrub": 2.25,
+      "winner": {
+        "method_id": "hybrid_maximin_v1",
+        "selection_id": "AGRI:C,FLOOD:A,INFRA:C,TRANS:A",
+        "selection": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C"
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "INFRA",
+            "mode_id": "C"
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "A"
+          }
+        ],
+        "c0_mrub": 1178.1,
+        "vpub_mrub_per_year": 1148.6,
+        "annual_surplus_mrub": 101.75,
+        "kcash": 1.3227597145122918,
+        "q": 0.0,
+        "q_exact": "0",
+        "components": [
+          {
+            "key": "vpub",
+            "title": "Общественная ценность",
+            "direction": "max",
+            "raw": 1148.6,
+            "minimum": 1001.4000000000001,
+            "maximum": 1370.4,
+            "normalized": 0.3989159891598916,
+            "bottleneck": false
+          },
+          {
+            "key": "surplus",
+            "title": "Годовой денежный остаток",
+            "direction": "max",
+            "raw": 101.75,
+            "minimum": -40.0,
+            "maximum": 101.75,
+            "normalized": 1.0,
+            "bottleneck": false
+          },
+          {
+            "key": "c0",
+            "title": "Затраты на запуск",
+            "direction": "min",
+            "raw": 1178.1,
+            "minimum": 1123.5,
+            "maximum": 1179.5,
+            "normalized": 0.025,
+            "bottleneck": false
+          },
+          {
+            "key": "readiness",
+            "title": "Готовность",
+            "direction": "max",
+            "raw": 4.375,
+            "minimum": 4.324999999999999,
+            "maximum": 4.525,
+            "normalized": 0.25,
+            "bottleneck": false
+          },
+          {
+            "key": "resilience",
+            "title": "Индекс устойчивости из данных кейса",
+            "direction": "max",
+            "raw": 4.175000000000001,
+            "minimum": 3.775,
+            "maximum": 4.225,
+            "normalized": 0.8888888888888888,
+            "bottleneck": false
+          },
+          {
+            "key": "scale",
+            "title": "Тиражируемость",
+            "direction": "max",
+            "raw": 4.575,
+            "minimum": 4.575,
+            "maximum": 4.775,
+            "normalized": 0.0,
+            "bottleneck": true
+          }
+        ]
+      }
+    },
+    {
+      "delta_from_mrub": 2.25,
+      "delta_to_exclusive_mrub": 7.25,
+      "winner": {
+        "method_id": "hybrid_maximin_v1",
+        "selection_id": "AGRI:C,ENV:A,FLOOD:A,TRANS:C",
+        "selection": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C"
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "FLOOD",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C"
+          }
+        ],
+        "c0_mrub": 1150.8,
+        "vpub_mrub_per_year": 1239.0,
+        "annual_surplus_mrub": 99.5,
+        "kcash": 1.319935691318328,
+        "q": 0.125,
+        "q_exact": "1/8",
+        "components": [
+          {
+            "key": "vpub",
+            "title": "Общественная ценность",
+            "direction": "max",
+            "raw": 1239.0,
+            "minimum": 1001.4000000000001,
+            "maximum": 1370.4,
+            "normalized": 0.6439024390243903,
+            "bottleneck": false
+          },
+          {
+            "key": "surplus",
+            "title": "Годовой денежный остаток",
+            "direction": "max",
+            "raw": 99.5,
+            "minimum": -40.0,
+            "maximum": 101.75,
+            "normalized": 0.9841269841269841,
+            "bottleneck": false
+          },
+          {
+            "key": "c0",
+            "title": "Затраты на запуск",
+            "direction": "min",
+            "raw": 1150.8,
+            "minimum": 1123.5,
+            "maximum": 1179.5,
+            "normalized": 0.5125,
+            "bottleneck": false
+          },
+          {
+            "key": "readiness",
+            "title": "Готовность",
+            "direction": "max",
+            "raw": 4.45,
+            "minimum": 4.324999999999999,
+            "maximum": 4.525,
+            "normalized": 0.625,
+            "bottleneck": false
+          },
+          {
+            "key": "resilience",
+            "title": "Индекс устойчивости из данных кейса",
+            "direction": "max",
+            "raw": 4.225,
+            "minimum": 3.775,
+            "maximum": 4.225,
+            "normalized": 1.0,
+            "bottleneck": false
+          },
+          {
+            "key": "scale",
+            "title": "Тиражируемость",
+            "direction": "max",
+            "raw": 4.6,
+            "minimum": 4.575,
+            "maximum": 4.775,
+            "normalized": 0.125,
+            "bottleneck": true
+          }
+        ]
+      }
+    },
+    {
+      "delta_from_mrub": 7.25,
+      "delta_to_exclusive_mrub": 9.5,
+      "winner": {
+        "method_id": "hybrid_maximin_v1",
+        "selection_id": "AGRI:C,FIRE:A,INFRA:C,TRANS:A",
+        "selection": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C"
+          },
+          {
+            "lot_id": "FIRE",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "INFRA",
+            "mode_id": "C"
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "A"
+          }
+        ],
+        "c0_mrub": 1157.1,
+        "vpub_mrub_per_year": 1108.6,
+        "annual_surplus_mrub": 94.5,
+        "kcash": 1.3048387096774194,
+        "q": 0.2905149051490515,
+        "q_exact": "536/1845",
+        "components": [
+          {
+            "key": "vpub",
+            "title": "Общественная ценность",
+            "direction": "max",
+            "raw": 1108.6,
+            "minimum": 1001.4000000000001,
+            "maximum": 1370.4,
+            "normalized": 0.2905149051490515,
+            "bottleneck": true
+          },
+          {
+            "key": "surplus",
+            "title": "Годовой денежный остаток",
+            "direction": "max",
+            "raw": 94.5,
+            "minimum": -40.0,
+            "maximum": 101.75,
+            "normalized": 0.9488536155202821,
+            "bottleneck": false
+          },
+          {
+            "key": "c0",
+            "title": "Затраты на запуск",
+            "direction": "min",
+            "raw": 1157.1,
+            "minimum": 1123.5,
+            "maximum": 1179.5,
+            "normalized": 0.4,
+            "bottleneck": false
+          },
+          {
+            "key": "readiness",
+            "title": "Готовность",
+            "direction": "max",
+            "raw": 4.449999999999999,
+            "minimum": 4.324999999999999,
+            "maximum": 4.525,
+            "normalized": 0.625,
+            "bottleneck": false
+          },
+          {
+            "key": "resilience",
+            "title": "Индекс устойчивости из данных кейса",
+            "direction": "max",
+            "raw": 4.0,
+            "minimum": 3.775,
+            "maximum": 4.225,
+            "normalized": 0.5,
+            "bottleneck": false
+          },
+          {
+            "key": "scale",
+            "title": "Тиражируемость",
+            "direction": "max",
+            "raw": 4.65,
+            "minimum": 4.575,
+            "maximum": 4.775,
+            "normalized": 0.375,
+            "bottleneck": false
+          }
+        ]
+      }
+    },
+    {
+      "delta_from_mrub": 9.5,
+      "delta_to_exclusive_mrub": null,
+      "winner": {
+        "method_id": "hybrid_maximin_v1",
+        "selection_id": "AGRI:C,ENV:A,FIRE:A,TRANS:C",
+        "selection": [
+          {
+            "lot_id": "AGRI",
+            "mode_id": "C"
+          },
+          {
+            "lot_id": "ENV",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "FIRE",
+            "mode_id": "A"
+          },
+          {
+            "lot_id": "TRANS",
+            "mode_id": "C"
+          }
+        ],
+        "c0_mrub": 1129.8,
+        "vpub_mrub_per_year": 1199.0,
+        "annual_surplus_mrub": 92.25,
+        "kcash": 1.3017170891251022,
+        "q": 0.5,
+        "q_exact": "1/2",
+        "components": [
+          {
+            "key": "vpub",
+            "title": "Общественная ценность",
+            "direction": "max",
+            "raw": 1199.0,
+            "minimum": 1001.4000000000001,
+            "maximum": 1370.4,
+            "normalized": 0.5355013550135501,
+            "bottleneck": false
+          },
+          {
+            "key": "surplus",
+            "title": "Годовой денежный остаток",
+            "direction": "max",
+            "raw": 92.25,
+            "minimum": -40.0,
+            "maximum": 101.75,
+            "normalized": 0.9329805996472663,
+            "bottleneck": false
+          },
+          {
+            "key": "c0",
+            "title": "Затраты на запуск",
+            "direction": "min",
+            "raw": 1129.8,
+            "minimum": 1123.5,
+            "maximum": 1179.5,
+            "normalized": 0.8875,
+            "bottleneck": false
+          },
+          {
+            "key": "readiness",
+            "title": "Готовность",
+            "direction": "max",
+            "raw": 4.525,
+            "minimum": 4.324999999999999,
+            "maximum": 4.525,
+            "normalized": 1.0,
+            "bottleneck": false
+          },
+          {
+            "key": "resilience",
+            "title": "Индекс устойчивости из данных кейса",
+            "direction": "max",
+            "raw": 4.050000000000001,
+            "minimum": 3.775,
+            "maximum": 4.225,
+            "normalized": 0.6111111111111112,
+            "bottleneck": false
+          },
+          {
+            "key": "scale",
+            "title": "Тиражируемость",
+            "direction": "max",
+            "raw": 4.675,
+            "minimum": 4.575,
+            "maximum": 4.775,
+            "normalized": 0.5,
+            "bottleneck": true
+          }
+        ]
+      }
+    }
+  ],
+  "pareto_objectives": [
+    "vpub",
+    "surplus",
+    "readiness",
+    "resilience",
+    "scale",
+    "c0"
+  ],
+  "normalization": "Min–max по всем официально допустимым портфелям выбранного сценария, до ограничения состава, дополнительных условий и Δ. Эти границы фиксированы для чувствительности. Постоянный критерий получает 1. Q — минимум шести оценок; ε = 0. При равенстве Q выбирается максимум S, затем сумма оценок, затем стабильный ID.",
+  "caveat": "Шкалы, Δ, дополнительные условия и шоки — допущения команды. Δ задаёт допустимую потерю денежного остатка, а не вероятность. Min–max усиливает небольшие различия индексов; равноправие шкал тоже является предпочтением. Шоки не заменяют официальный STRESS. S не учитывает возврат C0, налоги и стоимость капитала и не является чистой прибылью."
+}

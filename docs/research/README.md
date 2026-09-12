@@ -19,6 +19,12 @@ _База знаний Кейса 02 · [← индекс](../README.md)_
 | [ollama-model.md](ollama-model.md) | Локальная модель для объяснения готового расчёта | ✅ решение зафиксировано | `qwen3:4b-instruct`: русский язык, structured output, Apache-2.0; LLM не считает и имеет шаблонный fallback |
 | [sources.md](sources.md) | Ключевые первоисточники | ✅ | |
 | [github-repositories.md](github-repositories.md) | GitHub и GitVerse: репозитории нижегородского Кейса 02 | ✅ GitHub; ⚠️ GitVerse, на 12.09 | Найден `Mihail239239/Clodex_Cosmoton`: собственная модель и варианты D; GitVerse проверен частично из-за таймаутов |
+| [case-literature.md](case-literature.md) | Пять материалов организаторов и дополнительные первоисточники | Углублённый разбор, выводы согласованы 12.09 | Результат пользователя, закупки, права, спрос и непрерывность; статьи не дают коэффициенты D |
+| [access-mode-d.md](access-mode-d.md) | Собственный D и сравнение гипотез | Направление согласовано; числа условны | Публичный результат + платные дополнения; параметры и окончательный портфель не утверждены |
+| [portfolio-audit-results.json](portfolio-audit-results.json) | Результаты первоначальных экспериментов | Воспроизведены | Семь альтернативных D, чувствительность и исходные сравнения; не реальные сметы |
+| [portfolio-balance-results.json](portfolio-balance-results.json) | Новый поиск баланса и сроков платежей | Воспроизведены | ABBA, 88, 80,75, условный D и ликвидность; объяснение в [№21](../21-portfolio-balance-and-synergy.md) |
+
+| [portfolio-comparison.json](portfolio-comparison.json) | Единая сводка 24 конфигураций | Проверены арифметика, индексы и уникальность строк | 19 A/B/C и пять условных D; таблицы в [№21](../21-portfolio-balance-and-synergy.md) |
 
 ## Как пользоваться
 

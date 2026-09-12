@@ -1,7 +1,7 @@
 import { DownloadSimple } from '@phosphor-icons/react'
 
 import { snapshotFiles, useComparison } from '@entities/portfolio'
-import type { Calculation, CaseCatalog } from '@shared/api/contracts'
+import type { Calculation, CaseCatalog, RecommendationResult } from '@shared/api/contracts'
 import { downloadFile } from '@shared/lib'
 import { notifyInfo } from '@shared/lib/notify'
 import { Button, Tooltip } from '@shared/ui'
@@ -9,6 +9,7 @@ import { Button, Tooltip } from '@shared/ui'
 type Props = {
   calculation: Calculation | undefined
   catalog: CaseCatalog
+  recommendation?: RecommendationResult
   className?: string
 }
 
@@ -20,10 +21,10 @@ type Props = {
  * дословно, в полной точности. Если сравнение уже посчитано, добавляется
  * `comparison.csv`.
  */
-export function ExportButton({ calculation, catalog, className }: Props) {
+export function ExportButton({ calculation, catalog, recommendation, className }: Props) {
   const comparison = useComparison((state) => state.result)
   const ready = calculation?.status === 'complete' && calculation.metrics !== null
-  const files = ready ? snapshotFiles(calculation, catalog, comparison ?? undefined) : []
+  const files = ready ? snapshotFiles(calculation, catalog, comparison ?? undefined, recommendation) : []
 
   function download() {
     for (const file of files) downloadFile(file.name, file.content, file.mime)

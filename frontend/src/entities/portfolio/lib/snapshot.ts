@@ -1,4 +1,4 @@
-import type { Calculation, CaseCatalog, ComparisonResult, Scenario } from '@shared/api/contracts'
+import type { Calculation, CaseCatalog, ComparisonResult, RecommendationResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 
 import { DELTA_ROWS } from './compare'
@@ -93,6 +93,7 @@ export function decisionJson(
   calculation: Calculation,
   catalog: CaseCatalog,
   comparison?: ComparisonResult,
+  recommendation?: RecommendationResult,
 ): ExportFile {
   return {
     name: 'calculation_snapshot.json',
@@ -103,7 +104,11 @@ export function decisionJson(
       dataset_hash: calculation.dataset_hash,
       engine_version: calculation.engine_version,
       input_hash: calculation.input_hash,
-      method: catalog.methods[0] ?? null,
+      search_context: recommendation && [recommendation.recommended, ...recommendation.alternatives]
+        .some((variant) => variant?.calculation.input_hash === calculation.input_hash)
+        ? { request: recommendation.request, method: recommendation.method, analysis: recommendation.analysis,
+          is_recommended: recommendation.recommended?.calculation.input_hash === calculation.input_hash }
+        : null,
       source_refs: catalog.source_refs,
       exported_at: new Date().toISOString(),
       exported_by: 'frontend/dashboard',
@@ -151,9 +156,10 @@ export function snapshotFiles(
   calculation: Calculation,
   catalog: CaseCatalog,
   comparison?: ComparisonResult,
+  recommendation?: RecommendationResult,
 ): ExportFile[] {
   const files = [
-    decisionJson(calculation, catalog, comparison),
+    decisionJson(calculation, catalog, comparison, recommendation),
     metricsJson(calculation),
     detailCsv(calculation),
     ...SCENARIOS.map((scenario) => constraintsCsv(calculation, scenario)),

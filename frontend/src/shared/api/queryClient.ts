@@ -79,7 +79,7 @@ function createPersistOptions(): Omit<PersistQueryClientOptions, 'queryClient'> 
     return {
       persister: createSyncStoragePersister({ storage, key: 'cosmos-query-cache' }),
       maxAge: 24 * 60 * 60 * 1000,
-      buster: 'v4-evidence-explanations',
+      buster: 'v5-api-schema-2',
       dehydrateOptions: {
         shouldDehydrateQuery: (query) =>
           query.state.status === 'success' && query.meta?.persist !== false,

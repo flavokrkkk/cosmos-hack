@@ -56,8 +56,9 @@ function recommendRequest(params: RecommendParams, withExplanations: boolean): R
   return {
     dataset_hash: params.datasetHash as string,
     require_stress: params.requireStress,
-    method_id: settings.methodId,
-    weights: settings.weights,
+    method_id: 'hybrid_maximin_v1',
+    cash_loss_limit_mrub: settings.cashLossLimit,
+    quality_epsilon: 0,
     budget_cap_mrub: settings.budgetCap,
     vpub_floor_mrub_per_year: settings.vpubFloor,
     required_public_lot_ids: sortedLotIds(settings.publicLotIds),

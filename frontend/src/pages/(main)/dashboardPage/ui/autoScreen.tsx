@@ -55,8 +55,7 @@ export function AutoScreen({ catalog }: Props) {
   const [saveMounted, setSaveMounted] = useState(false)
   const [compareMounted, setCompareMounted] = useState(false)
 
-  const settings = useWorkspace((state) => state.searchSettings)
-  const method = catalog.methods.find((item) => item.id === settings.methodId)
+  const method = catalog.methods[0]
   const lotById = useMemo(() => new Map(catalog.lots.map((lot) => [lot.lot_id, lot])), [catalog.lots])
 
   const candidates = useMemo(
@@ -171,6 +170,7 @@ export function AutoScreen({ catalog }: Props) {
       {showPortfolio ? (
         <>
           <PortfolioReview
+            recommendation={result}
             catalog={catalog}
             calculation={active.calculation}
             variantKind={active.kind}

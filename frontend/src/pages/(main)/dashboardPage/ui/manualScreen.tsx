@@ -222,7 +222,7 @@ export function ManualScreen({ catalog }: Props) {
                   </PanelHeader>
                   {active.kind === 'reference' || active.kind === 'team' ? (
                     <p className="mb-3 text-[12.5px] text-muted">
-                      {active.kind === 'team' ? 'Портфель команды' : `Опорная точка: ${active.title}`} · сценарий {scenario}
+                      {active.kind === 'team' ? 'Рекомендация алгоритма' : `Опорная точка: ${active.title}`} · сценарий {scenario}
                     </p>
                   ) : null}
                   <MetricTiles metrics={active.calculation.metrics} tiles={METRIC_TILES_COMPACT} columns={2} />
@@ -265,7 +265,7 @@ export function ManualScreen({ catalog }: Props) {
                   </Button>
                 </div>
                 <div className="-mt-2">
-                  <ExportButton calculation={active.calculation} catalog={catalog} />
+                  <ExportButton calculation={active.calculation} catalog={catalog} recommendation={result} />
                 </div>
               </div>
             ) : null}

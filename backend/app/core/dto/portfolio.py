@@ -27,28 +27,12 @@ class EvaluateRequest(PortfolioSchema):
         return self
 
 
-class RankingWeights(PortfolioSchema):
-    vpub: float = Field(default=1, ge=0, le=1000)
-    c0: float = Field(default=1, ge=0, le=1000)
-    opex: float = Field(default=1, ge=0, le=1000)
-    kcash: float = Field(default=1, ge=0, le=1000)
-    t_rep: float = Field(default=1, ge=0, le=1000)
-    readiness: float = Field(default=1, ge=0, le=1000)
-    resilience: float = Field(default=1, ge=0, le=1000)
-    scale: float = Field(default=1, ge=0, le=1000)
-
-    @model_validator(mode="after")
-    def positive_total(self) -> Self:
-        if sum(self.model_dump().values()) <= 0:
-            raise ValueError("Хотя бы один вес должен быть положительным")
-        return self
-
-
 class RecommendRequest(PortfolioSchema):
     dataset_hash: DatasetHash
     require_stress: bool = Field(default=True, strict=True)
-    method_id: Literal["pareto_lexicographic_v1", "cash_surplus_v1", "weighted_mcda_v1"] = "pareto_lexicographic_v1"
-    weights: RankingWeights = Field(default_factory=RankingWeights)
+    method_id: Literal["hybrid_maximin_v1"] = "hybrid_maximin_v1"
+    cash_loss_limit_mrub: float | None = Field(default=None, ge=0, strict=True, description="Δ, млн ₽/год. null — минимальная потеря S для достижения глобального максимума Q.")
+    quality_epsilon: Literal[0] = 0
     budget_cap_mrub: float | None = Field(default=None, gt=0)
     vpub_floor_mrub_per_year: float | None = Field(default=None, ge=0)
     required_public_lot_ids: list[str] = Field(default_factory=list, max_length=4)
@@ -75,11 +59,6 @@ class RecommendRequest(PortfolioSchema):
         self.required_public_lot_ids = sorted(self.required_public_lot_ids)
         if self.lot_ids is not None and not set(self.required_public_lot_ids).issubset(self.lot_ids):
             raise ValueError("Обязательные общественные лоты должны входить в область поиска")
-        if self.method_id == "pareto_lexicographic_v1" and (
-            self.budget_cap_mrub is not None or self.vpub_floor_mrub_per_year is not None
-            or self.required_public_lot_ids or self.weights != RankingWeights()
-        ):
-            raise ValueError("Дополнительные условия и веса доступны в новых профилях подбора")
         if self.lot_ids is not None:
             if len(set(self.lot_ids)) != len(self.lot_ids):
                 raise ValueError("Каждый лот можно выбрать только один раз")
@@ -227,8 +206,7 @@ class ScoreComponent(RankingCriterion):
     minimum: float
     maximum: float
     normalized: float
-    weight: float
-    contribution: float
+    bottleneck: bool
 
 
 class MethodOutcome(PortfolioSchema):
@@ -239,7 +217,8 @@ class MethodOutcome(PortfolioSchema):
     vpub_mrub_per_year: float
     annual_surplus_mrub: float
     kcash: float
-    score: float | None = None
+    q: float
+    q_exact: str
     components: list[ScoreComponent] = Field(default_factory=list)
 
 
@@ -259,18 +238,37 @@ class SensitivityCase(PortfolioSchema):
     required_public_lot_ids: list[str]
     cash_multiplier: float = 1
     opex_multiplier: float = 1
-    weights: dict[str, float]
     feasible_count: int
-    outcomes: dict[str, SensitivityOutcome]
+    outcome: SensitivityOutcome
+    s_max_mrub: float | None
+    cash_floor_mrub: float | None
+    cash_eligible_count: int
+    q_max: float | None
+    effective_delta_mrub: float | None
+
+
+class SwitchingPoint(PortfolioSchema):
+    delta_from_mrub: float
+    delta_to_exclusive_mrub: float | None
+    winner: MethodOutcome
 
 
 class DecisionAnalysis(PortfolioSchema):
-    normalized_weights: dict[str, float]
-    methods: list[MethodOutcome]
+    winner: MethodOutcome | None
+    s_max_mrub: float | None
+    cash_floor_mrub: float | None
+    cash_eligible_count: int
+    q_max: float | None
+    effective_delta_mrub: float | None
+    cash_loss_limit_mrub: float | None
+    quality_epsilon: Literal[0] = 0
+    reference_count: int
+    bounds: dict[str, tuple[float, float]]
+    switching_curve: list[SwitchingPoint]
     sensitivity: list[SensitivityCase]
     pareto_objectives: list[str]
-    normalization: str = "Min–max по общей допустимой области исходного поиска; границы фиксированы для всех проверок чувствительности. Для постоянного показателя вклад одинаков у всех. Взвешенный балл — сумма нормированных значений × нормированные веса."
-    caveat: str = "Веса, дополнительные условия и шоки — допущения команды, не требования кейса. CASH, OPEX и KCASH связаны; веса не являются независимыми вероятностями. Шоки не заменяют официальный STRESS. Неизменность победителя не гарантирует самоокупаемость."
+    normalization: str
+    caveat: str
 
 
 class RecommendationVariant(PortfolioSchema):

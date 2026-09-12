@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
-import type { RankingMethod, RankingWeights, Scenario } from '@shared/api/contracts'
+import type { Scenario } from '@shared/api/contracts'
 
 import { PORTFOLIO_SIZE } from '../lib/selection'
 
@@ -9,7 +9,7 @@ export type WorkspaceMode = 'auto' | 'manual'
 
 /**
  * Какой вариант показывают блоки «Текущий портфель» и «Проверка».
- * `default` — портфель команды из ответа подбора, а если его там нет —
+ * `default` — результат гибридного подбора, а если его там нет —
  * первая опорная точка фронта.
  */
 export type ActiveVariant =
@@ -19,8 +19,7 @@ export type ActiveVariant =
 
 export type ManualOrigin = 'empty' | 'manual' | 'copy'
 export type SearchSettings = {
-  methodId: RankingMethod
-  weights: RankingWeights
+  cashLossLimit: number | null
   budgetCap: number | null
   vpubFloor: number | null
   publicLotIds: string[]
@@ -73,8 +72,7 @@ const INITIAL: WorkspaceState = {
   manualLotIds: [],
   manualOrigin: 'empty',
   searchSettings: {
-    methodId: 'cash_surplus_v1',
-    weights: { vpub: 1, c0: 1, opex: 1, kcash: 1, t_rep: 1, readiness: 1, resilience: 1, scale: 1 },
+    cashLossLimit: null,
     budgetCap: null, vpubFloor: null, publicLotIds: [],
   },
 }
@@ -173,7 +171,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
     }),
     {
       name: 'cosmos-workspace',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => sessionStorage),
       /** Несовместимая версия схемы — начинаем заново, а не чиним по кускам. */
       migrate: () => ({ ...INITIAL }),
