@@ -105,14 +105,25 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
   return (
     <div className="flex flex-col gap-14">
       <div className="flex flex-col gap-6">
-        <header className="grid items-center gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(340px,1fr)]">
+        <header className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-[24px] leading-tight font-bold">Выберите сервисные лоты</h1>
             <Tag size="md" tone="neutral" aria-live="polite">
               {selection.count} из {selection.maximum} · минимум {selection.minimum}
             </Tag>
           </div>
-          <div className="flex justify-start lg:justify-end">
+          <div className="flex flex-wrap items-center gap-3">
+            <CalculationInputsControl officialCatalog={officialCatalog} />
+            <Button
+              variant="secondary"
+              aria-label="Проверить точный портфель из четырёх лотов с заданными режимами"
+              onClick={() => {
+                setEditMounted(true)
+                setEditOpen(true)
+              }}
+            >
+              Проверить свои 4 лота
+            </Button>
             <Segmented
               size="sm"
               value={scenario}
@@ -123,74 +134,65 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
           </div>
         </header>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.68fr)_minmax(340px,1fr)] lg:items-start">
-          <ul className="grid content-start gap-4 sm:grid-cols-2">
-            {catalog.lots.map((lot) => (
-              <li key={lot.lot_id} className="flex">
-                <LotCard
-                  lot={lot}
-                  state={selection.stateOf(lot.lot_id)}
-                  onToggle={selection.toggle}
-                  onDetails={openDetails}
-                  formatMoney={formatMoney}
-                  className="w-full"
-                />
-              </li>
-            ))}
-          </ul>
+        <div className="flex flex-col gap-4">
+          <Panel>
+            <PanelHeader className="mb-3">
+              <PanelTitle className="text-[20px]">Кандидаты для алгоритма</PanelTitle>
+              {selection.count > 0 ? (
+                <Button variant="ghost" size="sm" onClick={selection.clear}>Очистить</Button>
+              ) : null}
+            </PanelHeader>
 
-          <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-            <Panel>
-              <PanelHeader className="mb-3">
-                <PanelTitle className="text-[20px]">Лоты для подбора</PanelTitle>
-                {selection.count > 0 ? (
-                  <Button variant="ghost" size="sm" onClick={selection.clear}>Очистить</Button>
+            {selection.count === 0 ? (
+              <p className="py-10 text-center text-[12px] text-ink/50">Для продолжения выберите минимум {selection.minimum} лота ниже</p>
+            ) : (
+              <>
+                <ul className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+                  {selection.lotIds.map((lotId) => {
+                    const lot = lotById.get(lotId)
+                    return (
+                      <li key={lotId}>
+                        <LotChip
+                          lotId={lotId}
+                          title={lot?.title ?? lotId}
+                          onRemove={selection.remove}
+                          onClick={openDetails}
+                        />
+                      </li>
+                    )
+                  })}
+                </ul>
+                {!complete ? (
+                  <p className="mt-3 text-[12.5px] text-muted">
+                    Выберите ещё {selection.remaining}, чтобы начать подбор
+                  </p>
                 ) : null}
-              </PanelHeader>
+                {complete ? <StressSwitch compact className="mt-4 justify-between" /> : null}
+                {!complete && partial.data ? (
+                  <PortfolioProgress calculation={partial.data} scenario={scenario} className="mt-4" />
+                ) : null}
+              </>
+            )}
+          </Panel>
 
-              {selection.count === 0 ? (
-                <p className="py-10 text-center text-[12px] text-ink/50">Для продолжения выберите минимум {selection.minimum} лота слева</p>
-              ) : (
-                <>
-                  <ul className="grid gap-3 sm:grid-cols-2">
-                    {selection.lotIds.map((lotId) => {
-                      const lot = lotById.get(lotId)
-                      return (
-                        <li key={lotId}>
-                          <LotChip
-                            lotId={lotId}
-                            title={lot?.title ?? lotId}
-                            onRemove={selection.remove}
-                            onClick={openDetails}
-                          />
-                        </li>
-                      )
-                    })}
-                  </ul>
-                  {!complete ? (
-                    <p className="mt-3 text-[12.5px] text-muted">
-                      Выберите ещё {selection.remaining}, чтобы начать подбор
-                    </p>
-                  ) : null}
-                  {complete ? <StressSwitch compact className="mt-4 justify-between" /> : null}
-                  {!complete && partial.data ? (
-                    <PortfolioProgress calculation={partial.data} scenario={scenario} className="mt-4" />
-                  ) : null}
-                </>
-              )}
-            </Panel>
+            <ul className="grid content-start gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {catalog.lots.map((lot) => (
+                <li key={lot.lot_id} className="flex">
+                  <LotCard
+                    lot={lot}
+                    state={selection.stateOf(lot.lot_id)}
+                    onToggle={selection.toggle}
+                    onDetails={openDetails}
+                    formatMoney={formatMoney}
+                    className="w-full"
+                  />
+                </li>
+              ))}
+            </ul>
 
-            <CalculationInputsControl officialCatalog={officialCatalog} />
             {complete && missingPublic.length > 0 ? <Panel>
               <p role="alert" className="text-[14px] text-fail">Добавьте обязательные лоты {missingPublic.join(', ')} в кандидаты или измените параметры поиска.</p>
             </Panel> : null}
-
-            <Button variant="secondary" onClick={() => {
-              setEditMounted(true)
-              setEditOpen(true)
-            }}>
-              Задать лоты и режимы
-            </Button>
 
             {complete && missingPublic.length === 0 && query.isPending ? (
               <>
@@ -239,7 +241,7 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
                     <PanelTitle className="text-[20px]">Текущий портфель</PanelTitle>
                     <Tag tone="brand">{active.calculation.selection.length} из {selection.count}</Tag>
                   </PanelHeader>
-                  <ul className="grid gap-3 sm:grid-cols-2">
+                  <ul className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
                     {active.calculation.selection.map((item) => (
                       <li key={item.lot_id}>
                         <LotChip
@@ -307,7 +309,6 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
                 </div>
               </div>
             ) : null}
-          </div>
         </div>
       </div>
 

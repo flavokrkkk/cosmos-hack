@@ -4,30 +4,40 @@ import {
   changedInputCount, cloneCalculationInputs, officialCalculationInputs, useWorkspace,
 } from '@entities/portfolio'
 import type { AccessMode, CalculationInputs, CaseCatalog, Lot } from '@shared/api/contracts'
-import { Button, Collapsible, Dialog, DialogClose, DialogContent, Segmented, Tag, TextField } from '@shared/ui'
+import { Button, Collapsible, Dialog, DialogClose, DialogContent, Segmented, Tag, TextField, Tooltip } from '@shared/ui'
 
 type Props = { open: boolean; onOpenChange: (open: boolean) => void; officialCatalog: CaseCatalog }
 type Tab = 'lots' | 'modes'
 
-const LOT_NUMBERS: { key: keyof Lot; label: string; min: number; max?: number; step?: number }[] = [
-  { key: 'c0_mrub', label: 'Вложения на запуск (C0), млн ₽', min: 0 },
-  { key: 'opex_mrub_per_year', label: 'Расходы за год (OPEX), млн ₽', min: 0 },
-  { key: 'anchor_cash_mrub_per_year', label: 'Якорные поступления, млн ₽/год', min: 0 },
-  { key: 'commercial_cash_mrub_per_year', label: 'Коммерческие поступления, млн ₽/год', min: 0 },
-  { key: 'vpub_mrub_per_year', label: 'Общественная ценность (VPUB), млн ₽/год', min: 0 },
-  { key: 't_rep', label: 'Индекс t_rep', min: 0, max: 1, step: .01 },
-  { key: 'readiness_1_5', label: 'Готовность (readiness_1_5)', min: 1, max: 5, step: .1 },
-  { key: 'resilience_1_5', label: 'Устойчивость (resilience_1_5)', min: 1, max: 5, step: .1 },
-  { key: 'scale_1_5', label: 'Тиражируемость (scale_1_5)', min: 1, max: 5, step: .1 },
+const LOT_NUMBERS: { key: keyof Lot; help: string; min: number; max?: number; step?: number }[] = [
+  { key: 'c0_mrub', help: 'Вложения на запуск, млн ₽', min: 0 },
+  { key: 'opex_mrub_per_year', help: 'Эксплуатационные расходы, млн ₽ в год', min: 0 },
+  { key: 'anchor_cash_mrub_per_year', help: 'Якорные поступления, млн ₽ в год', min: 0 },
+  { key: 'commercial_cash_mrub_per_year', help: 'Коммерческие поступления, млн ₽ в год', min: 0 },
+  { key: 'vpub_mrub_per_year', help: 'Общественная ценность, млн ₽ в год', min: 0 },
+  { key: 't_rep', help: 'Индекс t_rep из данных кейса, от 0 до 1', min: 0, max: 1, step: .01 },
+  { key: 'readiness_1_5', help: 'Готовность, оценка от 1 до 5', min: 1, max: 5, step: .1 },
+  { key: 'resilience_1_5', help: 'Устойчивость, оценка от 1 до 5', min: 1, max: 5, step: .1 },
+  { key: 'scale_1_5', help: 'Тиражируемость, оценка от 1 до 5', min: 1, max: 5, step: .1 },
 ]
 
-const MODE_NUMBERS: { key: keyof AccessMode; label: string }[] = [
-  { key: 'k_c0', label: 'Множитель запуска (k_c0)' },
-  { key: 'k_opex', label: 'Множитель расходов (k_opex)' },
-  { key: 'k_vpub', label: 'Множитель общественной ценности (k_vpub)' },
-  { key: 'k_anchor', label: 'Множитель якорных поступлений (k_anchor)' },
-  { key: 'k_commercial', label: 'Множитель коммерческих поступлений (k_commercial)' },
+const MODE_NUMBERS: { key: keyof AccessMode; help: string }[] = [
+  { key: 'k_c0', help: 'Множитель вложений на запуск' },
+  { key: 'k_opex', help: 'Множитель эксплуатационных расходов' },
+  { key: 'k_vpub', help: 'Множитель общественной ценности' },
+  { key: 'k_anchor', help: 'Множитель якорных поступлений' },
+  { key: 'k_commercial', help: 'Множитель коммерческих поступлений' },
 ]
+
+function FieldName({ name, help }: { name: string; help: string }) {
+  return (
+    <Tooltip content={help}>
+      <span tabIndex={0} className="cursor-help border-b border-dotted border-ink-300 outline-none focus:border-ink">
+        {name}
+      </span>
+    </Tooltip>
+  )
+}
 
 export function CalculationInputsDialog({ open, onOpenChange, officialCatalog }: Props) {
   return (
@@ -67,7 +77,7 @@ function InputsForm({ officialCatalog, onClose }: { officialCatalog: CaseCatalog
       for (const field of LOT_NUMBERS) {
         const value = lot[field.key]
         if (typeof value !== 'number' || !Number.isFinite(value) || value < field.min || (field.max !== undefined && value > field.max)) {
-          return `${lot.lot_id}: проверьте поле «${field.label}».`
+          return `${lot.lot_id}: проверьте поле «${String(field.key)}».`
         }
       }
     }
@@ -75,7 +85,7 @@ function InputsForm({ officialCatalog, onClose }: { officialCatalog: CaseCatalog
       for (const field of MODE_NUMBERS) {
         const value = mode[field.key]
         if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
-          return `Режим ${mode.mode_id}: проверьте поле «${field.label}».`
+          return `Режим ${mode.mode_id}: проверьте поле «${String(field.key)}».`
         }
       }
     }
@@ -103,21 +113,19 @@ function InputsForm({ officialCatalog, onClose }: { officialCatalog: CaseCatalog
           {draft.lots.map((lot, index) => (
             <Collapsible key={lot.lot_id} defaultOpen={index === 0} title={`${lot.title} · ${lot.lot_id}`}>
               <div className="grid gap-4 pb-5 sm:grid-cols-2 lg:grid-cols-3">
-                <TextField id={`lot-${lot.lot_id}-title`} label="Название" value={lot.title} onChange={(event) => updateLot(lot.lot_id, { title: event.target.value })} />
-                <TextField id={`lot-${lot.lot_id}-service`} label="Название в исходных данных (service)" value={lot.service} onChange={(event) => updateLot(lot.lot_id, { service: event.target.value })} />
-                <TextField id={`lot-${lot.lot_id}-territory-title`} label="Территория" value={lot.territory_title} onChange={(event) => updateLot(lot.lot_id, { territory_title: event.target.value })} />
-                <TextField id={`lot-${lot.lot_id}-archetype`} label="Код территориального архетипа" value={lot.territorial_archetype} onChange={(event) => updateLot(lot.lot_id, { territorial_archetype: event.target.value })} />
-                <TextField id={`lot-${lot.lot_id}-groups`} className="sm:col-span-2" label="Группы возможностей через запятую" value={lot.capability_groups.join(', ')}
+                <TextField id={`lot-${lot.lot_id}-service`} label={<FieldName name="service" help="Название сервиса в данных организаторов" />} value={lot.service} onChange={(event) => updateLot(lot.lot_id, { service: event.target.value })} />
+                <TextField id={`lot-${lot.lot_id}-archetype`} label={<FieldName name="territorial_archetype" help="Территориальный архетип — класс территории" />} value={lot.territorial_archetype} onChange={(event) => updateLot(lot.lot_id, { territorial_archetype: event.target.value })} />
+                <TextField id={`lot-${lot.lot_id}-groups`} label={<FieldName name="capability_groups" help="Группы возможностей через запятую" />} value={lot.capability_groups.join(', ')}
                   onChange={(event) => updateLot(lot.lot_id, { capability_groups: event.target.value.split(',').map((value) => value.trim()).filter(Boolean) })} />
                 {LOT_NUMBERS.map((field) => (
-                  <TextField key={String(field.key)} id={`lot-${lot.lot_id}-${String(field.key)}`} label={field.label} type="number" min={field.min} max={field.max} step={field.step ?? 'any'}
+                  <TextField key={String(field.key)} id={`lot-${lot.lot_id}-${String(field.key)}`} label={<FieldName name={String(field.key)} help={field.help} />} type="number" min={field.min} max={field.max} step={field.step ?? 'any'}
                     value={Number.isFinite(lot[field.key] as number) ? String(lot[field.key]) : ''}
                     onChange={(event) => updateLot(lot.lot_id, { [field.key]: event.target.value === '' ? Number.NaN : Number(event.target.value) })} />
                 ))}
                 <label className="flex min-h-11 items-center gap-3 rounded-2xl border border-line bg-card px-4 text-[13px] font-medium text-ink-700">
                   <input type="checkbox" className="size-4 accent-brand" checked={lot.federal}
                     onChange={(event) => updateLot(lot.lot_id, { federal: event.target.checked })} />
-                  Федеральный лот (federal)
+                  <FieldName name="federal" help="Признак федерального лота" />
                 </label>
               </div>
             </Collapsible>
@@ -130,14 +138,14 @@ function InputsForm({ officialCatalog, onClose }: { officialCatalog: CaseCatalog
               <h3 className="mb-4 text-[22px] font-bold">Режим {mode.mode_id}</h3>
               <div className="flex flex-col gap-4">
                 {MODE_NUMBERS.map((field) => (
-                  <TextField key={String(field.key)} id={`mode-${mode.mode_id}-${String(field.key)}`} label={field.label} type="number" min={0} step="any"
+                  <TextField key={String(field.key)} id={`mode-${mode.mode_id}-${String(field.key)}`} label={<FieldName name={String(field.key)} help={field.help} />} type="number" min={0} step="any"
                     value={Number.isFinite(mode[field.key] as number) ? String(mode[field.key]) : ''}
                     onChange={(event) => updateMode(mode.mode_id, { [field.key]: event.target.value === '' ? Number.NaN : Number(event.target.value) })} />
                 ))}
                 <label className="flex min-h-11 items-center gap-3 rounded-2xl border border-line bg-card px-4 text-[13px] font-medium text-ink-700">
                   <input type="checkbox" className="size-4 accent-brand" checked={mode.public_core}
                     onChange={(event) => updateMode(mode.mode_id, { public_core: event.target.checked })} />
-                  Входит в общественное ядро (public_core)
+                  <FieldName name="public_core" help="Режим учитывается как общественное ядро" />
                 </label>
               </div>
             </section>

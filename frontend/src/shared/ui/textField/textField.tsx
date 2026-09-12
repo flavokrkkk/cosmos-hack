@@ -1,9 +1,9 @@
-import type { ComponentPropsWithRef } from 'react'
+import type { ComponentPropsWithRef, ReactNode } from 'react'
 
 import { cn } from '@shared/lib/cn'
 
 type TextFieldProps = ComponentPropsWithRef<'input'> & {
-  label: string
+  label: ReactNode
   error?: string
   /** Необязательная подсказка под подписью. */
   hint?: string

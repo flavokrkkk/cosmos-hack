@@ -97,7 +97,13 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
           <CalculationInputsControl officialCatalog={officialCatalog} />
         </div>
         {!showPortfolio ? (
-          <Button variant="secondary" onClick={openEditor}>Задать лоты и режимы</Button>
+          <Button
+            variant="secondary"
+            aria-label="Проверить точный портфель из четырёх лотов с заданными режимами"
+            onClick={openEditor}
+          >
+            Проверить свои 4 лота
+          </Button>
         ) : null}
       </div>
 
