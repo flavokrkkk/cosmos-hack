@@ -16,11 +16,13 @@ export function useManualRecommendation(datasetHash: string | undefined) {
   const manualLotIds = useWorkspace((state) => state.manualLotIds)
   const requireStress = useWorkspace((state) => state.requireStress)
   const calculationInputs = useWorkspace((state) => state.calculationInputs)
+  const allowedModesByLot = useWorkspace((state) => state.manualAllowedModes)
   const missingPublicLotIds: string[] = []
-  const isComplete = manualLotIds.length >= PORTFOLIO_SIZE && manualLotIds.length <= MAX_CANDIDATE_LOTS
+  const isComplete = manualLotIds.length === 0 || (manualLotIds.length >= PORTFOLIO_SIZE && manualLotIds.length <= MAX_CANDIDATE_LOTS)
 
   const params: RecommendParams = {
-    datasetHash, requireStress, calculationInputs, lotIds: manualLotIds, enabled: isComplete,
+    datasetHash, requireStress, calculationInputs, lotIds: manualLotIds.length ? manualLotIds : null,
+    allowedModesByLot, enabled: isComplete,
   }
   const query = useRecommendation(params)
   const explanations = useRecommendationExplanations({ ...params, enabled: isComplete && query.isSuccess })

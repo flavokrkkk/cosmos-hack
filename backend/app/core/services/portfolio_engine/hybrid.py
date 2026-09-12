@@ -6,7 +6,7 @@
 Округление агрегатов до 8 знаков убирает машинный шум; ручной Δ не округляется.
 Дополнительные сценарии считаются после выбора и не меняют основную рекомендацию.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from fractions import Fraction
 import math
 
@@ -55,6 +55,7 @@ class Parameters:
     vpub_floor_mrub_per_year: float | None = None
     required_public_lot_ids: tuple[str, ...] = ()
     lot_ids: tuple[str, ...] | None = None
+    allowed_modes_by_lot: dict[str, list[str]] = field(default_factory=dict)
     quality_epsilon: float = 0
 
     def __post_init__(self):
@@ -70,6 +71,10 @@ class Parameters:
             if value is not None and (isinstance(value, bool) or not math.isfinite(value) or value < 0 or (positive and value == 0)):
                 raise ValueError("Некорректный дополнительный порог")
         known = set(canonical.lot_ids(self.inputs))
+        if not set(self.allowed_modes_by_lot) <= known:
+            raise ValueError("Неизвестные лоты в разрешённых режимах")
+        if any(not set(modes) <= {"A", "B", "C"} for modes in self.allowed_modes_by_lot.values()):
+            raise ValueError("Неизвестные режимы")
         for ids in (self.lot_ids, self.required_public_lot_ids):
             if ids is not None and (len(set(ids)) != len(ids) or not set(ids) <= known):
                 raise ValueError("Повторяющиеся или неизвестные лоты")
@@ -221,6 +226,11 @@ def analyze(parameters: Parameters, *, include_sensitivity: bool = True) -> tupl
     frame = all_rows
     if parameters.lot_ids is not None:
         frame = frame[frame.lots.map(lambda value: set(value.split("+")).issubset(parameters.lot_ids))].copy()
+    if parameters.allowed_modes_by_lot:
+        frame = frame[frame.stable_id.map(lambda value: all(
+            not parameters.allowed_modes_by_lot.get(lot) or mode in parameters.allowed_modes_by_lot[lot]
+            for lot, mode in space.parse_selection(value)
+        )).astype(bool)].copy()
     official = frame[frame.BASE_ok & (frame.STRESS_ok if parameters.require_stress else True)]
     limits = conditions(parameters)
     candidates = apply_conditions(official, limits)

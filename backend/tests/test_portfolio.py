@@ -311,7 +311,7 @@ def test_recommend_searches_all_four_lot_portfolios_inside_candidate_pool(
         assert selected <= allowed
 
 
-@pytest.mark.parametrize("ids", [[], ["FIRE"], ["FIRE", "AGRI", "ENV"],
+@pytest.mark.parametrize("ids", [["FIRE"], ["FIRE", "AGRI", "ENV"],
     [f"LOT_{index}" for index in range(9)], ["FIRE", "FIRE", "ENV", "TRANS"],
     ["FIRE", "AGRI", "ENV", "MISSING"]])
 def test_fixed_lots_reject_invalid_selection(client, catalog, ids):

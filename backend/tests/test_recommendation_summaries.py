@@ -146,6 +146,7 @@ def test_batch_failure_keeps_all_calculations(failure):
             assert before.calculation == after.calculation
             assert after.explanation.generated_by == "template"
             assert after.explanation.warning
+            assert after.explanation.unavailable_reason == "generation_failed"
         assert not service._pending
     asyncio.run(run())
 

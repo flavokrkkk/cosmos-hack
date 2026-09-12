@@ -37,6 +37,7 @@ type WorkspaceState = {
   activeVariant: Record<WorkspaceMode, ActiveVariant>
   /** До восьми кандидатов; сервер выбирает четыре лота и назначает им режимы. */
   manualLotIds: string[]
+  manualAllowedModes: Record<string, string[]>
   manualOrigin: ManualOrigin
 }
 
@@ -48,6 +49,7 @@ type WorkspaceActions = {
   applyCalculationInputs: (inputs: CalculationInputs | null) => void
   /** Запуск автоподбора с текущим условием поиска. */
   launchAutoSearch: () => void
+  applySearchOptions: (lotIds: string[], modes: Record<string, string[]>) => void
   /** Открыть вариант в текущем режиме страницы (рекомендация, альтернатива). */
   openVariant: (variant: ActiveVariant) => void
   /** Открыть сохранённый вариант: всегда в автоподборе, где есть блок просмотра. */
@@ -70,13 +72,23 @@ const INITIAL: WorkspaceState = {
   autoSearch: null,
   activeVariant: { auto: { kind: 'default' }, manual: { kind: 'default' } },
   manualLotIds: [],
+  manualAllowedModes: {},
   manualOrigin: 'empty',
 }
 
 /** Убираем прежние фильтры, сохраняя выбор пользователя и привязку к данным. */
 function migrateWorkspace(persisted: unknown): WorkspaceState {
   if (!persisted || typeof persisted !== 'object') return { ...INITIAL }
-  const state = persisted as Partial<WorkspaceState>
+  const state = persisted as Partial<WorkspaceState> & { allowedModes?: { manual?: unknown } }
+  const previousModes = state.manualAllowedModes ?? state.allowedModes?.manual
+  const manualAllowedModes = previousModes && typeof previousModes === 'object'
+    ? Object.fromEntries(Object.entries(previousModes).flatMap(([lot, modes]) => {
+        if (!Array.isArray(modes)) return []
+        const valid = [...new Set(modes.filter((mode): mode is string =>
+          typeof mode === 'string' && ['A', 'B', 'C'].includes(mode)))].sort()
+        return valid.length ? [[lot, valid]] : []
+      }))
+    : {}
   const manualLotIds = Array.isArray(state.manualLotIds)
     ? [...new Set(state.manualLotIds.filter((id) => typeof id === 'string'))].slice(0, MAX_CANDIDATE_LOTS)
     : []
@@ -106,6 +118,7 @@ function migrateWorkspace(persisted: unknown): WorkspaceState {
       manual: { kind: 'default' },
     },
     manualLotIds,
+    manualAllowedModes,
     manualOrigin: manualLotIds.length === 0 ? 'empty' : state.manualOrigin === 'copy' ? 'copy' : 'manual',
   }
 }
@@ -150,6 +163,15 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
         set((state) => ({
           autoSearch: { requireStress: state.requireStress, startedAt: Date.now() },
           activeVariant: { ...state.activeVariant, auto: { kind: 'default' } },
+        })),
+
+      applySearchOptions: (lotIds, modes) =>
+        set((state) => ({
+          mode: 'manual',
+          manualLotIds: [...lotIds],
+          manualOrigin: lotIds.length ? 'manual' : 'empty',
+          manualAllowedModes: structuredClone(modes),
+          activeVariant: { ...state.activeVariant, manual: { kind: 'default' } },
         })),
 
       openVariant: (variant) =>
@@ -202,6 +224,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
       clearManual: () =>
         set((state) => ({
           manualLotIds: [],
+          manualAllowedModes: {},
           manualOrigin: 'empty',
           activeVariant: { ...state.activeVariant, manual: { kind: 'default' } },
         })),
@@ -210,6 +233,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
         set((state) => ({
           mode: 'manual',
           manualLotIds: [...new Set(lotIds)].slice(0, MAX_CANDIDATE_LOTS),
+          manualAllowedModes: {},
           manualOrigin: 'copy',
           activeVariant: { ...state.activeVariant, manual: { kind: 'default' } },
         })),
@@ -217,7 +241,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
     }),
     {
       name: 'cosmos-workspace',
-      version: 5,
+      version: 6,
       storage: createJSONStorage(() => sessionStorage),
       migrate: migrateWorkspace,
       partialize: (state) => ({
@@ -229,6 +253,7 @@ export const useWorkspace = create<WorkspaceState & WorkspaceActions>()(
         autoSearch: state.autoSearch,
         activeVariant: state.activeVariant,
         manualLotIds: state.manualLotIds,
+        manualAllowedModes: state.manualAllowedModes,
         manualOrigin: state.manualOrigin,
       }),
     },

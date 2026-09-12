@@ -22,6 +22,7 @@ SELECTION = [
 
 def assert_template(result):
     assert result["generated_by"] == "template"
+    assert result["unavailable_reason"] == "disabled"
     assert result["model"] is None
     assert result["warning"] == OLLAMA_DISABLED_MESSAGE
     explanation = result["explanation"]
@@ -46,7 +47,7 @@ def test_disabled_service_rejects_generation_before_processing_inputs(method):
     async def run():
         service = OllamaService(None, "test-model")
         assert service.enabled is False
-        with pytest.raises(OllamaDisabledError, match="Ollama отключена"):
+        with pytest.raises(OllamaDisabledError, match="AI-объяснение отключено"):
             await getattr(service, method)([])
 
     asyncio.run(run())

@@ -196,16 +196,23 @@ function ComparisonAnalysis({ result, inputs }: { result: ComparisonResult; inpu
         <Segmented size="sm" value={scenario} onChange={(value: Scenario) => setScenario(value)}
           options={SCENARIOS.map((value) => ({ value, label: value }))} label="Сценарий объяснения сравнения" />
       </div>
-      <Button className="mt-4" size="md" loading={query.isFetching} onClick={() => {
+      {analysis?.unavailable_reason !== 'disabled' ? <Button className="mt-4" size="md" loading={query.isFetching} onClick={() => {
         if (launched) void query.refetch()
         else setLaunchedKey(requestKey)
-      }}>Объяснить различия</Button>
+      }}>Объяснить различия</Button> : null}
       {query.isFetching ? <p role="status" className="mt-3 text-[13px] text-muted">Готовим анализ…</p> : null}
       {launched && query.isError ? <p className="mt-3 text-[13px] text-fail">Анализ не получен: {query.error.message}. Расчёты в таблице доступны.</p> : null}
-      {analysis && !query.isFetching ? (
+      {analysis && !query.isFetching && analysis.generated_by === 'template' ? (
+        <p className="mt-4 text-[14px] text-muted">
+          {analysis.unavailable_reason === 'disabled'
+            ? 'AI-объяснение отключено. Таблица сравнения доступна.'
+            : 'Не удалось получить AI-объяснение. Таблица сравнения доступна.'}
+        </p>
+      ) : null}
+      {analysis && !query.isFetching && analysis.generated_by === 'ollama' ? (
         <div className="mt-4 flex flex-col gap-3">
-          <Tag tone={analysis.generated_by === 'ollama' ? 'brand' : 'muted'}>
-            {analysis.generated_by === 'ollama' ? 'Анализ AI' : 'Анализ по расчётам'} · {analysis.scenario}
+          <Tag tone="brand">
+            Анализ AI · {analysis.scenario}
           </Tag>
           <p className="font-semibold">{analysis.explanation.headline}</p>
           <p className="text-[14px]">{analysis.explanation.summary}</p>

@@ -14,7 +14,7 @@ export function useManualSelection() {
   const remove = useWorkspace((state) => state.removeManualLot)
   const clear = useWorkspace((state) => state.clearManual)
 
-  const isComplete = lotIds.length >= PORTFOLIO_SIZE && lotIds.length <= MAX_CANDIDATE_LOTS
+  const isComplete = lotIds.length === 0 || (lotIds.length >= PORTFOLIO_SIZE && lotIds.length <= MAX_CANDIDATE_LOTS)
 
   const stateOf = useCallback(
     (lotId: string): LotCardState => {

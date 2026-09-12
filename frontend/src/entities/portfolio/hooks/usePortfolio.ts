@@ -55,6 +55,7 @@ export type RecommendParams = {
   lotIds: readonly string[] | null
   enabled: boolean
   calculationInputs?: CalculationInputs | null
+  allowedModesByLot?: Record<string, string[]>
 }
 
 function recommendRequest(params: RecommendParams, withExplanations: boolean): RecommendRequest {
@@ -69,6 +70,7 @@ function recommendRequest(params: RecommendParams, withExplanations: boolean): R
     required_public_lot_ids: [],
     quality_epsilon: 0,
     lot_ids: params.lotIds ? sortedLotIds(params.lotIds) : null,
+    allowed_modes_by_lot: params.allowedModesByLot ?? {},
     with_explanations: withExplanations,
   }
 }

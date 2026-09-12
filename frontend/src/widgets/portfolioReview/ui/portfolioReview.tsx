@@ -5,7 +5,7 @@ import {
   ConstraintTiles, ExtraMetrics, FeasibilityBadge, METRIC_TILES, MetricTiles, PortfolioLotCard,
   FinancialBreakdown, scenarioDependentCodes, useWorkspace,
 } from '@entities/portfolio'
-import { ExportButton } from '@features'
+import { CalculationInputsControl, ExportButton } from '@features'
 import type { AccessMode, Calculation, CaseCatalog, Lot, RecommendationResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
@@ -15,6 +15,7 @@ import { describeComposition } from './describeComposition'
 
 type Props = {
   catalog: CaseCatalog
+  officialCatalog: CaseCatalog
   recommendation?: RecommendationResult
   calculation: Calculation | undefined
   /** Что именно открыто: портфель команды, опорная точка фронта или сохранённый вариант. */
@@ -31,7 +32,6 @@ type Props = {
   onBackToDefault?: () => void
   onSave: () => void
   onCompare: () => void
-  onEditManually?: () => void
   /** Намерение открыть диалог (наведение/фокус на кнопки): чанки грузятся заранее. */
   onActionsIntent?: () => void
 }
@@ -46,8 +46,8 @@ const SCENARIO_OPTIONS = SCENARIOS.map((scenario) => ({ value: scenario, label: 
  * раздельно — на карточке лота видно «исходное × коэффициент = после режима».
  */
 export function PortfolioReview({
-  catalog, recommendation, calculation, variantKind, variantTitle, isDefault, reason, isLoading, isError, onRetry,
-  onBackToDefault, onSave, onCompare, onEditManually, onActionsIntent,
+  catalog, officialCatalog, recommendation, calculation, variantKind, variantTitle, isDefault, reason, isLoading, isError, onRetry,
+  onBackToDefault, onSave, onCompare, onActionsIntent,
 }: Props) {
   const scenario = useWorkspace((state) => state.scenario)
   const setScenario = useWorkspace((state) => state.setScenario)
@@ -161,20 +161,15 @@ export function PortfolioReview({
           )}
         </Panel>
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" onMouseEnter={onActionsIntent} onFocus={onActionsIntent}>
+        <div className="grid grid-cols-2 items-center gap-2 [&_button]:px-2 [&_button]:text-[12px]" onMouseEnter={onActionsIntent} onFocus={onActionsIntent}>
           <Button onClick={onSave} disabled={!complete || isLoading}>Сохранить вариант</Button>
           <Button variant="secondary" onClick={onCompare} disabled={!complete || isLoading}>Сравнить</Button>
-          {onEditManually ? (
-            <Button variant="secondary" onClick={onEditManually} disabled={!complete || isLoading} className="col-span-2 sm:col-span-1">
-              Изменить лоты и режимы
-            </Button>
-          ) : null}
         </div>
-
-        {/* Выгрузка — тихой строкой под кнопками действий: колонки независимой высоты. */}
-        <div className="-mt-2 flex justify-end">
+        <div className="grid grid-cols-[1fr_auto] items-center gap-2 [&_button]:px-2 [&_button]:text-[12px]" onMouseEnter={onActionsIntent} onFocus={onActionsIntent}>
+          <CalculationInputsControl officialCatalog={officialCatalog} />
           <ExportButton calculation={calculation} catalog={catalog} recommendation={recommendation} />
         </div>
+
       </div>
     </div>
   )

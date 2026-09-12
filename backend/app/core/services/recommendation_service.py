@@ -59,7 +59,7 @@ class RecommendationService:
         verify_dataset(request.dataset_hash)
         known_lots = ({lot.lot_id for lot in request.inputs.lots} if request.inputs else
                       {lot.lot_id for lot in PortfolioService().catalog().lots})
-        unknown = (set(request.lot_ids or []) | set(request.required_public_lot_ids)) - known_lots
+        unknown = (set(request.lot_ids or []) | set(request.required_public_lot_ids) | set(request.allowed_modes_by_lot)) - known_lots
         if unknown:
             raise InvalidPortfolio(f"Неизвестные лоты: {', '.join(sorted(unknown))}")
         with _search_lock:

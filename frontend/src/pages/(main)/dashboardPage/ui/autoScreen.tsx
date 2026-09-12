@@ -14,7 +14,7 @@ import {
   Alternatives, ExplanationBlock, LotDetailsHost, PortfolioReview, type AlternativeTarget,
 } from '@widgets'
 
-import { LazyCompareDialog, LazyEditPortfolioDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
+import { LazyCompareDialog, LazySaveVariantDialog, preloadActionDialogs } from './lazyDialogs'
 
 type Props = {
   catalog: CaseCatalog
@@ -53,15 +53,9 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
 
   const [saveOpen, setSaveOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
   /* Диалог монтируется при первом открытии и дальше остаётся: так работает анимация закрытия. */
   const [saveMounted, setSaveMounted] = useState(false)
   const [compareMounted, setCompareMounted] = useState(false)
-  const [editMounted, setEditMounted] = useState(false)
-  const openEditor = () => {
-    setEditMounted(true)
-    setEditOpen(true)
-  }
 
   const lotById = useMemo(() => new Map(catalog.lots.map((lot) => [lot.lot_id, lot])), [catalog.lots])
 
@@ -94,11 +88,7 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
         />
         <div className="flex flex-wrap items-center justify-center gap-3">
           <StressSwitch />
-          <CalculationInputsControl officialCatalog={officialCatalog} />
         </div>
-        {!showPortfolio ? (
-          <Button variant="secondary" onClick={openEditor}>Задать лоты и режимы</Button>
-        ) : null}
       </div>
 
       {!launched && !isDirectVariant ? (
@@ -184,6 +174,7 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
           <PortfolioReview
             recommendation={result}
             catalog={catalog}
+            officialCatalog={officialCatalog}
             calculation={active.calculation}
             variantKind={active.kind}
             variantTitle={active.title}
@@ -205,7 +196,6 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
               setCompareOpen(true)
             }}
             onActionsIntent={preloadActionDialogs}
-            onEditManually={openEditor}
           />
 
           {!isDirectVariant ? (
@@ -232,6 +222,10 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
         />
       ) : null}
 
+      {!showPortfolio ? <div className="flex flex-wrap justify-center gap-2">
+        <CalculationInputsControl officialCatalog={officialCatalog} />
+      </div> : null}
+
       <Suspense fallback={null}>
         {saveMounted && active.calculation ? (
           <LazySaveVariantDialog
@@ -252,14 +246,6 @@ export function AutoScreen({ catalog, officialCatalog }: Props) {
             inputs={calculationInputs}
             candidates={candidates}
             initialIds={compareInitial}
-          />
-        ) : null}
-        {editMounted ? (
-          <LazyEditPortfolioDialog
-            open={editOpen}
-            onOpenChange={setEditOpen}
-            catalog={catalog}
-            selection={showPortfolio ? active.calculation?.selection ?? [] : []}
           />
         ) : null}
       </Suspense>

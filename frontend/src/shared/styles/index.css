@@ -30,6 +30,8 @@
   --color-card: rgb(255 255 255 / 0.5);
   --color-lifted: rgb(255 255 255 / 0.7);
   --color-sunken: rgb(255 255 255 / 0.28);
+  --color-tooltip: #111318;
+  --color-tooltip-foreground: #ffffff;
 
   /* Текст */
   --color-ink: #111318;
@@ -56,12 +58,12 @@
   --radius-tile: 16px;
   --radius-chip: 24px;
 
-  /* Тени как на макете: широкие, мягкие, малоконтрастные — карточка лежит на странице */
-  --shadow-panel: 0 8px 40px rgb(0 0 0 / 0.08);
-  --shadow-card: 0 8px 40px rgb(0 0 0 / 0.08);
-  --shadow-card-hover: 0 12px 44px rgb(0 0 0 / 0.12);
-  --shadow-tile: 0 8px 40px rgb(0 0 0 / 0.06);
-  --shadow-chip: 0 8px 40px rgb(0 0 0 / 0.08);
+  /* Мягкая единая тень поверхностей: широкий blur без плотного серого ореола. */
+  --shadow-panel: 0 8px 56px rgb(0 0 0 / 0.03);
+  --shadow-card: 0 8px 56px rgb(0 0 0 / 0.03);
+  --shadow-card-hover: 0 8px 56px rgb(0 0 0 / 0.03);
+  --shadow-tile: 0 8px 56px rgb(0 0 0 / 0.03);
+  --shadow-chip: 0 8px 56px rgb(0 0 0 / 0.03);
   --shadow-brand: 0 8px 20px rgb(0 0 0 / 0.08);
   --shadow-inset: inset 0 1px 2px rgb(21 40 82 / 0.06);
 
@@ -148,6 +150,8 @@
     --color-card: rgb(58 58 60 / 0.56);
     --color-lifted: rgb(72 72 74 / 0.68);
     --color-sunken: rgb(72 72 74 / 0.42);
+    --color-tooltip: #f5f5f7;
+    --color-tooltip-foreground: #111318;
 
     --color-ink: #f5f5f7;
     --color-ink-700: rgb(235 235 245 / 0.86);
@@ -165,11 +169,11 @@
     --color-warn: #ffd60a;
     --color-warn-bg: rgb(255 214 10 / 0.14);
 
-    --shadow-panel: 0 18px 52px rgb(0 0 0 / 0.36);
-    --shadow-card: 0 14px 42px rgb(0 0 0 / 0.32);
-    --shadow-card-hover: 0 18px 48px rgb(0 0 0 / 0.42);
-    --shadow-tile: 0 12px 34px rgb(0 0 0 / 0.28);
-    --shadow-chip: 0 8px 24px rgb(0 0 0 / 0.26);
+    --shadow-panel: 0 8px 56px rgb(0 0 0 / 0.03);
+    --shadow-card: 0 8px 56px rgb(0 0 0 / 0.03);
+    --shadow-card-hover: 0 8px 56px rgb(0 0 0 / 0.03);
+    --shadow-tile: 0 8px 56px rgb(0 0 0 / 0.03);
+    --shadow-chip: 0 8px 56px rgb(0 0 0 / 0.03);
     --shadow-brand: 0 10px 24px rgb(10 132 255 / 0.26);
     --shadow-inset: inset 0 1px 2px rgb(0 0 0 / 0.34);
   }

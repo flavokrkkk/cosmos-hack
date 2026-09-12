@@ -15,7 +15,7 @@ import { normalizeApiError } from '@shared/api'
 import type { CaseCatalog, RecommendationResult, Scenario } from '@shared/api/contracts'
 import { SCENARIOS } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
-import { Button, Panel, PanelHeader, PanelTitle, Segmented, Skeleton, Tag } from '@shared/ui'
+import { Button, Collapsible, Panel, PanelHeader, PanelTitle, Segmented, Skeleton, Tag } from '@shared/ui'
 import {
   Alternatives, ExplanationBlock, LotDetailsHost, type AlternativeTarget,
 } from '@widgets'
@@ -109,17 +109,10 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-[24px] leading-tight font-bold">Выберите сервисные лоты</h1>
             <Tag size="md" tone="neutral" aria-live="polite">
-              {selection.count} из {selection.maximum} · минимум {selection.minimum}
+              {selection.count ? `${selection.count} из ${selection.maximum} · минимум ${selection.minimum}` : 'Все лоты'}
             </Tag>
           </div>
           <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-            <CalculationInputsControl officialCatalog={officialCatalog} />
-            <Button variant="secondary" onClick={() => {
-              setEditMounted(true)
-              setEditOpen(true)
-            }}>
-              Задать лоты и режимы
-            </Button>
             <Segmented
               size="sm"
               value={scenario}
@@ -156,7 +149,7 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
               </PanelHeader>
 
               {selection.count === 0 ? (
-                <p className="py-10 text-center text-[12px] text-ink/50">Для продолжения выберите минимум {selection.minimum} лота слева</p>
+                <p className="py-6 text-center text-[13px] text-muted">Подбор по всем лотам. Выберите лоты слева, чтобы сузить поиск.</p>
               ) : (
                 <>
                   <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -180,12 +173,12 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
                       Выберите ещё {selection.remaining}, чтобы начать подбор
                     </p>
                   ) : null}
-                  {complete ? <StressSwitch compact className="mt-4 justify-between" /> : null}
                   {!complete && partial.data ? (
                     <PortfolioProgress calculation={partial.data} scenario={scenario} className="mt-4" />
                   ) : null}
                 </>
               )}
+              {complete ? <StressSwitch compact className="mt-4 justify-between" /> : null}
             </Panel>
 
             {complete && missingPublic.length > 0 ? <Panel>
@@ -193,23 +186,18 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
             </Panel> : null}
 
             {complete && missingPublic.length === 0 && query.isPending ? (
-              <>
-                <Panel aria-busy role="status">
-                  <PanelHeader className="mb-3">
-                    <PanelTitle className="text-[20px]">Показатели</PanelTitle>
-                    <Tag tone="brand">подбираем портфель…</Tag>
-                  </PanelHeader>
+              <Panel aria-busy role="status">
+                <Collapsible defaultOpen title="Показатели" summary={<Tag tone="brand">подбираем портфель…</Tag>}>
                   <div className="grid grid-cols-2 gap-3">
                     {[0, 1, 2, 3].map((index) => <Skeleton key={index} className="h-[76px]" />)}
                   </div>
-                </Panel>
-                <Panel aria-busy>
-                  <PanelTitle className="mb-3 text-[20px]">Проверка ограничений</PanelTitle>
+                </Collapsible>
+                <Collapsible title="Проверка ограничений" className="mt-2 border-t border-line/70 pt-2">
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {Array.from({ length: 9 }, (_, index) => <Skeleton key={index} className="h-[76px]" />)}
                   </div>
-                </Panel>
-              </>
+                </Collapsible>
+              </Panel>
             ) : null}
 
             {complete && missingPublic.length === 0 && query.isError && !query.isPending ? (
@@ -237,7 +225,7 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
                 <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
                   <PanelHeader className="mb-3">
                     <PanelTitle className="text-[20px]">Текущий портфель</PanelTitle>
-                    <Tag tone="brand">{active.calculation.selection.length} из {selection.count}</Tag>
+                    <Tag tone="brand">{active.calculation.selection.length} из {selection.count || catalog.lots.length}</Tag>
                   </PanelHeader>
                   <ul className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {active.calculation.selection.map((item) => (
@@ -253,38 +241,42 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
                     ))}
                   </ul>
                 </Panel>
-                <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
-                  <PanelHeader className="mb-3">
-                    <PanelTitle className="text-[20px]">Показатели</PanelTitle>
-                    <FeasibilityBadge calculation={active.calculation} scenario={scenario} size="sm" />
-                  </PanelHeader>
-                  {active.kind === 'reference' || active.kind === 'team' ? (
-                    <p className="mb-3 text-[12.5px] text-muted">
-                      {active.kind === 'team' ? 'Рекомендация алгоритма' : `Опорная точка: ${active.title}`} · сценарий {scenario}
-                    </p>
-                  ) : null}
-                  <MetricTiles metrics={active.calculation.metrics} tiles={METRIC_TILES_COMPACT} columns={2} />
-                  <ExtraMetrics
-                    metrics={active.calculation.metrics}
-                    shown={METRIC_TILES_COMPACT}
-                    rest={METRIC_TILES.filter((tile) => !METRIC_TILES_COMPACT.includes(tile))}
-                    className="mt-4"
-                  />
-                  <FinancialBreakdown financial={active.calculation.financial} />
-                </Panel>
-
-                <Panel className={cn(query.isFetching && 'is-stale')} aria-busy={query.isFetching}>
-                  <PanelTitle className="mb-3 text-[20px]">Проверка ограничений</PanelTitle>
-                  {active.calculation.checks[scenario] ? (
-                    <ConstraintTiles
-                      checks={active.calculation.checks[scenario]}
-                      scenarioDependent={scenarioDependentCodes(active.calculation)}
-                      scenario={scenario}
+                <Panel
+                  className={cn('[&_.shadow-tile]:shadow-none', query.isFetching && 'is-stale')}
+                  aria-busy={query.isFetching}
+                >
+                  <Collapsible
+                    defaultOpen
+                    title="Показатели"
+                    summary={<FeasibilityBadge calculation={active.calculation} scenario={scenario} size="sm" />}
+                  >
+                    {active.kind === 'reference' || active.kind === 'team' ? (
+                      <p className="mb-3 text-[12.5px] text-muted">
+                        {active.kind === 'team' ? 'Рекомендация алгоритма' : `Опорная точка: ${active.title}`} · сценарий {scenario}
+                      </p>
+                    ) : null}
+                    <MetricTiles metrics={active.calculation.metrics} tiles={METRIC_TILES_COMPACT} columns={2} />
+                    <ExtraMetrics
+                      metrics={active.calculation.metrics}
+                      shown={METRIC_TILES_COMPACT}
+                      rest={METRIC_TILES.filter((tile) => !METRIC_TILES_COMPACT.includes(tile))}
+                      className="mt-4"
                     />
-                  ) : null}
+                    <FinancialBreakdown financial={active.calculation.financial} />
+                  </Collapsible>
+
+                  <Collapsible title="Проверка ограничений" className="mt-2 border-t border-line/70 pt-2">
+                    {active.calculation.checks[scenario] ? (
+                      <ConstraintTiles
+                        checks={active.calculation.checks[scenario]}
+                        scenarioDependent={scenarioDependentCodes(active.calculation)}
+                        scenario={scenario}
+                      />
+                    ) : null}
+                  </Collapsible>
                 </Panel>
 
-                <div className="grid grid-cols-2 gap-2" onMouseEnter={preloadActionDialogs} onFocus={preloadActionDialogs}>
+                <div className="grid grid-cols-2 items-center gap-2 [&_button]:px-2 [&_button]:text-[12px]" onMouseEnter={preloadActionDialogs} onFocus={preloadActionDialogs}>
                   <Button
                     onClick={() => {
                       setSaveMounted(true)
@@ -303,11 +295,15 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
                     Сравнить
                   </Button>
                 </div>
-                <div className="-mt-2">
-                  <ExportButton calculation={active.calculation} catalog={catalog} recommendation={result} />
-                </div>
               </div>
             ) : null}
+            <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-2 [&_button]:px-2 [&_button]:text-[12px]" onMouseEnter={preloadActionDialogs} onFocus={preloadActionDialogs}>
+              <CalculationInputsControl officialCatalog={officialCatalog} />
+              <Button variant="secondary" onClick={() => { setEditMounted(true); setEditOpen(true) }}>
+                Задать лоты и режимы
+              </Button>
+              <ExportButton calculation={showResult ? active.calculation : undefined} catalog={catalog} recommendation={result} />
+            </div>
           </div>
         </div>
       </div>
@@ -359,7 +355,6 @@ export function ManualScreen({ catalog, officialCatalog }: Props) {
             open={editOpen}
             onOpenChange={setEditOpen}
             catalog={catalog}
-            selection={active.calculation?.selection ?? partialSelection.slice(0, PORTFOLIO_SIZE)}
           />
         ) : null}
       </Suspense>

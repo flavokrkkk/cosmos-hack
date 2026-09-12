@@ -1,6 +1,6 @@
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 Scenario = Literal["BASE", "STRESS"]
@@ -89,6 +89,7 @@ class RecommendRequest(PortfolioSchema):
     budget_cap_mrub: float | None = Field(default=None, gt=0, strict=True)
     vpub_floor_mrub_per_year: float | None = Field(default=None, ge=0, strict=True)
     required_public_lot_ids: list[str] = Field(default_factory=list, max_length=4)
+    allowed_modes_by_lot: dict[str, list[Literal["A", "B", "C"]]] = Field(default_factory=dict)
     lot_ids: list[Annotated[str, Field(min_length=1, max_length=32)]] | None = Field(
         default=None, min_length=4, max_length=8,
         description=(
@@ -105,8 +106,16 @@ class RecommendRequest(PortfolioSchema):
         ),
     )
 
+    @field_validator("lot_ids", mode="before")
+    @classmethod
+    def empty_lots_mean_all(cls, value):
+        return None if value == [] else value
+
     @model_validator(mode="after")
     def unique_fixed_lots(self) -> Self:
+        self.allowed_modes_by_lot = {
+            lot: sorted(set(modes)) for lot, modes in sorted(self.allowed_modes_by_lot.items()) if modes
+        }
         if len(set(self.required_public_lot_ids)) != len(self.required_public_lot_ids):
             raise ValueError("Обязательные общественные лоты не должны повторяться")
         self.required_public_lot_ids = sorted(self.required_public_lot_ids)
@@ -364,6 +373,7 @@ class PortfolioExplanationResult(PortfolioSchema):
     model: str | None
     generated_by: Literal["ollama", "template"]
     warning: str | None = None
+    unavailable_reason: Literal["disabled", "generation_failed"] | None = None
 
 
 class RecommendationExplanation(PortfolioSchema):
@@ -374,6 +384,7 @@ class RecommendationExplanation(PortfolioSchema):
     model: str | None
     generated_by: Literal["ollama", "template"]
     warning: str | None = None
+    unavailable_reason: Literal["disabled", "generation_failed"] | None = None
     composition: Literal["generative", "extractive"] = "generative"
 
 

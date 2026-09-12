@@ -53,7 +53,7 @@ class PortfolioExplanationService:
                 reason=str(error),
             )
             generated_by = "template"
-            warning = "Ollama недоступен или вернул некорректный ответ; показан шаблонный текст."
+            warning = "Не удалось получить AI-объяснение. Расчёт портфеля доступен."
             explanation = _template_explanation(calculation, request.scenario, facts)
 
         return PortfolioExplanationResult(
@@ -64,6 +64,7 @@ class PortfolioExplanationService:
             model=model,
             generated_by=generated_by,
             warning=warning,
+            unavailable_reason=None if generated_by == "ollama" else "generation_failed" if ollama.enabled else "disabled",
         )
 
 

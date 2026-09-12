@@ -256,6 +256,7 @@ export type RecommendRequest = {
    * Бэкенд сортирует список и отклоняет дубликаты и неизвестные ID (422).
    */
   lot_ids?: string[] | null
+  allowed_modes_by_lot?: Record<string, string[]>
   /**
    * `false` — только расчёт и фронт, без пакетного объяснения Ollama (доли секунды).
    * Фронтенд сначала показывает числа, а объяснения запрашивает вторым вызовом.
@@ -313,6 +314,7 @@ export type PortfolioExplanationResult = {
   /** `template` — модель выключена или недоступна, текст собран сервером по фактам расчёта. */
   generated_by: 'ollama' | 'template'
   warning?: string | null
+  unavailable_reason?: 'disabled' | 'generation_failed' | null
 }
 
 export type RecommendationExplanation = Omit<PortfolioExplanationResult, 'calculation'> & {

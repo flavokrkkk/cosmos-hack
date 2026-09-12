@@ -14,7 +14,7 @@ from app.infrastructure.logging.logger import get_logger
 
 
 logger = get_logger(__name__)
-PROMPT_VERSION = "recommend-narrative-v6"
+PROMPT_VERSION = "recommend-narrative-v8"
 
 
 class RecommendationSummaryService:
@@ -95,7 +95,7 @@ class RecommendationSummaryService:
                 warning = OLLAMA_DISABLED_MESSAGE
             except (OllamaError, TimeoutError) as error:
                 logger.warning("recommendation_summary_fallback", reason=str(error), input_hash=result.input_hash)
-                warning = "Пакетное объяснение Ollama недоступно; показан шаблон по расчёту. Повторите подбор позже."
+                warning = "Не удалось получить AI-объяснение. Расчёт портфеля доступен."
             for index, variant in enumerate(variants):
                 item_key = f"v{index}"
                 variant.explanation = RecommendationExplanation(
@@ -106,6 +106,7 @@ class RecommendationSummaryService:
                     model=model,
                     generated_by="ollama" if explanations else "template",
                     warning=warning,
+                    unavailable_reason=None if explanations else "generation_failed" if ollama.enabled else "disabled",
                     composition="generative" if explanations else "extractive",
                 )
             # Сбой не закрепляем надолго: следующий подбор сможет повторить генерацию.

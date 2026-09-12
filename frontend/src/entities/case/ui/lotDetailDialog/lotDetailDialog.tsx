@@ -51,73 +51,71 @@ export function LotDetailDialog({
         hint: `исходно ${formatNumber(base)} · ${formatFactor(k)} в режиме ${mode?.mode_id}`,
       }
     }
-    return { value: unit(base), hint: 'исходное значение каталога' }
+    return { value: unit(base) }
   }
 
   const finance: FieldTile[] = [
     {
       title: 'Стартовые затраты · C0',
-      description: 'Разовые затраты на запуск сервиса. Не включают ежегодные расходы на его работу',
+      description: 'Разовые затраты на запуск сервиса.',
       ...withMode(lot.c0_mrub, mode?.k_c0, detail?.c0_mrub, money),
     },
     {
       title: 'Ежегодные расходы · OPEX',
-      description: 'Сколько стоит поддерживать работу сервиса в течение года',
+      description: 'Расходы на работу сервиса за год.',
       ...withMode(lot.opex_mrub_per_year, mode?.k_opex, detail?.opex_mrub_per_year, perYear),
     },
     {
       title: 'Общественная ценность · VPUB',
-      description: 'Оценка общественной пользы по модели кейса. Это не денежная выручка сервиса',
+      description: 'Общественная польза по модели кейса; не выручка.',
       ...withMode(lot.vpub_mrub_per_year, mode?.k_vpub, detail?.vpub_mrub_per_year, perYear),
     },
     {
       title: 'Якорные поступления',
-      description:
-        'Исходная якорная часть ежегодных поступлений. Конкретного плательщика команда определяет в финансовой схеме',
+      description: 'Гарантированная часть годовых поступлений.',
       value: perYear(lot.anchor_cash_mrub_per_year),
-      hint: mode ? `${formatFactor(mode.k_anchor)} в режиме ${mode.mode_id}` : 'исходное значение каталога',
+      hint: mode ? `${formatFactor(mode.k_anchor)} в режиме ${mode.mode_id}` : undefined,
     },
     {
       title: 'Коммерческие поступления',
-      description: 'Исходная коммерческая часть ежегодных денежных поступлений, заданная в данных кейса',
+      description: 'Коммерческая часть годовых поступлений.',
       value: perYear(lot.commercial_cash_mrub_per_year),
-      hint: mode ? `${formatFactor(mode.k_commercial)} в режиме ${mode.mode_id}` : 'исходное значение каталога',
+      hint: mode ? `${formatFactor(mode.k_commercial)} в режиме ${mode.mode_id}` : undefined,
     },
     {
       title: 'Поступления после режима · CASH',
-      description: 'Якорные и коммерческие поступления с учётом коэффициентов выбранного режима',
+      description: 'Якорные и коммерческие поступления после режима.',
       value: detail ? perYear(detail.cash_mrub_per_year) : '—',
-      hint: detail ? `режим ${detail.mode_id}` : 'появится после выбора режима',
+      hint: detail ? `режим ${detail.mode_id}` : 'после выбора режима',
     },
   ]
 
   const indexes: FieldTile[] = [
     {
       title: 'Готовность',
-      description: 'Заданный индекс готовности сервиса по шкале от 1 до 5',
+      description: 'Готовность сервиса по шкале 1–5.',
       value: `${formatNumber(lot.readiness_1_5)} / 5`,
     },
     {
       title: 'Устойчивость',
-      description: 'Заданный индекс устойчивости сервиса по шкале от 1 до 5. Не является вероятностью успешной работы',
+      description: 'Устойчивость сервиса по шкале 1–5.',
       value: `${formatNumber(lot.resilience_1_5)} / 5`,
     },
     {
       title: 'Тиражируемость',
-      description: 'Заданный индекс возможности тиражирования сервиса по шкале от 1 до 5',
+      description: 'Возможность тиражирования по шкале 1–5.',
       value: `${formatNumber(lot.scale_1_5)} / 5`,
     },
     {
       title: 't_rep',
-      description:
-        'Безразмерный показатель из данных кейса. Для портфеля используется среднее значение',
+      description: 'Безразмерный индекс кейса; в портфеле усредняется.',
       value: formatNumber(lot.t_rep),
     },
     {
       title: 'Общественное ядро · Public core',
-      description: 'Учитывается ли выбранный режим в минимальном числе сервисов общественного ядра',
+      description: 'Входит ли выбранный режим в общественное ядро.',
       value: mode ? (mode.public_core ? 'Да' : 'Нет') : '—',
-      hint: mode ? `режим ${mode.mode_id}` : 'зависит от режима доступа',
+      hint: mode ? `режим ${mode.mode_id}` : 'после выбора режима',
     },
   ]
 
@@ -127,6 +125,7 @@ export function LotDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         size="md"
+        className="max-w-[740px]"
         title={
           <span className="flex flex-col gap-3">
             <LotIcon lotId={lot.lot_id} tone="brand" size="lg" />
@@ -152,8 +151,7 @@ export function LotDetailDialog({
               <Tile className="px-4 py-3.5">
                 <p className="text-[13px] font-semibold">Территория</p>
                 <p className="mt-0.5 text-[11.5px] leading-snug text-muted">
-                  Территориальный тип из исходных данных. Федеральный сервис не добавляет отдельную
-                  территорию при проверке разнообразия
+                  Территориальный тип. Федеральный лот не добавляет отдельную территорию.
                 </p>
                 <p className="mt-2 text-[15px] font-semibold">
                   {lot.territory_title}
@@ -163,7 +161,7 @@ export function LotDetailDialog({
               <Tile className="px-4 py-3.5">
                 <p className="text-[13px] font-semibold">Космические возможности</p>
                 <p className="mt-0.5 text-[11.5px] leading-snug text-muted">
-                  Какие группы возможностей использует сервис. PNT и InSAR при проверке относятся к одной группе
+                  Группы сервиса; PNT и InSAR считаются одной группой.
                 </p>
                 <ul className="mt-2 flex flex-col gap-1 text-[13px]">
                   {lot.capability_groups.map((group) => (

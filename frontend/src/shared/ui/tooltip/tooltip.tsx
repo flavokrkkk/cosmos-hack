@@ -39,13 +39,13 @@ export function Tooltip({ content, children, side = 'top', className }: Props) {
           collisionPadding={12}
           onPointerDownOutside={() => setOpen(false)}
           className={cn(
-            'z-[60] max-w-[280px] rounded-xl bg-ink px-3 py-2 text-[12.5px] leading-snug text-white shadow-card',
+            'z-[60] max-w-[280px] rounded-xl bg-tooltip px-3 py-2 text-[12.5px] leading-snug text-tooltip-foreground shadow-card',
             'data-[state=delayed-open]:animate-fade-in',
             className,
           )}
         >
           {content}
-          <RadixTooltip.Arrow className="fill-ink" width={10} height={5} />
+          <RadixTooltip.Arrow className="fill-tooltip" width={10} height={5} />
         </RadixTooltip.Content>
       </RadixTooltip.Portal>
     </RadixTooltip.Root>

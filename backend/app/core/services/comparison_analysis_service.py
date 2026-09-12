@@ -104,11 +104,12 @@ class ComparisonAnalysisService:
             warning = OLLAMA_DISABLED_MESSAGE
         except (OllamaError, TimeoutError) as error:
             logger.warning("comparison_analysis_fallback", reason=str(error) or type(error).__name__)
-            warning = "Анализ Ollama недоступен; показаны факты сравнения без генерации AI."
+            warning = "Не удалось получить AI-объяснение. Таблица сравнения доступна."
         result = ComparisonAnalysisResult(
             comparison=comparison, input_hash=calculation_hash, scenario=request.scenario, facts=facts,
             explanation=render_evidence("Сравнение по расчётным показателям", facts),
             model=None, generated_by="template", warning=warning, composition="extractive",
+            unavailable_reason="generation_failed" if ollama.enabled else "disabled",
         )
         self._remember(key, result, 15)
         return result.model_copy(deep=True)

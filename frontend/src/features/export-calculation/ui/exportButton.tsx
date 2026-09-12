@@ -40,9 +40,8 @@ export function ExportButton({ calculation, catalog, recommendation, className }
           : 'Выгрузка доступна для полного портфеля из четырёх лотов'
       }
     >
-      <Button variant="ghost" size="sm" onClick={download} disabled={!ready} className={className}>
+      <Button variant="secondary" size="icon" aria-label="Скачать расчёт (CSV / JSON)" onClick={download} disabled={!ready} className={className}>
         <DownloadSimple className="size-4" aria-hidden />
-        Скачать расчёт (CSV / JSON)
       </Button>
     </Tooltip>
   )

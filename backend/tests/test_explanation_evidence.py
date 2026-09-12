@@ -83,6 +83,9 @@ def test_model_selects_ids_in_one_call_and_cannot_add_text():
         assert "summary" not in schema["properties"]
         assert schema["additionalProperties"] is False
         assert client.request["think"] is False
+        system_prompt = client.request["messages"][0].content
+        assert "никогда не называй t_rep главным преимуществом" in system_prompt
+        assert "ровный баланс шести показателей" in system_prompt
     asyncio.run(run())
 
 
@@ -136,7 +139,30 @@ def test_model_evidence_with_wrong_kind_is_safely_filtered():
         assert selection.strength_ids == ["budget"]
         assert any(next(fact for fact in facts if fact.id == key).source == "calculation" for key in selection.summary_ids)
         explanation = render_evidence("Портфель", facts, selection)
-        assert "Его главное преимущество" in explanation.summary
-        assert "При этом" in explanation.summary
+        assert explanation.summary == NARRATIVE
+
+    asyncio.run(run())
+
+
+def test_unsafe_model_narrative_is_rejected_instead_of_mislabeled_as_ollama():
+    class Client:
+        async def chat(self, **kwargs):
+            return OllamaChatResult(model="test", content=EvidenceBatch(items=[EvidenceSelection(
+                key="v0",
+                narrative=(
+                    "Портфель проходит условия сценария. Его главное преимущество — t_rep 0,73. "
+                    "При этом у варианта остаётся ограничение, которое нужно обсудить отдельно."
+                ),
+                summary_ids=["budget", "cash_balance"],
+                strength_ids=["budget"],
+                limitation_ids=["lot_deficits"],
+            )]).model_dump_json())
+
+    async def run():
+        facts = portfolio_evidence(example(), "BASE")
+        with pytest.raises(OllamaResponseError, match="unsafe"):
+            await OllamaService(Client(), "test").select_evidence([
+                {"key": "v0", "facts": [fact.model_dump() for fact in facts]},
+            ])
 
     asyncio.run(run())
