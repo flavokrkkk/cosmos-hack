@@ -11,12 +11,12 @@ type Props = {
   selection: readonly SelectionItem[]
 }
 
-/** Здесь задаётся точный итоговый вариант; алгоритм не заменяет выбранные режимы. */
+/** Здесь задаётся точный вариант; подбор не заменяет выбранные режимы. */
 export function EditPortfolioDialog({ open, onOpenChange, catalog, selection }: Props) {
   const openCustomVariant = useWorkspace((state) => state.openCustomVariant)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent title="Проверить точный портфель">
+      <DialogContent title="Лоты и режимы">
         {open ? (
           <EditForm
             catalog={catalog}
