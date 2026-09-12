@@ -26,7 +26,7 @@ export function ConstraintTiles({ checks, scenarioDependent, scenario, className
           content={
             <span>
               <span className="font-semibold">{check.title}</span>
-              <span className="block text-white/75">
+              <span className="block opacity-70">
                 {check.passed ? 'выполнено' : 'нарушено'} · запас {formatSlack(check.slack)}
                 {check.unit && check.unit !== '—' ? ` ${check.unit}` : ''}
               </span>

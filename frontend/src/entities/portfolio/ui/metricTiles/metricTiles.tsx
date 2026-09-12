@@ -26,7 +26,7 @@ export function MetricTiles({ metrics, tiles = METRIC_TILES, columns = 3, classN
             content={
               <span>
                 <span className="font-semibold">{tile.title}</span>
-                {tile.caveat ? <span className="block text-white/75">{tile.caveat}</span> : null}
+                {tile.caveat ? <span className="block opacity-70">{tile.caveat}</span> : null}
               </span>
             }
           >
