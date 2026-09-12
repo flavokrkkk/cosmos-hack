@@ -168,6 +168,42 @@ backend/.venv/bin/python scripts/render_pdf.py
   against the `source_sha256` recorded in `manifest.json`, so a bundle left unbuilt
   after a source change fails the suite instead of shipping quietly.
 
+### Map of the management note — read before touching it
+
+Source: `docs/23-management-note.md` (one markdown file). Rendered by `scripts/render_pdf.py` into
+`docs/management-note.pdf` (sections 1–11, must stay 8–12 pages; the tracker said «двенадцать
+максимум») and `docs/management-note-appendices.pdf` (appendices А–Г). Both go to
+`team-submission/docs/` via `scripts/build_submission.py`. The one-page stress summary is
+`docs/24-stress-summary.md` → `docs/stress-summary.pdf`. The 12-slide skeleton for the defence is
+`docs/25-presentation-skeleton.md`; 17 of its figures are under the same number sync as the note.
+
+| Section | Criterion | What it holds |
+|---|---|---|
+| 1 | — | portfolio `FIRE:A, AGRI:C, TRANS:C, ENV:A`, thesis, nine constraints with STRESS slack, glossary |
+| 2 | П1 | need → user → service → action → measurable effect → public value, per lot; mode rule by anchor share (68/39/32/20%); no double counting via `k_vpub`; contracts-and-money diagram |
+| 3 | П2 | data provenance by hashes; formulas; method = MCDA without weights (maximin), Q = 0,5, Δ = 9,5; choice sensitivity over 16 scenarios; model limits; assumptions A1–A7 |
+| 4 | П3 | launch 1129,8 = federal 512,40 / regional 417,48 / operator 199,92 (40% derived from the roadmap, cap 46%); operations 305,75 vs 398,0 → surplus 92,25; cross-coverage of the public core (−8,0) with a fallback direct subsidy (0,7% of C0/year) |
+| 5 | П4 | 5670 → 1031 → 143 → 11 → 1; mode ladder AAAA → ACCA; the FLOOD row and the head-on answer (more money and value, but STRESS slack 29,2 vs 50,2); named weaknesses |
+| 6 | П5 | causal chain of mode coefficients; roles matrix; contract design (offset contract 111.4 44-ФЗ, ГЧП, subscription, paid emergency availability — not in CASH) |
+| 7 | П6 | stress: 9/9 PASS, where it breaks (six limits, two are team thresholds), decision |
+| 8 | П7 | demand risk 58,9% commercial; four anti-lock-in measures; six supplier-switch triggers |
+| 9 | П8 | replicable core vs local adaptation; `scale_1_5` carries replication talk, `t_rep` only as a constraint; next waves FarEast, UralVolga |
+| 10 | П9 | roadmap 0–60 months, six fields per stage; payment for service level |
+| 11 | — | reproduction commands |
+| А–Г | П7, П9, П2, sources | risk register (7 fields), RACI + KPI verification, per-lot tables, 29 sources — every number-bearing precedent has one |
+
+Mistakes already made and fixed — do not repeat them:
+
+- calling `t_rep` «тиражируемость» (the instructions forbid guessing its meaning; use `scale_1_5`);
+- calling a territorial archetype a region («Сибирь») — it is a class of territory;
+- payback computed from revenue instead of net flow (199,92 / 92,25 = 2,2 years, not «about a year»);
+- «треть ограничений не работает» — it is four of nine, «ровно 4 лота» holds by construction;
+- 1370,0 − 1199,0 is 171,0, not 171,4; the OPEX/C0 headroom ratio is «вчетверо», not «втрое»;
+- a precedent cited without a source in appendix Г (CLPS +171 млн $, IRIS²) — now sources 28–29;
+- IRIS² has its checkpoint at 12 months, not mid-term — cite the mechanism, not the timing;
+- a page-1 declaration («12 страниц») that drifts from the measured count — `render_pdf.py` now fails on it;
+- adding text without cutting: the note sits at 12 pages, so every addition needs a matching cut.
+
 ### Wording the organisers constrain
 
 - `t_rep` has no published meaning and the instructions explicitly forbid guessing
