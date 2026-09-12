@@ -76,6 +76,7 @@ def collect():
         'остаток S, % к OPEX': (money(surplus / opex * 100, 1), (NOTE,)),
         'запас STRESS': (money(1180 - c0), (NOTE, SUMMARY, ALGORITHM)),
         'запас BASE': (money(1300 - c0), (SUMMARY,)),
+        'сокращение лимита в стрессе, %': (money((1300 - 1180) / 1300 * 100, 2), (NOTE, SUMMARY)),
         'минимум C0 пространства': (money(stress.c0.min()), (NOTE, SUMMARY)),
         'конфигураций всего': (str(len(space)), (NOTE, SUMMARY, ALGORITHM)),
         'проходят BASE': (str(int(space.BASE_ok.sum())), (NOTE, ALGORITHM)),
