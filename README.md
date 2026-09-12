@@ -120,7 +120,8 @@ python -m pytest tests/ -q    # проверки формул, границ, ф�
 
 | Материал | Где |
 |---|---|
-| **Управленческая записка**, 12 страниц + приложения | [docs/management-note.pdf](docs/management-note.pdf), исходник [docs/23-management-note.md](docs/23-management-note.md) |
+| **Управленческая записка**, 12 страниц | [docs/management-note.pdf](docs/management-note.pdf), исходник [docs/23-management-note.md](docs/23-management-note.md) |
+| **Приложения к записке** А–Г: реестр рисков, матрица ответственности и KPI, расчётные таблицы, источники | [docs/management-note-appendices.pdf](docs/management-note-appendices.pdf) — тот же исходник |
 | **Резюме стресс-сценария**, одна страница | [docs/stress-summary.pdf](docs/stress-summary.pdf), исходник [docs/24-stress-summary.md](docs/24-stress-summary.md) |
 | Как вычислен портфель | [docs/22-hybrid-selection.md](docs/22-hybrid-selection.md) |
 | Рекомендуемый портфель и результат выбора | [results/hybrid_analysis.json](results/hybrid_analysis.json) |

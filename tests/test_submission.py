@@ -24,7 +24,7 @@ def test_submission_manifest_and_material_status():
     manifest = json.loads((BUNDLE/'manifest.json').read_text())
     for name, digest in manifest['files'].items():
         assert hashlib.sha256((BUNDLE/name).read_bytes()).hexdigest() == digest, name
-    required = ('docs/management-note.pdf','docs/stress-summary.pdf','presentation.pdf')
+    required = ('docs/management-note.pdf','docs/management-note-appendices.pdf','docs/stress-summary.pdf','presentation.pdf')
     assert manifest['missing_materials'] == [name for name in required if not (BUNDLE/name).is_file()]
     assert all(not any(part in name.split('/') for part in ('.env','.venv','node_modules','flowers_store')) for name in manifest['files'])
 
@@ -97,11 +97,11 @@ def test_committed_pdf_matches_a_fresh_render():
     scratch = ROOT / 'results/.render-check'
     scratch.mkdir(exist_ok=True)
     try:
-        for source, target, size, _, _ in render_pdf.JOBS:
-            fresh = scratch / Path(target).name
-            render_pdf.render(ROOT / source, fresh, size)
-            assert fresh.read_bytes() == (ROOT / target).read_bytes(), (
-                f'{target} не совпадает со свежим рендером {source}: '
+        for job in render_pdf.JOBS:
+            fresh = scratch / Path(job['target']).name
+            render_pdf.render_job(job, fresh)
+            assert fresh.read_bytes() == (ROOT / job['target']).read_bytes(), (
+                f"{job['target']} не совпадает со свежим рендером {job['source']}: "
                 'запустите python scripts/render_pdf.py')
     finally:
         for leftover in scratch.iterdir():

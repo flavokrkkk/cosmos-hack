@@ -30,6 +30,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))  # пакет engine лежит в корне репозитория
 SNAPSHOT = ROOT / 'results/document_facts.json'
 NOTE, SUMMARY, ALGORITHM = 'docs/23-management-note.md', 'docs/24-stress-summary.md', 'docs/22-hybrid-selection.md'
+SLIDES = 'docs/25-presentation-skeleton.md'  # содержание слайдов: те же числа, что в записке
 
 # Правило распределения запуска по уровням бюджета — управленческое решение команды, раздел 4
 # записки. Лежит здесь, чтобы суммы не расходились с текстом при смене состава портфеля.
@@ -63,35 +64,35 @@ def collect():
 
     analysis = decision.analysis
     facts = {
-        'Q победителя': (str(analysis['q_max']).replace('.', ','), (NOTE, ALGORITHM)),
-        'Δ, млн ₽/год': (str(analysis['effective_delta_mrub']).replace('.', ','), (NOTE, ALGORITHM)),
+        'Q победителя': (str(analysis['q_max']).replace('.', ','), (NOTE, ALGORITHM, SLIDES)),
+        'Δ, млн ₽/год': (str(analysis['effective_delta_mrub']).replace('.', ','), (NOTE, ALGORITHM, SLIDES)),
         'максимальный остаток S в допустимой области': (money(analysis['s_max_mrub'], 2), (NOTE, ALGORITHM)),
-        'C0': (money(c0), (NOTE, SUMMARY, ALGORITHM)),
-        'OPEX': (money(opex, 2), (NOTE, SUMMARY, ALGORITHM)),
-        'CASH': (money(cash, 1), (NOTE, SUMMARY, ALGORITHM)),
+        'C0': (money(c0), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'OPEX': (money(opex, 2), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'CASH': (money(cash, 1), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
         'VPUB': (money(metrics['vpub_mrub_per_year'], 1), (NOTE, SUMMARY, ALGORITHM)),
         'KCASH': (money(metrics['kcash'], 3), (NOTE, SUMMARY)),
         't_rep': (money(metrics['t_rep'], 3), (NOTE, SUMMARY)),
-        'остаток S': (money(surplus, 2), (NOTE, SUMMARY, ALGORITHM)),
-        'остаток S, % к OPEX': (money(surplus / opex * 100, 1), (NOTE,)),
-        'запас STRESS': (money(1180 - c0), (NOTE, SUMMARY, ALGORITHM)),
+        'остаток S': (money(surplus, 2), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'остаток S, % к OPEX': (money(surplus / opex * 100, 1), (NOTE, SLIDES)),
+        'запас STRESS': (money(1180 - c0), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
         'запас BASE': (money(1300 - c0), (SUMMARY,)),
-        'сокращение лимита в стрессе, %': (money((1300 - 1180) / 1300 * 100, 2), (NOTE, SUMMARY)),
-        'минимум C0 пространства': (money(stress.c0.min()), (NOTE, SUMMARY)),
-        'конфигураций всего': (str(len(space)), (NOTE, SUMMARY, ALGORITHM)),
-        'проходят BASE': (str(int(space.BASE_ok.sum())), (NOTE, ALGORITHM)),
-        'проходят STRESS': (str(len(stress)), (NOTE, SUMMARY, ALGORITHM)),
+        'сокращение лимита в стрессе, %': (money((1300 - 1180) / 1300 * 100, 2), (NOTE, SUMMARY, SLIDES)),
+        'минимум C0 пространства': (money(stress.c0.min()), (NOTE, SUMMARY, SLIDES)),
+        'конфигураций всего': (str(len(space)), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
+        'проходят BASE': (str(int(space.BASE_ok.sum())), (NOTE, ALGORITHM, SLIDES)),
+        'проходят STRESS': (str(len(stress)), (NOTE, SUMMARY, ALGORITHM, SLIDES)),
         'наборов проходит STRESS': (str(stress.lots.nunique()), (NOTE,)),
         'режимных комбинаций нашего набора': (str(int(ours.STRESS_ok.sum())), (NOTE,)),
         'якорные поступления': (money(anchor, 2), (NOTE,)),
         'коммерческие поступления': (money(commercial, 2), (NOTE,)),
-        'доля коммерческих поступлений': (money(commercial / cash * 100, 1), (NOTE, SUMMARY)),
+        'доля коммерческих поступлений': (money(commercial / cash * 100, 1), (NOTE, SUMMARY, SLIDES)),
     }
     flood = space[(space.lots.str.split('+').apply(set) == {'FLOOD', 'AGRI', 'TRANS', 'ENV'}) & (space.modes == 'ACCA')].iloc[0]
     facts['FLOOD-вариант: остаток'] = (money(flood.cash - flood.opex, 2), (NOTE,))
     facts['FLOOD-вариант: VPUB'] = (money(flood.vpub, 1), (NOTE,))
-    facts['FLOOD-вариант: запас STRESS'] = (money(1180 - flood.c0), (NOTE,))
-    facts['FLOOD-вариант: прирост остатка, %'] = (money((flood.cash - flood.opex - surplus) / surplus * 100, 1), (NOTE,))
+    facts['FLOOD-вариант: запас STRESS'] = (money(1180 - flood.c0), (NOTE, SLIDES))
+    facts['FLOOD-вариант: прирост остатка, %'] = (money((flood.cash - flood.opex - surplus) / surplus * 100, 1), (NOTE, SLIDES))
     facts['дефицит ядра'] = (money(abs(sum(b for b in (detail.cash_mrub_per_year - detail.opex_mrub_per_year) if b < 0)), 2), (NOTE,))
     for row in detail.itertuples():
         facts[f'{row.lot_id}: c0'] = (money(row.c0_mrub, 2), (NOTE,))
@@ -101,7 +102,7 @@ def collect():
             facts[f'{row.lot_id}: {level}'] = (money(row.c0_mrub * share, 2), (NOTE,))
     for level in ('федеральный', 'региональный', 'оператор'):
         total = sum(row.c0_mrub * FINANCING.get(row.lot_id, {}).get(level, 0) for row in detail.itertuples())
-        facts[f'запуск, {level}'] = (money(total, 2), (NOTE,))
+        facts[f'запуск, {level}'] = (money(total, 2), (NOTE, SLIDES))
     for row in sens.itertuples():
         name = row.input.split(' ')[0]
         facts[f'предел {name} {row.direction} ({row.binding_constraint.split(" ")[0]})'] = (

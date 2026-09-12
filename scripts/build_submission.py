@@ -109,7 +109,7 @@ def main():
         text = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', local_link, text)
         path.write_text(text, encoding='utf-8')
     missing = []
-    for name in ('docs/management-note.pdf', 'docs/stress-summary.pdf', 'presentation.pdf'):
+    for name in ('docs/management-note.pdf', 'docs/management-note-appendices.pdf', 'docs/stress-summary.pdf', 'presentation.pdf'):
         if (ROOT / name).exists():
             copy(name, name)
         if not (target / name).exists():

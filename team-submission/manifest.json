@@ -140,7 +140,7 @@
     },
     "docs/management-note.md": {
       "source": "docs/23-management-note.md",
-      "source_sha256": "77225be55c668fc8c5439ca7bed6a2061f0222003fb02a61ae37c73270b90cf1"
+      "source_sha256": "ce3740ca8b2b5743a52e6439ac5f75a25dcdfbefb80b3b93e38b2092d0c97e4d"
     },
     "docs/stress-summary.md": {
       "source": "docs/24-stress-summary.md",
@@ -160,7 +160,11 @@
     },
     "docs/management-note.pdf": {
       "source": "docs/management-note.pdf",
-      "source_sha256": "a380d18a1a959228e6703b211c45985238e19612cf054a6888d787e029c8a98c"
+      "source_sha256": "0fce377d86594695a5cd76affbe0a8b7bf36d4f6d9f3ab19d8910285d33f6d89"
+    },
+    "docs/management-note-appendices.pdf": {
+      "source": "docs/management-note-appendices.pdf",
+      "source_sha256": "6fb657bfb6011ceb6ec16caf043cc178911e33742019f3903c76b5c50a00ee90"
     },
     "docs/stress-summary.pdf": {
       "source": "docs/stress-summary.pdf",
@@ -179,8 +183,9 @@
     "docs/23-results-glossary.md": "74518e9b03c340aafa61053c8c1a228ec84a8f7c4ee1429fb5f91e3f6a4e0df7",
     "docs/README.md": "ad8f1028ba708e6dd7cf1b008fc0c85cfeb7a7407ea0c129bfbfba979e621def",
     "docs/algorithm.md": "ab2829c3fe928d80e471f4c6a8c80003e7a5f0a6643a1dba2fb20a96b628880d",
-    "docs/management-note.md": "cfc91475fe248e46560f80191e850978544a26861cb293f7ce6cfe1c810560f6",
-    "docs/management-note.pdf": "a380d18a1a959228e6703b211c45985238e19612cf054a6888d787e029c8a98c",
+    "docs/management-note-appendices.pdf": "6fb657bfb6011ceb6ec16caf043cc178911e33742019f3903c76b5c50a00ee90",
+    "docs/management-note.md": "030417672016d67f7a5685cba2928a86c600a68ba22fa70746111f6852758e83",
+    "docs/management-note.pdf": "0fce377d86594695a5cd76affbe0a8b7bf36d4f6d9f3ab19d8910285d33f6d89",
     "docs/research/README.md": "4af19e1f55d613d325307f4361411d319694b18448ad58f000ee3dd429b97fc8",
     "docs/research/access-mode-d.md": "26cd707c3b3a99907605bb878e6f7bda8b32ad6d5be8c950cbddd2951e3ac034",
     "docs/research/case-literature.md": "f34d5eb041b0a7d061d9aacf34c08082bda0e493b458e33a0e2067392ce5040f",

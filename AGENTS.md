@@ -116,6 +116,8 @@ pre-event template changes.
 
 ## Submission documents
 
+**Freeze: no commits to code or documents after 12.09.2026 23:30 MSK** (the stop-code). The tracker was explicit that any change after it — «ни точки, ни запятой» — is grounds for disqualification. Only the presentation may change, until 13.09 10:00.
+
 The scored deliverables are settled. Maintain them; do not rewrite them, do not
 restructure them, and do not start a parallel version in a new file.
 
