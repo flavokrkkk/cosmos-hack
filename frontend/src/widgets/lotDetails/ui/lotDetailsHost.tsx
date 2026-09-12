@@ -22,7 +22,6 @@ export function LotDetailsHost({ catalog, calculation }: Props) {
       lot={lot}
       mode={mode}
       detail={detail}
-      source={{ caseId: catalog.case_id, caseVersion: catalog.case_version }}
       open={lotId !== null}
       onOpenChange={(open) => {
         if (!open) close()

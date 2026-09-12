@@ -4,7 +4,7 @@ import type { AccessMode, Lot, LotDetail } from '@shared/api/contracts'
 import { cn } from '@shared/lib/cn'
 import { Dialog, DialogContent, Tag, Tile } from '@shared/ui'
 
-import { capabilityTitle, describeMode, formatFactor } from '../../lib'
+import { capabilityTitle, formatFactor } from '../../lib'
 import { LotIcon } from '../lotIcon'
 
 type Props = {
@@ -12,8 +12,6 @@ type Props = {
   /** Режим и пересчёт, если лот входит в просматриваемый портфель. */
   mode?: AccessMode
   detail?: LotDetail
-  /** Версия данных для подписи источника. */
-  source: { caseId: string; caseVersion: string }
   open: boolean
   onOpenChange: (open: boolean) => void
   formatNumber: (value: number) => string
@@ -35,7 +33,7 @@ type FieldTile = {
  * в браузере ничего не умножается.
  */
 export function LotDetailDialog({
-  lot, mode, detail, source, open, onOpenChange, formatNumber,
+  lot, mode, detail, open, onOpenChange, formatNumber,
 }: Props) {
   if (!lot) return null
 
@@ -179,16 +177,6 @@ export function LotDetailDialog({
             </div>
           </section>
 
-          {mode ? (
-            <p className="rounded-2xl bg-brand-50 px-4 py-3 text-[12.5px] leading-snug text-brand-700">
-              {describeMode(mode)}
-            </p>
-          ) : null}
-
-          <p className="text-[12px] text-muted">
-            Источник: данные кейсодержателя, {source.caseId} · v{source.caseVersion}. Исходные
-            значения — каталог лота; пересчёт после режима — ответ расчётного ядра.
-          </p>
         </div>
       </DialogContent>
     </Dialog>

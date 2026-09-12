@@ -137,6 +137,7 @@ export function PortfolioReview({
           {complete && calculation.metrics ? (
             <>
               <MetricTiles metrics={calculation.metrics} />
+              <ExtraMetrics metrics={calculation.metrics} shown={METRIC_TILES} className="mt-4" />
               <FinancialBreakdown financial={calculation.financial} />
             </>
           ) : (
@@ -169,19 +170,13 @@ export function PortfolioReview({
             </Button>
           ) : null}
         </div>
-
-        <div className="-mt-3">
-          <ExportButton calculation={calculation} catalog={catalog} />
-        </div>
       </div>
     </div>
 
-    {/* Подробности — отдельной строкой под колонками: раскрытие не меняет их высоту. */}
-    {complete && calculation.metrics ? (
-      <Panel className="px-4 py-2">
-        <ExtraMetrics metrics={calculation.metrics} shown={METRIC_TILES} />
-      </Panel>
-    ) : null}
+    {/* Выгрузка — тихой строкой под обеими колонками, чтобы не ломать их общую высоту. */}
+    <div className="-mt-2 flex justify-end">
+      <ExportButton calculation={calculation} catalog={catalog} />
+    </div>
     </div>
   )
 }
